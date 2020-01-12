@@ -1,0 +1,64 @@
+{
+  "name": "coc-markmap",
+  "version": "0.2.5",
+  "description": "Visualize your Markdown as mindmaps with Markmap",
+  "author": "Gerald <i@gerald.top>",
+  "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
+  "scripts": {
+    "dev": "rollup -wc rollup.conf.js",
+    "clean": "del dist",
+    "build:js": "rollup -c rollup.conf.js",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
+    "build": "npm run build:js",
+    "lint": "eslint --ext .ts ."
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.common.js",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@gera2ld/plaid": "~2.0.2",
+    "@gera2ld/plaid-common-ts": "~2.0.2",
+    "@gera2ld/plaid-rollup": "~2.0.2",
+    "coc.nvim": "^0.0.77",
+    "del-cli": "^3.0.0",
+    "husky": "^4.2.5"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.9.6",
+    "markmap-lib": "^0.7.4"
+  },
+  "engines": {
+    "coc": ">= 0.0.70"
+  },
+  "keywords": [
+    "coc.nvim",
+    "markmap"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "coc-markmap",
+      "properties": {
+        "markmap.mathJax": {
+          "type": "object",
+          "description": "Options that will be passed to MathJax directly",
+          "default": {}
+        }
+      }
+    }
+  },
+  "repository": "git@github.com:gera2ld/coc-markmap.git"
+}

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "es6",
+    "moduleResolution": "node",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "types",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react"
+  },
+  "files": [
+    "src/index.ts"
+  ]
+}
