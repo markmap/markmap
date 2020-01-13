@@ -5,15 +5,13 @@ const { createMarkmap } = require('..');
 
 const program = new Command();
 program
-.version(require('../package.json').version);
-
-program
-.command('create <input>')
+.version(require('../package.json').version)
 .description('Create a markmap from a Markdown input file')
-.option('-o, --output <output>', 'Specify filename of the output HTML')
-.option('--no-open', 'Do not open the output file after generation')
+.arguments('<input>')
+.option('-o, --output <output>', 'specify filename of the output HTML')
+.option('--no-open', 'do not open the output file after generation')
 .action((input, cmd) => {
-  createMarkmap(input, {
+  return createMarkmap(input, {
     open: cmd.open,
     output: cmd.output,
   });
