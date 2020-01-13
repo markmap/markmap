@@ -23,3 +23,7 @@ $ markmap README.md
 ```
 
 Then you will get a `README.html` in the same directory, and hopefully it will be open in your default browser.
+
+## Related
+
+- [coc-markmap](https://github.com/gera2ld/coc-markmap) - Vim / NeoVim plugin powered by [coc.nvim](https://github.com/neoclide/coc.nvim)
