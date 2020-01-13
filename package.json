@@ -1,0 +1,58 @@
+{
+  "name": "markmap-cli",
+  "version": "0.0.0",
+  "description": "Visualize your Markdown as mindmaps with Markmap",
+  "author": "Gerald <i@gerald.top>",
+  "license": "MIT",
+  "bin": {
+    "markmap": "bin/cli.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
+  "scripts": {
+    "dev": "rollup -wc rollup.conf.js",
+    "clean": "del dist types",
+    "build:js": "rollup -c rollup.conf.js",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
+    "build": "tsc && npm run build:js",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.common.js",
+  "files": [
+    "bin",
+    "dist",
+    "templates",
+    "types"
+  ],
+  "typings": "types/index.d.ts",
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.8.0",
+    "@gera2ld/plaid": "~1.5.0",
+    "@rollup/plugin-alias": "^3.0.0",
+    "@rollup/plugin-commonjs": "^11.0.1",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-replace": "^2.3.0",
+    "cross-env": "^6.0.3",
+    "del-cli": "^3.0.0",
+    "husky": "^4.0.7",
+    "rollup": "^1.29.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.8.0",
+    "commander": "^4.1.0",
+    "markmap": "^0.6.1",
+    "open": "^7.0.0"
+  },
+  "repository": "git@github.com:gera2ld/markmap-cli.git"
+}

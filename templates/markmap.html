@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Markmap</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap@0.6.1/style/view.mindmap.css">
+<style>
+svg#mindmap {
+  width: 100vw;
+  height: 100vh;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap@0.6.1/lib/d3-flextree.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap@0.6.1/lib/view.mindmap.js"></script>
+</head>
+<body>
+<svg id="mindmap"></svg>
+<script>
+  markmap('svg#mindmap', {/* data */}, {
+    preset: 'colorful',
+    linkShape: 'diagonal',
+  });
+</script>
+</body>
+</html>
