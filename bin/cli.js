@@ -11,8 +11,9 @@ program
 .option('-o, --output <output>', 'specify filename of the output HTML')
 .option('--no-open', 'do not open the output file after generation')
 .action((input, cmd) => {
-  return createMarkmap(input, {
+  return createMarkmap({
     open: cmd.open,
+    input,
     output: cmd.output,
   });
 });
