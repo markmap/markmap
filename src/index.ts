@@ -5,14 +5,14 @@ import transform from 'markmap/lib/transform.headings';
 
 let template: string;
 
-export interface ICreateOptions {
+export interface MarkmapCreateOptions {
   open?: boolean;
   content?: string;
   input?: string;
   output?: string;
 }
 
-export async function createMarkmap(options: ICreateOptions = {}) {
+export async function createMarkmap(options: MarkmapCreateOptions = {}): Promise<void> {
   const {
     input,
     open: openFile = true,

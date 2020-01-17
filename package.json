@@ -20,7 +20,7 @@
     "prepublishOnly": "npm run build",
     "ci": "npm run lint",
     "build": "tsc && npm run build:js",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'"
+    "lint": "eslint --ext .ts ."
   },
   "publishConfig": {
     "access": "public"
@@ -40,12 +40,14 @@
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-replace": "^2.3.0",
+    "@typescript-eslint/eslint-plugin": "^2.16.0",
+    "@typescript-eslint/parser": "^2.16.0",
     "cross-env": "^6.0.3",
     "del-cli": "^3.0.0",
+    "eslint": "^6.8.0",
     "husky": "^4.0.7",
     "rollup": "^1.29.0",
     "rollup-plugin-babel": "^4.3.3",
-    "tslint": "^5.20.1",
     "typescript": "^3.7.4"
   },
   "dependencies": {
