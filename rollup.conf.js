@@ -44,6 +44,21 @@ const rollupConfig = [
     input: {
       input: 'src/transform.ts',
       plugins: getRollupPlugins(),
+      external: getExternal([
+        ...externalList,
+        'remarkable',
+      ]),
+    },
+    output: {
+      format: 'cjs',
+      file: `${DIST}/transform.common.js`,
+      ...bundleOptions,
+    },
+  },
+  {
+    input: {
+      input: 'src/transform.ts',
+      plugins: getRollupPlugins(),
       external: getExternal(externalList),
     },
     output: {
@@ -53,6 +68,21 @@ const rollupConfig = [
       ...bundleOptions,
     },
     minify: true,
+  },
+  {
+    input: {
+      input: 'src/view.ts',
+      plugins: [
+        ...getRollupPlugins(),
+        getPostCSSPlugin(`${DIST}/style.css`),
+      ],
+      external: getExternal(externalList),
+    },
+    output: {
+      format: 'cjs',
+      file: `${DIST}/view.common.js`,
+      ...bundleOptions,
+    },
   },
   {
     input: {

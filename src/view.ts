@@ -85,7 +85,7 @@ export function render(svg, data: INode) {
     svg.attr('class', classList.join(' '));
   }
   const svgNode = svg.node();
-  const g = svg.append('g');
+  const g = svg.selectAll(function () { return this.childNodes; }).data([0]).join('g');
   addIds(data, 0);
   const state = {
     data,

@@ -69,7 +69,8 @@
     "commander": "^5.0.0",
     "d3": "^5.15.0",
     "d3-flextree": "^2.1.1",
-    "open": "^7.0.3"
+    "open": "^7.0.3",
+    "remarkable": "^2.0.0"
   },
   "repository": "git@github.com:gera2ld/markmap-lib.git"
 }
