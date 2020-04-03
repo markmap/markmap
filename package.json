@@ -1,5 +1,5 @@
 {
-  "name": "markmap-cli",
+  "name": "markmap-lib",
   "version": "0.2.0",
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <i@gerald.top>",
@@ -25,36 +25,51 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/index.common.js",
+  "main": "dist/index.js",
+  "unpkg": "dist/view.min.js",
+  "jsdelivr": "dist/view.min.js",
   "files": [
     "bin",
     "dist",
     "templates",
     "types"
   ],
+  "keywords": [
+    "markmap",
+    "mindmap"
+  ],
   "typings": "types/index.d.ts",
   "devDependencies": {
-    "@babel/preset-typescript": "^7.8.0",
+    "@babel/preset-typescript": "^7.9.0",
     "@gera2ld/plaid": "~1.5.0",
-    "@rollup/plugin-alias": "^3.0.0",
-    "@rollup/plugin-commonjs": "^11.0.1",
-    "@rollup/plugin-node-resolve": "^7.0.0",
-    "@rollup/plugin-replace": "^2.3.0",
-    "@typescript-eslint/eslint-plugin": "^2.16.0",
-    "@typescript-eslint/parser": "^2.16.0",
-    "cross-env": "^6.0.3",
+    "@rollup/plugin-alias": "^3.0.1",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@rollup/plugin-replace": "^2.3.1",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "@typescript-eslint/parser": "^2.26.0",
+    "cross-env": "^7.0.2",
+    "cssnano": "^4.1.10",
     "del-cli": "^3.0.0",
     "eslint": "^6.8.0",
-    "husky": "^4.0.7",
-    "rollup": "^1.29.0",
-    "rollup-plugin-babel": "^4.3.3",
-    "typescript": "^3.7.4"
+    "husky": "^4.2.3",
+    "postcss-calc": "^7.0.2",
+    "postcss-color-function": "^4.1.0",
+    "precss": "^4.0.0",
+    "rollup": "^2.3.1",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-postcss": "^2.5.0",
+    "rollup-plugin-terser": "^5.3.0",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@babel/runtime": "^7.8.0",
-    "commander": "^4.1.0",
-    "markmap": "^0.6.1",
-    "open": "^7.0.0"
+    "@babel/runtime": "^7.9.2",
+    "@types/d3": "^5.7.2",
+    "commander": "^5.0.0",
+    "d3": "^5.15.0",
+    "d3-flextree": "^2.1.1",
+    "open": "^7.0.3"
   },
-  "repository": "git@github.com:gera2ld/markmap-cli.git"
+  "repository": "git@github.com:gera2ld/markmap-lib.git"
 }

@@ -1,29 +1,97 @@
-const rollup = require('rollup');
+const { terser } = require('rollup-plugin-terser');
+const postcss = require('rollup-plugin-postcss');
 const { getRollupPlugins, getExternal, DIST } = require('./scripts/util');
 const pkg = require('./package.json');
 
-const FILENAME = 'index';
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
-const external = getExternal([
+const externalList = [
   'fs',
   'path',
   'open',
   'markmap',
-]);
+  'd3',
+];
+const bundleOptions = {
+  extend: true,
+  esModule: false,
+};
+const getPostCSSPlugin = (filename) => postcss({
+  extract: filename,
+  plugins: [
+    require('precss'),
+    require('postcss-color-function'),
+    require('postcss-calc'),
+    require('cssnano'),
+  ],
+});
 const rollupConfig = [
   {
     input: {
       input: 'src/index.ts',
       plugins: getRollupPlugins(),
-      external,
+      external: getExternal([
+        ...externalList,
+        'remarkable',
+      ]),
     },
     output: {
       format: 'cjs',
-      file: `${DIST}/${FILENAME}.common.js`,
+      file: `${DIST}/index.js`,
     },
   },
+  {
+    input: {
+      input: 'src/transform.ts',
+      plugins: getRollupPlugins(),
+      external: getExternal(externalList),
+    },
+    output: {
+      format: 'iife',
+      file: `${DIST}/transform.js`,
+      name: 'markmap',
+      ...bundleOptions,
+    },
+    minify: true,
+  },
+  {
+    input: {
+      input: 'src/view.ts',
+      plugins: [
+        ...getRollupPlugins(),
+        getPostCSSPlugin(`${DIST}/style.css`),
+      ],
+      external: getExternal(externalList),
+    },
+    output: {
+      format: 'iife',
+      file: `${DIST}/view.js`,
+      name: 'markmap',
+      globals: {
+        d3: 'd3',
+      },
+      ...bundleOptions,
+    },
+    minify: true,
+  },
 ];
+// Generate minified versions
+rollupConfig.filter(({ minify }) => minify)
+.forEach(config => {
+  rollupConfig.push({
+    input: {
+      ...config.input,
+      plugins: [
+        ...config.input.plugins,
+        terser(),
+      ],
+    },
+    output: {
+      ...config.output,
+      file: config.output.file.replace(/\.js$/, '.min.js'),
+    },
+  });
+});
 
 rollupConfig.forEach((item) => {
   item.output = {

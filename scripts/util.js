@@ -3,6 +3,7 @@ const replace = require('@rollup/plugin-replace');
 const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const alias = require('@rollup/plugin-alias');
+const json = require('@rollup/plugin-json');
 const pkg = require('../package.json');
 
 const values = {
@@ -28,6 +29,7 @@ const rollupPluginMap = {
   replace: () => replace({ values }),
   resolve: () => resolve({ extensions }),
   commonjs: () => commonjs(),
+  json: () => json(),
 };
 
 function getRollupPlugins({ babelConfig, esm, aliases } = {}) {
@@ -37,6 +39,7 @@ function getRollupPlugins({ babelConfig, esm, aliases } = {}) {
     rollupPluginMap.replace(),
     rollupPluginMap.resolve(),
     rollupPluginMap.commonjs(),
+    rollupPluginMap.json(),
   ].filter(Boolean);
 }
 
