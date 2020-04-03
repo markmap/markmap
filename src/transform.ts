@@ -96,8 +96,14 @@ function cleanNode(node: INode): void {
       }
     });
   }
-  if (node.children?.length === 0) delete node.children;
-  else node.children.forEach(cleanNode);
+  if (node.children.length === 0) {
+    delete node.children;
+  } else {
+    if (node.children.length === 1 && !node.children[0].v.length) {
+      node.children = node.children[0].children;
+    }
+    node.children.forEach(cleanNode);
+  }
   let last: IValue;
   const content = [];
   for (const item of node.v) {
