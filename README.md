@@ -4,11 +4,13 @@ Visualize your Markdown as mindmaps.
 
 This project is heavily inspired by [Markmap](https://github.com/dundalek/markmap).
 
-It is a complete reimplementation with the following features:
+It is a complete reimplementation with some additional features:
 
-- command-line to create a markmap from a Markdown file
-- multiline text and styles
+- command-line usage
+- multiline text
+- text styles
 - links
+- friendly to browsers
 
 <img src="https://user-images.githubusercontent.com/3139113/72221499-52476a80-3596-11ea-8d15-c57fdfe04ce0.png" alt="markdown" width="300"> <img src="https://user-images.githubusercontent.com/3139113/72221508-7014cf80-3596-11ea-9b59-b8a97bba8e1c.png" alt="mindmap" width="300">
 
