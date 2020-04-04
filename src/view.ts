@@ -13,8 +13,8 @@ function walkTree<T>(tree: T, callback: (item: T, next: () => void) => void): vo
 let canvas: HTMLCanvasElement;
 function getTextRect(items: IValue[], font: string): [number, number] {
   // re-use canvas object for better performance
-  if (!canvas) canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+  if (!canvas) canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
   context.font = font;
   let maxWidth = 0;
   let width = 0;
@@ -209,24 +209,24 @@ export function markmap(svg, data, opts) {
     const node = g.selectAll('g.markmap-node').data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
       .attr('class', 'markmap-node')
-      .attr("transform", d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2})`)
+      .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2})`)
       .on('click', handleClick);
 
     const nodeExit = node.exit().transition().duration(options.duration);
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySize);
     nodeExit.select('text').attr('fill-opacity', 0);
-    nodeExit.attr("transform", d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2})`).remove();
+    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
     nodeMerge.transition()
       .duration(options.duration)
-      .attr("transform", d => `translate(${d.y},${d.x + d.xSize / 2})`);
+      .attr('transform', d => `translate(${d.y},${d.x + d.xSize / 2})`);
 
     nodeMerge.selectAll('rect').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('rect')
-            .attr("y", -1)
+            .attr('y', -1)
             .attr('x', d => d.ySize)
             .attr('width', 0)
             .attr('height', linkWidth);
@@ -244,7 +244,7 @@ export function markmap(svg, data, opts) {
         enter => {
           return enter.append('circle')
             .attr('stroke-width', '1.5')
-            .attr("r", 0);
+            .attr('r', 0);
         },
         update => update,
         exit => exit.remove(),
@@ -253,15 +253,15 @@ export function markmap(svg, data, opts) {
       .attr('cx', d => d.ySize)
       .attr('r', 6)
       .attr('stroke', d => options.color(d.data.p.i))
-      .attr("fill", d => d.data.fold ? options.color(d.data.p.i) : '#fff');
+      .attr('fill', d => d.data.fold ? options.color(d.data.p.i) : '#fff');
 
     nodeMerge.selectAll('text').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('text')
-            .attr("x", 8)
+            .attr('x', 8)
             .attr('y', d => options.lineHeight - 4 - d.xSize)
-            .attr("text-anchor", "start")
+            .attr('text-anchor', 'start')
             .attr('fill-opacity', 0)
             .call(renderText);
         },
@@ -296,10 +296,10 @@ export function markmap(svg, data, opts) {
       )
       .transition()
       .duration(options.duration)
-      .attr("class", "markmap-link")
+      .attr('class', 'markmap-link')
       .attr('stroke', d => options.color(d.target.data.p.i))
       .attr('stroke-width', d => linkWidth(d.target))
-      .attr("d", d => {
+      .attr('d', d => {
         const source: [number, number] = [
           d.source.y + d.source.ySize,
           d.source.x + d.source.xSize / 2,
