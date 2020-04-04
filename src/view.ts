@@ -3,9 +3,7 @@ import { flextree } from 'd3-flextree';
 import { INode, IValue } from './types';
 import './style.css';
 
-const color = d3.scaleOrdinal(d3.schemeCategory10);
-
-function walkTree(tree, callback: (item, next: () => void) => void): void {
+function walkTree<T>(tree: T, callback: (item: T, next: () => void) => void): void {
   const walk = (item): void => callback(item, () => {
     item.children?.forEach(walk);
   });
@@ -43,28 +41,17 @@ function getTextRect(items: IValue[], font: string): [number, number] {
 
 function linkWidth(nodeData): number {
   const data: INode = nodeData.data;
-  let { d } = data;
-  const { v, children } = data;
-  if (v.length && children?.length === 1 && children[0].v.length) {
-    d += 1;
-  }
-  return Math.max(6 - 2 * d, 1.5);
+  return Math.max(6 - 2 * data.d, 1.5);
 }
 
-function addIds(node: INode, d = 0) {
-  let id = 1;
-  let i = 1;
-  walkTree(node, (item, next) => {
-    color(`${i}`); // preload colors
-    item.p = {
-      id,
-      i,
-      ...item.p,
-    };
-    id += 1;
-    next();
-    if (!d || item.d === d) i += 1;
+function getKey(v: IValue[]): string {
+  const result = ['<'];
+  v.forEach(item => {
+    if (item.t === 'text') result.push(item.v.replace(/[<|&]/g, m => `&${m}`));
+    else if (item.children) result.push(getKey(item.children));
   });
+  result.push('>');
+  return result.join('');
 }
 
 function addSpacing(tree, spacing: number): void {
@@ -77,7 +64,7 @@ function addSpacing(tree, spacing: number): void {
   });
 }
 
-export function render(svg, data: INode) {
+export function markmap(svg, data, opts) {
   svg = svg.datum ? svg : d3.select(svg);
   const classList = (svg.attr('class') || '').split(' ').filter(Boolean);
   if (classList.indexOf('markmap') < 0) {
@@ -86,19 +73,59 @@ export function render(svg, data: INode) {
   }
   const svgNode = svg.node();
   const g = svg.selectAll(function () { return this.childNodes; }).data([0]).join('g');
-  addIds(data, 0);
-  const state = {
-    data,
+  const options = {
     duration: 500,
     nodeFont: '300 16px sans-serif',
     lineHeight: 20,
     spacingVertical: 5,
     spacingHorizontal: 80,
-    fit: true,
+    autoFit: false,
+    color: d3.scaleOrdinal(d3.schemeCategory10),
+    colorDepth: 0,
+    ...opts,
   };
-  renderData(state.data);
-  state.fit = false;
+  const state: any = {};
+  if (data) {
+    setData(data);
+    fit(); // always fit for the first render
+  }
+  return {
+    setData,
+    setOptions,
+    fit,
+  };
 
+  function addKeys(node: INode) {
+    let i = 1;
+    const { colorDepth } = options;
+    walkTree(node, (item, next) => {
+      options.color(`${i}`); // preload colors
+      item.p = {
+        i,
+        ...item.p,
+      };
+      if (item.v?.length) {
+        item.p.k = getKey(item.v);
+      }
+      next();
+      if (!colorDepth || item.d === colorDepth) i += 1;
+    });
+  }
+  function setOptions(opts) {
+    Object.assign(options, opts);
+  }
+  function setData(data, opts?: any) {
+    addKeys(data);
+    state.data = data;
+    if (opts) setOptions(opts);
+    renderData(data);
+  }
+  function fit() {
+    const { minX, maxX, minY, maxY, offsetWidth, offsetHeight } = state;
+    const naturalWidth = maxY - minY;
+    const naturalHeight = maxX - minX;
+    g.attr('transform', `translate(${(offsetWidth - naturalWidth) / 2 - minY},${(offsetHeight - naturalHeight) / 2 - minX})`);
+  }
   function handleClick(d) {
     d.data.fold = !d.data.fold;
     renderData(d.data);
@@ -131,7 +158,7 @@ export function render(svg, data: INode) {
           ].filter(Boolean).join(' ');
         })
         .attr('x', (d: IValue) => d.p?.newline ? 8 : null)
-        .attr('dy', (d: IValue) => d.p?.newline ? state.lineHeight : null);
+        .attr('dy', (d: IValue) => d.p?.newline ? options.lineHeight : null);
     }
   }
   function renderText(text) {
@@ -143,19 +170,20 @@ export function render(svg, data: INode) {
     return text;
   }
   function renderData(originData) {
-    svg.attr('style', `font: ${state.nodeFont}`);
+    if (!state.data) return;
+    svg.attr('style', `font: ${options.nodeFont}`);
     const layout = flextree()
       .children(d => !d.fold && d.children)
       .nodeSize(d => {
-        const [width, rows] = getTextRect(d.data.v, state.nodeFont);
-        return [rows * state.lineHeight, width + 16];
+        const [width, rows] = getTextRect(d.data.v, options.nodeFont);
+        return [rows * options.lineHeight, width + 16];
       })
       .spacing((a, b) => {
-        return a.parent === b.parent ? state.spacingVertical : state.spacingVertical * 2;
+        return a.parent === b.parent ? options.spacingVertical : options.spacingVertical * 2;
       });
     const tree = layout.hierarchy(state.data);
     layout(tree);
-    addSpacing(tree, state.spacingHorizontal);
+    addSpacing(tree, options.spacingHorizontal);
     const descendants = tree.descendants().reverse();
     const links = tree.links();
     const linkShape = d3.linkHorizontal();
@@ -163,74 +191,76 @@ export function render(svg, data: INode) {
     const maxX = d3.max<any, number>(descendants, d => d.x);
     const minY = d3.min<any, number>(descendants, d => d.y);
     const maxY = d3.max<any, number>(descendants, d => d.y + d.ySize);
-    const naturalWidth = maxY - minY;
-    const naturalHeight = maxX - minX;
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
+    state.minX = minX;
+    state.maxX = maxX;
+    state.minY = minY;
+    state.maxY = maxY;
+    state.offsetWidth = offsetWidth;
+    state.offsetHeight = offsetHeight;
 
-    if (state.fit) {
-      g.attr('transform', `translate(${(offsetWidth - naturalWidth) / 2 - minY},${(offsetHeight - naturalHeight) / 2 - minX})`);
-    }
+    if (options.autoFit) fit();
 
     const origin = originData ? descendants.find(item => item.data === originData) : tree;
     const x0 = origin.data.x0 ?? origin.x;
     const y0 = origin.data.y0 ?? origin.y;
 
     // Update the nodes
-    const node = g.selectAll('g.markmap-node').data(descendants, d => d.data.p.id);
+    const node = g.selectAll('g.markmap-node').data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
       .attr('class', 'markmap-node')
       .attr("transform", d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2})`)
       .on('click', handleClick);
 
-    const nodeExit = node.exit().transition().duration(state.duration);
+    const nodeExit = node.exit().transition().duration(options.duration);
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySize);
     nodeExit.select('text').attr('fill-opacity', 0);
     nodeExit.attr("transform", d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
     nodeMerge.transition()
-      .duration(state.duration)
+      .duration(options.duration)
       .attr("transform", d => `translate(${d.y},${d.x + d.xSize / 2})`);
 
-    nodeMerge.selectAll('rect').data(d => [d])
+    nodeMerge.selectAll('rect').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('rect')
             .attr("y", -1)
             .attr('x', d => d.ySize)
             .attr('width', 0)
-            .attr('height', linkWidth)
-            .attr('fill', d => color(d.data.p.i));
+            .attr('height', linkWidth);
         },
         update => update,
         exit => exit.remove(),
       )
-      .transition().duration(state.duration)
+      .transition().duration(options.duration)
       .attr('x', -1)
-      .attr('width', d => d.ySize + 2);
+      .attr('width', d => d.ySize + 2)
+      .attr('fill', d => options.color(d.data.p.i));
 
-    nodeMerge.selectAll('circle').data(d => d.data.children ? [d] : [])
+    nodeMerge.selectAll('circle').data(d => d.data.children ? [d] : [], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('circle')
-            .attr('cx', d => d.ySize)
             .attr('stroke-width', '1.5')
-            .attr('stroke', d => color(d.data.p.i))
             .attr("r", 0);
         },
         update => update,
         exit => exit.remove(),
       )
-      .transition().duration(state.duration)
+      .transition().duration(options.duration)
+      .attr('cx', d => d.ySize)
       .attr('r', 6)
-      .attr("fill", d => d.data.fold ? color(d.data.p.i) : '#fff');
+      .attr('stroke', d => options.color(d.data.p.i))
+      .attr("fill", d => d.data.fold ? options.color(d.data.p.i) : '#fff');
 
-    nodeMerge.selectAll('text').data(d => [d])
+    nodeMerge.selectAll('text').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('text')
             .attr("x", 8)
-            .attr('y', d => state.lineHeight - 4 - d.xSize)
+            .attr('y', d => options.lineHeight - 4 - d.xSize)
             .attr("text-anchor", "start")
             .attr('fill-opacity', 0)
             .call(renderText);
@@ -238,11 +268,11 @@ export function render(svg, data: INode) {
         update => update,
         exit => exit.remove(),
       )
-      .transition().duration(state.duration)
+      .transition().duration(options.duration)
       .attr('fill-opacity', 1);
 
     // Update the links
-    g.selectAll('path.markmap-link').data(links, d => d.target.data.p.id)
+    g.selectAll('path.markmap-link').data(links, d => d.target.data.p.k)
       .join(
         enter => {
           const source: [number, number] = [
@@ -259,15 +289,15 @@ export function render(svg, data: INode) {
             origin.x + origin.xSize / 2,
           ];
           return exit.transition()
-            .duration(state.duration)
+            .duration(options.duration)
             .attr('d', linkShape({ source, target: source }))
             .remove();
         },
       )
       .transition()
-      .duration(state.duration)
+      .duration(options.duration)
       .attr("class", "markmap-link")
-      .attr('stroke', d => color(d.target.data.p.i))
+      .attr('stroke', d => options.color(d.target.data.p.i))
       .attr('stroke-width', d => linkWidth(d.target))
       .attr("d", d => {
         const source: [number, number] = [

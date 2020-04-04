@@ -65,7 +65,7 @@ function extractInline(token): IValue[] {
   return root.children;
 }
 
-function cleanNode(node: INode): void {
+function cleanNode(node: INode, depth = 0): void {
   if (node.t === 'heading') {
     // drop all paragraphs
     node.children = node.children.filter(item => item.t !== 'paragraph');
@@ -102,7 +102,7 @@ function cleanNode(node: INode): void {
     if (node.children.length === 1 && !node.children[0].v.length) {
       node.children = node.children[0].children;
     }
-    node.children.forEach(cleanNode);
+    node.children.forEach(child => cleanNode(child, depth + 1));
   }
   let last: IValue;
   const content = [];
@@ -115,6 +115,7 @@ function cleanNode(node: INode): void {
     last = item;
   }
   node.v = content;
+  node.d = depth;
   delete node.p;
 }
 
