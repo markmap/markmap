@@ -71,6 +71,7 @@ export function markmap(svg, data, opts) {
     classList.push('markmap');
     svg.attr('class', classList.join(' '));
   }
+  const zoom = d3.zoom().on('zoom', handleZoom);
   const svgNode = svg.node();
   const g = svg.selectAll(function () { return this.childNodes; }).data([0]).join('g');
   const options = {
@@ -80,6 +81,7 @@ export function markmap(svg, data, opts) {
     spacingVertical: 5,
     spacingHorizontal: 80,
     autoFit: false,
+    fitRatio: 0.95,
     color: d3.scaleOrdinal(d3.schemeCategory10),
     colorDepth: 0,
     ...opts,
@@ -89,12 +91,17 @@ export function markmap(svg, data, opts) {
     setData(data);
     fit(); // always fit for the first render
   }
+  svg.call(zoom);
   return {
     setData,
     setOptions,
     fit,
   };
 
+  function handleZoom() {
+    const { transform } = d3.event;
+    g.attr('transform', transform);
+  }
   function addKeys(node: INode) {
     let i = 1;
     const { colorDepth } = options;
@@ -125,7 +132,12 @@ export function markmap(svg, data, opts) {
     const { minX, maxX, minY, maxY } = state;
     const naturalWidth = maxY - minY;
     const naturalHeight = maxX - minX;
-    g.attr('transform', `translate(${(offsetWidth - naturalWidth) / 2 - minY},${(offsetHeight - naturalHeight) / 2 - minX})`);
+    const scale = Math.min(offsetWidth / naturalWidth * options.fitRatio, offsetHeight / naturalHeight * options.fitRatio, 2);
+    const initialZoom = d3.zoomIdentity
+      .translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale)
+      .scale(scale);
+    svg.transition().duration(options.duration)
+      .call(zoom.transform, initialZoom);
   }
   function handleClick(d) {
     d.data.fold = !d.data.fold;
