@@ -121,7 +121,8 @@ export function markmap(svg, data, opts) {
     renderData(data);
   }
   function fit() {
-    const { minX, maxX, minY, maxY, offsetWidth, offsetHeight } = state;
+    const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
+    const { minX, maxX, minY, maxY } = state;
     const naturalWidth = maxY - minY;
     const naturalHeight = maxX - minX;
     g.attr('transform', `translate(${(offsetWidth - naturalWidth) / 2 - minY},${(offsetHeight - naturalHeight) / 2 - minX})`);
@@ -191,13 +192,10 @@ export function markmap(svg, data, opts) {
     const maxX = d3.max<any, number>(descendants, d => d.x);
     const minY = d3.min<any, number>(descendants, d => d.y);
     const maxY = d3.max<any, number>(descendants, d => d.y + d.ySize);
-    const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     state.minX = minX;
     state.maxX = maxX;
     state.minY = minY;
     state.maxY = maxY;
-    state.offsetWidth = offsetWidth;
-    state.offsetHeight = offsetHeight;
 
     if (options.autoFit) fit();
 
