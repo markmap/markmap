@@ -1,7 +1,6 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { INode, IValue } from './types';
-import './style.css';
 
 function walkTree<T>(tree: T, callback: (item: T, next: () => void) => void): void {
   const walk = (item): void => callback(item, () => {
@@ -64,6 +63,10 @@ function addSpacing(tree, spacing: number): void {
   });
 }
 
+function getChildNodes() {
+  return this.childNodes;
+}
+
 export function markmap(svg, data, opts) {
   svg = svg.datum ? svg : d3.select(svg);
   const classList = (svg.attr('class') || '').split(' ').filter(Boolean);
@@ -71,9 +74,10 @@ export function markmap(svg, data, opts) {
     classList.push('markmap');
     svg.attr('class', classList.join(' '));
   }
+  const style = svg.append('style');
+  const g = svg.append('g');
   const zoom = d3.zoom().on('zoom', handleZoom);
   const svgNode = svg.node();
-  const g = svg.selectAll(function () { return this.childNodes; }).data([0]).join('g');
   const options = {
     duration: 500,
     nodeFont: '300 16px sans-serif',
@@ -87,6 +91,7 @@ export function markmap(svg, data, opts) {
     ...opts,
   };
   const state: any = {};
+  updateStyle();
   if (data) {
     setData(data);
     fit(); // always fit for the first render
@@ -98,6 +103,31 @@ export function markmap(svg, data, opts) {
     fit,
   };
 
+  function updateStyle() {
+    style.text(`\
+a {
+  fill: #0097e6;
+}
+a:hover {
+  fill: #00a8ff;
+}
+path {
+  fill: none;
+}
+text {
+  font: ${options.nodeFont}
+}
+tspan.markmap-em {
+  font-style: italic;
+}
+tspan.markmap-strong {
+  font-weight: 500;
+}
+g > g {
+  cursor: pointer;
+}
+`);
+  }
   function handleZoom() {
     const { transform } = d3.event;
     g.attr('transform', transform);
@@ -153,7 +183,7 @@ export function markmap(svg, data, opts) {
         .attr('href', d.p.href)
         .attr('title', d.p.title)
         .on('click', handleLink);
-      const text = a.selectAll('.markmap-text').data((d: IValue) => d.children);
+      const text = a.selectAll(getChildNodes).data((d: IValue) => d.children);
       text.enter().each(function (d: IValue) {
         const t = d3.select(this);
         renderTextNode(t, d);
@@ -165,7 +195,6 @@ export function markmap(svg, data, opts) {
         .attr('class', (d: IValue) => {
           const style = d.p?.style || {};
           return [
-            'markmap-text',
             style.em && 'markmap-em',
             style.strong && 'markmap-strong',
           ].filter(Boolean).join(' ');
@@ -175,7 +204,8 @@ export function markmap(svg, data, opts) {
     }
   }
   function renderText(text) {
-    const textNode = text.selectAll('.markmap-text').data(d => d.data.v);
+    const textNode = text.selectAll(getChildNodes)
+      .data(d => d.data.v);
     textNode.enter().each(function (d: IValue) {
       const t = d3.select(this);
       renderTextNode(t, d);
@@ -184,7 +214,6 @@ export function markmap(svg, data, opts) {
   }
   function renderData(originData) {
     if (!state.data) return;
-    svg.attr('style', `font: ${options.nodeFont}`);
     const layout = flextree()
       .children(d => !d.fold && d.children)
       .nodeSize(d => {
@@ -216,9 +245,8 @@ export function markmap(svg, data, opts) {
     const y0 = origin.data.y0 ?? origin.y;
 
     // Update the nodes
-    const node = g.selectAll('g.markmap-node').data(descendants, d => d.data.p.k);
+    const node = g.selectAll('g').data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
-      .attr('class', 'markmap-node')
       .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2})`)
       .on('click', handleClick);
 
@@ -282,7 +310,7 @@ export function markmap(svg, data, opts) {
       .attr('fill-opacity', 1);
 
     // Update the links
-    g.selectAll('path.markmap-link').data(links, d => d.target.data.p.k)
+    g.selectAll('path').data(links, d => d.target.data.p.k)
       .join(
         enter => {
           const source: [number, number] = [
@@ -306,7 +334,6 @@ export function markmap(svg, data, opts) {
       )
       .transition()
       .duration(options.duration)
-      .attr('class', 'markmap-link')
       .attr('stroke', d => options.color(d.target.data.p.i))
       .attr('stroke-width', d => linkWidth(d.target))
       .attr('d', d => {

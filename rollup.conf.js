@@ -16,15 +16,6 @@ const bundleOptions = {
   extend: true,
   esModule: false,
 };
-const getPostCSSPlugin = (filename) => postcss({
-  extract: filename,
-  plugins: [
-    require('precss'),
-    require('postcss-color-function'),
-    require('postcss-calc'),
-    require('cssnano'),
-  ],
-});
 const rollupConfig = [
   {
     input: {
@@ -72,10 +63,7 @@ const rollupConfig = [
   {
     input: {
       input: 'src/view.ts',
-      plugins: [
-        ...getRollupPlugins(),
-        getPostCSSPlugin(`${DIST}/style.css`),
-      ],
+      plugins: getRollupPlugins(),
       external: getExternal(externalList),
     },
     output: {
@@ -87,10 +75,7 @@ const rollupConfig = [
   {
     input: {
       input: 'src/view.ts',
-      plugins: [
-        ...getRollupPlugins(),
-        getPostCSSPlugin(`${DIST}/style.css`),
-      ],
+      plugins: getRollupPlugins(),
       external: getExternal(externalList),
     },
     output: {
