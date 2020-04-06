@@ -105,27 +105,13 @@ export function markmap(svg, data, opts) {
 
   function updateStyle() {
     style.text(`\
-a {
-  fill: #0097e6;
-}
-a:hover {
-  fill: #00a8ff;
-}
-path {
-  fill: none;
-}
-text {
-  font: ${options.nodeFont}
-}
-tspan.markmap-em {
-  font-style: italic;
-}
-tspan.markmap-strong {
-  font-weight: 500;
-}
-g > g {
-  cursor: pointer;
-}
+.markmap a { fill: #0097e6; }
+.markmap a:hover { fill: #00a8ff; }
+.markmap path { fill: none; }
+.markmap text { font: ${options.nodeFont} }
+.markmap tspan.markmap-em { font-style: italic; }
+.markmap tspan.markmap-strong { font-weight: 500; }
+.markmap g > g { cursor: pointer; }
 `);
   }
   function handleZoom() {
