@@ -175,6 +175,6 @@ export function transform(content: string): INode {
   const tokens = md.parse(content || '', {});
   let root = buildTree(tokens);
   cleanNode(root);
-  if (root.c.length === 1) root = root.c[0];
+  if (root.c?.length === 1) root = root.c[0];
   return root;
 }
