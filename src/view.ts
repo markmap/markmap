@@ -2,10 +2,12 @@ import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { INode, IValue } from './types';
 
-function walkTree<T>(tree: T, callback: (item: T, next: () => void) => void): void {
-  const walk = (item): void => callback(item, () => {
-    item.children?.forEach(walk);
-  });
+function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) => void, key = 'c'): void {
+  const walk = (item: T, parent?: T): void => callback(item, () => {
+    item[key]?.forEach((child: T) => {
+      walk(child, item);
+    });
+  }, parent);
   walk(tree);
 }
 
@@ -31,7 +33,7 @@ function getTextRect(items: IValue[], font: string): [number, number] {
       width = 0;
       row += 1;
     } else if (item.t === 'link') {
-      item.children.forEach(walk);
+      item.c.forEach(walk);
     }
   };
   items.forEach(walk);
@@ -47,7 +49,7 @@ function getKey(v: IValue[]): string {
   const result = ['<'];
   v.forEach(item => {
     if (item.t === 'text') result.push(item.v.replace(/[<|&]/g, m => `&${m}`));
-    else if (item.children) result.push(getKey(item.children));
+    else if (item.c) result.push(getKey(item.c));
   });
   result.push('>');
   return result.join('');
@@ -60,7 +62,7 @@ function addSpacing(tree, spacing: number): void {
     depth += 1;
     next();
     depth -= 1;
-  });
+  }, 'children');
 }
 
 function getChildNodes() {
@@ -121,14 +123,14 @@ export function markmap(svg, data, opts) {
   function addKeys(node: INode) {
     let i = 1;
     const { colorDepth } = options;
-    walkTree(node, (item, next) => {
+    walkTree(node, (item, next, parent) => {
       options.color(`${i}`); // preload colors
       item.p = {
         i,
         ...item.p,
       };
       if (item.v?.length) {
-        item.p.k = getKey(item.v);
+        item.p.k = (parent?.p?.k || '') + getKey(item.v);
       }
       next();
       if (!colorDepth || item.d === colorDepth) i += 1;
@@ -156,7 +158,11 @@ export function markmap(svg, data, opts) {
       .call(zoom.transform, initialZoom);
   }
   function handleClick(d) {
-    d.data.fold = !d.data.fold;
+    const { data } = d;
+    data.p = {
+      ...data.p,
+      f: !data.p?.f,
+    };
     renderData(d.data);
   }
   function handleLink(d) {
@@ -169,7 +175,7 @@ export function markmap(svg, data, opts) {
         .attr('href', d.p.href)
         .attr('title', d.p.title)
         .on('click', handleLink);
-      const text = a.selectAll(getChildNodes).data((d: IValue) => d.children);
+      const text = a.selectAll(getChildNodes).data((d: IValue) => d.c);
       text.enter().each(function (d: IValue) {
         const t = d3.select(this);
         renderTextNode(t, d);
@@ -201,7 +207,7 @@ export function markmap(svg, data, opts) {
   function renderData(originData) {
     if (!state.data) return;
     const layout = flextree()
-      .children(d => !d.fold && d.children)
+      .children(d => !d.p?.f && d.c)
       .nodeSize(d => {
         const [width, rows] = getTextRect(d.data.v, options.nodeFont);
         return [rows * options.lineHeight, width + 16];
@@ -263,7 +269,7 @@ export function markmap(svg, data, opts) {
       .attr('width', d => d.ySize + 2)
       .attr('fill', d => options.color(d.data.p.i));
 
-    nodeMerge.selectAll('circle').data(d => d.data.children ? [d] : [], d => d.data.p.k)
+    nodeMerge.selectAll('circle').data(d => d.data.c ? [d] : [], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('circle')
@@ -278,7 +284,7 @@ export function markmap(svg, data, opts) {
       .transition().duration(options.duration)
       .attr('r', 6)
       .attr('stroke', d => options.color(d.data.p.i))
-      .attr('fill', d => d.data.fold ? options.color(d.data.p.i) : '#fff');
+      .attr('fill', d => d.data.p?.f ? options.color(d.data.p.i) : '#fff');
 
     nodeMerge.selectAll('text').data(d => [d], d => d.data.p.k)
       .join(

@@ -15,20 +15,20 @@ function shallowEqual(a, b): boolean {
 function extractInline(token): IValue[] {
   const root: IValue = {
     t: 'inline',
-    children: [],
+    c: [],
   };
   const stack = [root];
   let style = {};
   for (const child of token.children) {
     const current = stack[stack.length - 1];
     if (child.type === 'text') {
-      current.children.push({
+      current.c.push({
         t: 'text',
         v: child.content,
         p: { style },
       });
     } else if (child.type === 'softbreak') {
-      current.children.push({
+      current.c.push({
         t: 'softbreak',
       });
     } else if (child.type.endsWith('_open')) {
@@ -36,13 +36,13 @@ function extractInline(token): IValue[] {
       if (type === 'link') {
         const item = {
           t: 'link',
-          children: [],
+          c: [],
           p: {
             href: child.href,
             title: child.title,
           },
         };
-        current.children.push(item);
+        current.c.push(item);
         stack.push(item);
       } else {
         style = {
@@ -62,16 +62,16 @@ function extractInline(token): IValue[] {
       }
     }
   }
-  return root.children;
+  return root.c;
 }
 
 function cleanNode(node: INode, depth = 0): void {
   if (node.t === 'heading') {
     // drop all paragraphs
-    node.children = node.children.filter(item => item.t !== 'paragraph');
+    node.c = node.c.filter(item => item.t !== 'paragraph');
   } else if (node.t === 'list_item') {
     // keep first paragraph as content of list_item, drop others
-    node.children = node.children.filter(item => {
+    node.c = node.c.filter(item => {
       if (item.t === 'paragraph') {
         if (!node.v.length) node.v.push(...item.v);
         return false;
@@ -86,7 +86,7 @@ function cleanNode(node: INode, depth = 0): void {
     }
   } else if (node.t === 'ordered_list') {
     let index = node.p?.start ?? 1;
-    node.children.forEach(item => {
+    node.c.forEach(item => {
       if (item.t === 'list_item') {
         item.p = {
           ...item.p,
@@ -96,13 +96,13 @@ function cleanNode(node: INode, depth = 0): void {
       }
     });
   }
-  if (node.children.length === 0) {
-    delete node.children;
+  if (node.c.length === 0) {
+    delete node.c;
   } else {
-    if (node.children.length === 1 && !node.children[0].v.length) {
-      node.children = node.children[0].children;
+    if (node.c.length === 1 && !node.c[0].v.length) {
+      node.c = node.c[0].c;
     }
-    node.children.forEach(child => cleanNode(child, depth + 1));
+    node.c.forEach(child => cleanNode(child, depth + 1));
   }
   let last: IValue;
   const content = [];
@@ -125,7 +125,7 @@ export function buildTree(tokens): INode {
     t: 'root',
     d: 0,
     v: [],
-    children: [],
+    c: [],
   };
   const stack = [root];
   let depth = 0;
@@ -151,9 +151,9 @@ export function buildTree(tokens): INode {
         d: depth,
         v: [],
         p: payload,
-        children: [],
+        c: [],
       };
-      current.children.push(item);
+      current.c.push(item);
       stack.push(item);
     } else if (!current) {
       continue
@@ -175,6 +175,6 @@ export function transform(content: string): INode {
   const tokens = md.parse(content || '', {});
   let root = buildTree(tokens);
   cleanNode(root);
-  if (root.children.length === 1) root = root.children[0];
+  if (root.c.length === 1) root = root.c[0];
   return root;
 }

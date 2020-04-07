@@ -1,16 +1,16 @@
-export interface IValue {
+export interface IHierachy<T> {
   t: string;
-  v?: string;
   p?: any;
-  children?: IValue[];
+  c?: T[];
 }
 
-export interface INode {
-  t: string;
+export interface IValue extends IHierachy<IValue> {
+  v?: string;
+}
+
+export interface INode extends IHierachy<INode> {
   d?: number;
   v?: IValue[];
-  p?: any;
-  children?: INode[];
 }
 
 export interface IMarkmapCreateOptions {
