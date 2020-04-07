@@ -215,8 +215,8 @@ export function markmap(svg, data, opts) {
     const descendants = tree.descendants().reverse();
     const links = tree.links();
     const linkShape = d3.linkHorizontal();
-    const minX = d3.min<any, number>(descendants, d => d.x);
-    const maxX = d3.max<any, number>(descendants, d => d.x);
+    const minX = d3.min<any, number>(descendants, d => d.x - d.xSize / 2);
+    const maxX = d3.max<any, number>(descendants, d => d.x + d.xSize / 2);
     const minY = d3.min<any, number>(descendants, d => d.y);
     const maxY = d3.max<any, number>(descendants, d => d.y + d.ySize);
     state.minX = minX;
@@ -233,25 +233,25 @@ export function markmap(svg, data, opts) {
     // Update the nodes
     const node = g.selectAll('g').data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
-      .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2})`)
+      .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`)
       .on('click', handleClick);
 
     const nodeExit = node.exit().transition().duration(options.duration);
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySize);
     nodeExit.select('text').attr('fill-opacity', 0);
-    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2})`).remove();
+    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
     nodeMerge.transition()
       .duration(options.duration)
-      .attr('transform', d => `translate(${d.y},${d.x + d.xSize / 2})`);
+      .attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
 
     nodeMerge.selectAll('rect').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('rect')
-            .attr('y', -1)
             .attr('x', d => d.ySize)
+            .attr('y', d => d.xSize - linkWidth(d) / 2)
             .attr('width', 0)
             .attr('height', linkWidth);
         },
@@ -268,13 +268,14 @@ export function markmap(svg, data, opts) {
         enter => {
           return enter.append('circle')
             .attr('stroke-width', '1.5')
+            .attr('cx', d => d.ySize)
+            .attr('cy', d => d.xSize)
             .attr('r', 0);
         },
         update => update,
         exit => exit.remove(),
       )
       .transition().duration(options.duration)
-      .attr('cx', d => d.ySize)
       .attr('r', 6)
       .attr('stroke', d => options.color(d.data.p.i))
       .attr('fill', d => d.data.fold ? options.color(d.data.p.i) : '#fff');
@@ -284,7 +285,7 @@ export function markmap(svg, data, opts) {
         enter => {
           return enter.append('text')
             .attr('x', 8)
-            .attr('y', d => options.lineHeight - 4 - d.xSize)
+            .attr('y', options.lineHeight - 4)
             .attr('text-anchor', 'start')
             .attr('fill-opacity', 0)
             .call(renderText);
