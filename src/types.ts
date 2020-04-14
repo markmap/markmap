@@ -19,3 +19,15 @@ export interface IMarkmapCreateOptions {
   input?: string;
   output?: string;
 }
+
+export interface IMarkmapOptions {
+  duration: number;
+  nodeFont: string;
+  lineHeight: number;
+  spacingVertical: number;
+  spacingHorizontal: number;
+  autoFit: boolean;
+  fitRatio: number;
+  color: (key: string) => string;
+  colorDepth: number;
+}
