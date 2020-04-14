@@ -27,6 +27,17 @@ function extractInline(token): IValue[] {
         v: child.content,
         p: { style },
       });
+    } else if (child.type === 'code') {
+      current.c.push({
+        t: 'text',
+        v: child.content,
+        p: {
+          style: {
+            ...style,
+            code: true,
+          },
+        },
+      });
     } else if (child.type === 'softbreak') {
       current.c.push({
         t: 'softbreak',

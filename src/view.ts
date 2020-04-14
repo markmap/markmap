@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
-import { INode, IValue } from './types';
+import { INode, IValue, IMarkmapOptions } from './types';
 
 function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) => void, key = 'c'): void {
   const walk = (item: T, parent?: T): void => callback(item, () => {
@@ -12,18 +12,22 @@ function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) 
 }
 
 let canvas: HTMLCanvasElement;
-function getTextRect(items: IValue[], font: string): [number, number] {
+function getTextRect(items: IValue[], options: IMarkmapOptions): [number, number] {
   // re-use canvas object for better performance
   if (!canvas) canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  context.font = font;
+  context.font = options.nodeFont;
   let maxWidth = 0;
   let width = 0;
+  let height = 0;
   let row = 0;
   const walk = (item: IValue): void => {
     if (item.t === 'text') {
+      height = (row + 1) * options.lineHeight;
       item.p = {
         ...item.p,
+        x: width,
+        y: height,
       };
       if (!width && row) item.p.newline = true;
       const metrics = context.measureText(item.v);
@@ -37,7 +41,7 @@ function getTextRect(items: IValue[], font: string): [number, number] {
     }
   };
   items.forEach(walk);
-  return [maxWidth, row + 1];
+  return [maxWidth, height];
 }
 
 function linkWidth(nodeData): number {
@@ -80,7 +84,7 @@ export function markmap(svg, data, opts) {
   const g = svg.append('g');
   const zoom = d3.zoom().on('zoom', handleZoom);
   const svgNode = svg.node();
-  const options = {
+  const options: IMarkmapOptions = {
     duration: 500,
     nodeFont: '300 16px sans-serif',
     lineHeight: 20,
@@ -191,8 +195,8 @@ export function markmap(svg, data, opts) {
             style.strong && 'markmap-strong',
           ].filter(Boolean).join(' ');
         })
-        .attr('x', (d: IValue) => d.p?.newline ? 8 : null)
-        .attr('dy', (d: IValue) => d.p?.newline ? options.lineHeight : null);
+        .attr('x', (d: IValue) => d.p?.x + 8)
+        .attr('y', (d: IValue) => d.p?.y - 4);
     }
   }
   function renderText(text) {
@@ -209,8 +213,8 @@ export function markmap(svg, data, opts) {
     const layout = flextree()
       .children(d => !d.p?.f && d.c)
       .nodeSize(d => {
-        const [width, rows] = getTextRect(d.data.v, options.nodeFont);
-        return [rows * options.lineHeight, width + 16];
+        const [width, height] = getTextRect(d.data.v, options);
+        return [height, width + 16];
       })
       .spacing((a, b) => {
         return a.parent === b.parent ? options.spacingVertical : options.spacingVertical * 2;
@@ -291,7 +295,7 @@ export function markmap(svg, data, opts) {
         enter => {
           return enter.append('text')
             .attr('x', 8)
-            .attr('y', options.lineHeight - 4)
+            .attr('y', 0)
             .attr('text-anchor', 'start')
             .attr('fill-opacity', 0)
             .call(renderText);
