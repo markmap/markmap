@@ -1,3 +1,4 @@
+const fs = require('fs');
 const babel = require('rollup-plugin-babel');
 const replace = require('@rollup/plugin-replace');
 const resolve = require('@rollup/plugin-node-resolve');
@@ -8,6 +9,7 @@ const pkg = require('../package.json');
 
 const values = {
   'process.env.VERSION': pkg.version,
+  'process.env.TEMPLATE': JSON.stringify(fs.readFileSync('templates/markmap.html', 'utf8')),
 };
 const extensions = ['.ts', '.tsx', '.js'];
 
