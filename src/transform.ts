@@ -164,8 +164,10 @@ export function buildTree(tokens): INode {
         stack.pop();
         depth = 0;
       }
-    } else {
+    } else if (token.type === 'inline') {
       current.v.push(...extractInline(token));
+    } else {
+      // ignore other nodes
     }
   }
   return root;
