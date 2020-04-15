@@ -123,19 +123,24 @@ export function markmap(svg, data, opts) {
     g.attr('transform', transform);
   }
   function addKeys(node: INode) {
-    let i = 1;
+    let i = 0;
+    let c = 0;
     const { colorDepth } = options;
     walkTree(node, (item, next, parent) => {
-      options.color(`${i}`); // preload colors
+      i += 1;
+      options.color(`${c}`); // preload colors
       item.p = {
+        // unique ID
         i,
+        // color key
+        c,
         ...item.p,
+        // TODO keep keys for unchanged objects
+        // unique key, should be based on content
+        k: `${parent?.p?.i || ''}.${i}:${getKey(item.v)}`,
       };
-      if (item.v?.length) {
-        item.p.k = (parent?.p?.k || '') + getKey(item.v);
-      }
       next();
-      if (!colorDepth || item.d === colorDepth) i += 1;
+      if (!colorDepth || item.d === colorDepth) c += 1;
     });
   }
   function setOptions(opts) {
@@ -271,7 +276,7 @@ export function markmap(svg, data, opts) {
       .transition().duration(options.duration)
       .attr('x', -1)
       .attr('width', d => d.ySizeInner + 2)
-      .attr('fill', d => options.color(d.data.p.i));
+      .attr('fill', d => options.color(d.data.p.c));
 
     nodeMerge.selectAll('circle').data(d => d.data.c ? [d] : [], d => d.data.p.k)
       .join(
@@ -287,8 +292,8 @@ export function markmap(svg, data, opts) {
       )
       .transition().duration(options.duration)
       .attr('r', 6)
-      .attr('stroke', d => options.color(d.data.p.i))
-      .attr('fill', d => d.data.p?.f ? options.color(d.data.p.i) : '#fff');
+      .attr('stroke', d => options.color(d.data.p.c))
+      .attr('fill', d => d.data.p?.f ? options.color(d.data.p.c) : '#fff');
 
     nodeMerge.selectAll('text').data(d => [d], d => d.data.p.k)
       .join(
@@ -331,7 +336,7 @@ export function markmap(svg, data, opts) {
       )
       .transition()
       .duration(options.duration)
-      .attr('stroke', d => options.color(d.target.data.p.i))
+      .attr('stroke', d => options.color(d.target.data.p.c))
       .attr('stroke-width', d => linkWidth(d.target))
       .attr('d', d => {
         const source: [number, number] = [
