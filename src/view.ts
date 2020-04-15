@@ -19,7 +19,7 @@ function getTextRect(items: IValue[], options: IMarkmapOptions): [number, number
   context.font = options.nodeFont;
   let maxWidth = 0;
   let width = 0;
-  let height = 0;
+  let height = options.lineHeight;
   let row = 0;
   const walk = (item: IValue): void => {
     if (item.t === 'text') {
@@ -59,13 +59,11 @@ function getKey(v: IValue[]): string {
   return result.join('');
 }
 
-function addSpacing(tree, spacing: number): void {
-  let depth = 0;
-  walkTree(tree, (item, next) => {
-    item.y += depth * spacing;
-    depth += 1;
+function adjustSpacing(tree, spacing: number): void {
+  walkTree(tree, (d, next) => {
+    d.ySizeInner = d.ySize - spacing;
+    d.y += spacing;
     next();
-    depth -= 1;
   }, 'children');
 }
 
@@ -210,25 +208,27 @@ export function markmap(svg, data, opts) {
   }
   function renderData(originData) {
     if (!state.data) return;
+    const { spacingHorizontal } = options;
     const layout = flextree()
       .children(d => !d.p?.f && d.c)
       .nodeSize(d => {
-        const [width, height] = getTextRect(d.data.v, options);
-        return [height, width + 16];
+        d.outerSize = d.outerSize || getTextRect(d.data.v, options);
+        const [width, height] = d.outerSize;
+        return [height, width + (width ? 16 : 0) + spacingHorizontal];
       })
       .spacing((a, b) => {
         return a.parent === b.parent ? options.spacingVertical : options.spacingVertical * 2;
       });
     const tree = layout.hierarchy(state.data);
     layout(tree);
-    addSpacing(tree, options.spacingHorizontal);
+    adjustSpacing(tree, spacingHorizontal);
     const descendants = tree.descendants().reverse();
     const links = tree.links();
     const linkShape = d3.linkHorizontal();
     const minX = d3.min<any, number>(descendants, d => d.x - d.xSize / 2);
     const maxX = d3.max<any, number>(descendants, d => d.x + d.xSize / 2);
     const minY = d3.min<any, number>(descendants, d => d.y);
-    const maxY = d3.max<any, number>(descendants, d => d.y + d.ySize);
+    const maxY = d3.max<any, number>(descendants, d => d.y + d.ySizeInner);
     state.minX = minX;
     state.maxX = maxX;
     state.minY = minY;
@@ -243,13 +243,13 @@ export function markmap(svg, data, opts) {
     // Update the nodes
     const node = g.selectAll('g').data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
-      .attr('transform', d => `translate(${y0 + origin.ySize - d.ySize},${x0 + origin.xSize / 2 - d.xSize})`)
+      .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`)
       .on('click', handleClick);
 
     const nodeExit = node.exit().transition().duration(options.duration);
-    nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySize);
+    nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
     nodeExit.select('text').attr('fill-opacity', 0);
-    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySize - d.ySize},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
+    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
     nodeMerge.transition()
@@ -260,7 +260,7 @@ export function markmap(svg, data, opts) {
       .join(
         enter => {
           return enter.append('rect')
-            .attr('x', d => d.ySize)
+            .attr('x', d => d.ySizeInner)
             .attr('y', d => d.xSize - linkWidth(d) / 2)
             .attr('width', 0)
             .attr('height', linkWidth);
@@ -270,7 +270,7 @@ export function markmap(svg, data, opts) {
       )
       .transition().duration(options.duration)
       .attr('x', -1)
-      .attr('width', d => d.ySize + 2)
+      .attr('width', d => d.ySizeInner + 2)
       .attr('fill', d => options.color(d.data.p.i));
 
     nodeMerge.selectAll('circle').data(d => d.data.c ? [d] : [], d => d.data.p.k)
@@ -278,7 +278,7 @@ export function markmap(svg, data, opts) {
         enter => {
           return enter.append('circle')
             .attr('stroke-width', '1.5')
-            .attr('cx', d => d.ySize)
+            .attr('cx', d => d.ySizeInner)
             .attr('cy', d => d.xSize)
             .attr('r', 0);
         },
@@ -311,7 +311,7 @@ export function markmap(svg, data, opts) {
       .join(
         enter => {
           const source: [number, number] = [
-            y0 + origin.ySize,
+            y0 + origin.ySizeInner,
             x0 + origin.xSize / 2,
           ];
           return enter.insert('path', 'g')
@@ -320,7 +320,7 @@ export function markmap(svg, data, opts) {
         update => update,
         exit => {
           const source: [number, number] = [
-            origin.y + origin.ySize,
+            origin.y + origin.ySizeInner,
             origin.x + origin.xSize / 2,
           ];
           return exit.transition()
@@ -335,7 +335,7 @@ export function markmap(svg, data, opts) {
       .attr('stroke-width', d => linkWidth(d.target))
       .attr('d', d => {
         const source: [number, number] = [
-          d.source.y + d.source.ySize,
+          d.source.y + d.source.ySizeInner,
           d.source.x + d.source.xSize / 2,
         ];
         const target: [number, number] = [
