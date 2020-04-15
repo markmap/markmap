@@ -31,10 +31,10 @@
   "files": [
     "bin",
     "dist",
-    "templates",
     "types"
   ],
   "keywords": [
+    "markdown",
     "markmap",
     "mindmap"
   ],
@@ -54,12 +54,8 @@
     "del-cli": "^3.0.0",
     "eslint": "^6.8.0",
     "husky": "^4.2.3",
-    "postcss-calc": "^7.0.2",
-    "postcss-color-function": "^4.1.0",
-    "precss": "^4.0.0",
     "rollup": "^2.3.1",
     "rollup-plugin-babel": "^4.4.0",
-    "rollup-plugin-postcss": "^2.5.0",
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.8.3"
   },

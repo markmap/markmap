@@ -1,5 +1,4 @@
 const { terser } = require('rollup-plugin-terser');
-const postcss = require('rollup-plugin-postcss');
 const { getRollupPlugins, getExternal, DIST } = require('./scripts/util');
 const pkg = require('./package.json');
 
@@ -24,11 +23,23 @@ const rollupConfig = [
       external: getExternal([
         ...externalList,
         'remarkable',
+        './template',
       ]),
     },
     output: {
       format: 'cjs',
       file: `${DIST}/index.js`,
+    },
+  },
+  {
+    input: {
+      input: 'src/template.ts',
+      plugins: getRollupPlugins(),
+      external: getExternal(externalList),
+    },
+    output: {
+      format: 'cjs',
+      file: `${DIST}/template.js`,
     },
   },
   {
@@ -64,7 +75,10 @@ const rollupConfig = [
     input: {
       input: 'src/view.ts',
       plugins: getRollupPlugins(),
-      external: getExternal(externalList),
+      external: getExternal([
+        ...externalList,
+        'd3-flextree',
+      ]),
     },
     output: {
       format: 'cjs',
