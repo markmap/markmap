@@ -1,5 +1,9 @@
 # markmap-lib
 
+![NPM](https://img.shields.io/npm/v/markmap-lib.svg)
+![License](https://img.shields.io/npm/l/markmap-lib.svg)
+![Downloads](https://img.shields.io/npm/dt/markmap-lib.svg)
+
 Visualize your Markdown as mindmaps.
 
 This project is heavily inspired by [Markmap](https://github.com/dundalek/markmap).
