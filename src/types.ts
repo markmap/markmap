@@ -4,13 +4,9 @@ export interface IHierachy<T> {
   c?: T[];
 }
 
-export interface IValue extends IHierachy<IValue> {
-  v?: string;
-}
-
 export interface INode extends IHierachy<INode> {
   d?: number;
-  v?: IValue[];
+  v: string;
 }
 
 export interface IMarkmapCreateOptions {
@@ -21,13 +17,15 @@ export interface IMarkmapCreateOptions {
 }
 
 export interface IMarkmapOptions {
+  id?: string;
   duration: number;
   nodeFont: string;
-  lineHeight: number;
   spacingVertical: number;
   spacingHorizontal: number;
   autoFit: boolean;
   fitRatio: number;
   color: (key: string) => string;
   colorDepth: number;
+  paddingX: number;
+  style?: (id: string) => string;
 }
