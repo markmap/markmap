@@ -8,6 +8,7 @@ export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promis
   const {
     input,
     open: openFile = true,
+    mathJax = false,
   } = options;
   let { content, output } = options;
   if (input) {
@@ -18,7 +19,9 @@ export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promis
   }
 
   const root = transform(content || '');
-  const html = fillTemplate(root);
+  const html = fillTemplate(root, {
+    mathJax,
+  });
   fs.writeFile(output, html, 'utf8');
   if (openFile) open(output);
 }

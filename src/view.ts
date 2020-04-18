@@ -294,8 +294,10 @@ ${getStyleContent()}
             .style('opacity', 0)
             .attr('height', d => d.xSize);
           fo.append('xhtml:div')
-            .each(function (d) {
-              this.replaceWith(d.data.p.el.cloneNode(true));
+            .select(function (d) {
+              const node = d.data.p.el.cloneNode(true);
+              this.replaceWith(node);
+              return node;
             })
             .attr('xmlns', 'http://www.w3.org/1999/xhtml');
           return fo;

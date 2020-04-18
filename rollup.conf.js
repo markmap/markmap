@@ -4,12 +4,18 @@ const pkg = require('./package.json');
 
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
+const globalList = [
+  'd3',
+];
 const externalList = [
+  ...globalList,
   'fs',
   'path',
   'open',
-  'markmap',
-  'd3',
+  'remarkable',
+  'd3-flextree',
+  './template',
+  './util',
 ];
 const bundleOptions = {
   extend: true,
@@ -20,11 +26,7 @@ const rollupConfig = [
     input: {
       input: 'src/index.ts',
       plugins: getRollupPlugins(),
-      external: getExternal([
-        ...externalList,
-        'remarkable',
-        './template',
-      ]),
+      external: getExternal(externalList),
     },
     output: {
       format: 'cjs',
@@ -44,12 +46,20 @@ const rollupConfig = [
   },
   {
     input: {
+      input: 'src/util.ts',
+      plugins: getRollupPlugins(),
+      external: getExternal(externalList),
+    },
+    output: {
+      format: 'cjs',
+      file: `${DIST}/util.js`,
+    },
+  },
+  {
+    input: {
       input: 'src/transform.ts',
       plugins: getRollupPlugins(),
-      external: getExternal([
-        ...externalList,
-        'remarkable',
-      ]),
+      external: getExternal(externalList),
     },
     output: {
       format: 'cjs',
@@ -61,7 +71,7 @@ const rollupConfig = [
     input: {
       input: 'src/transform.ts',
       plugins: getRollupPlugins(),
-      external: getExternal(externalList),
+      external: getExternal(globalList),
     },
     output: {
       format: 'iife',
@@ -75,10 +85,7 @@ const rollupConfig = [
     input: {
       input: 'src/view.ts',
       plugins: getRollupPlugins(),
-      external: getExternal([
-        ...externalList,
-        'd3-flextree',
-      ]),
+      external: getExternal(externalList),
     },
     output: {
       format: 'cjs',
@@ -90,7 +97,7 @@ const rollupConfig = [
     input: {
       input: 'src/view.ts',
       plugins: getRollupPlugins(),
-      external: getExternal(externalList),
+      external: getExternal(globalList),
     },
     output: {
       format: 'iife',
