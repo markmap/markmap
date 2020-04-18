@@ -1,10 +1,18 @@
 import { Remarkable } from 'remarkable';
-import { INode, IValue } from './types';
+import { INode } from './types';
 
 const md = new Remarkable();
 md.block.ruler.enable([
   'deflist',
 ]);
+
+function escapeHtml(html: string): string {
+  return html.replace(/[&<"]/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '"': '&quot;',
+  }[m]));
+}
 
 function shallowEqual(a, b): boolean {
   a = a || {};
@@ -12,49 +20,48 @@ function shallowEqual(a, b): boolean {
   return Object.keys(a).length === Object.keys(b).length && Object.keys(a).every(k => a[k] === b[k]);
 }
 
-function extractInline(token): IValue[] {
-  const root: IValue = {
-    t: 'inline',
-    c: [],
-  };
-  const stack = [root];
+function htmlOpen(tagName: string, attrs?: any): string {
+  const attrStr = attrs ? Object.entries<string>(attrs)
+    .map(([key, value]) => value != null && ` ${escapeHtml(key)}="${escapeHtml(value)}"`)
+    .filter(Boolean)
+    .join('') : '';
+  return `<${tagName}${attrStr}>`;
+}
+
+function htmlClose(tagName: string): string {
+  return `</${tagName}>`;
+}
+
+function wrapWith(content: string, tagName: string, attrs?: any): string {
+  return htmlOpen(tagName, attrs) + content + htmlClose(tagName);
+}
+
+function buildHtml(text: string, style: any): string {
+  if (style.code) text = wrapWith(text, 'code');
+  if (style.em) text = wrapWith(text, 'em');
+  if (style.strong) text = wrapWith(text, 'strong');
+  return text;
+}
+
+function extractInline(token): string {
+  const html = [];
   let style = {};
   for (const child of token.children) {
-    const current = stack[stack.length - 1];
     if (child.type === 'text') {
-      current.c.push({
-        t: 'text',
-        v: child.content,
-        p: { style },
-      });
+      html.push(buildHtml(escapeHtml(child.content), style));
     } else if (child.type === 'code') {
-      current.c.push({
-        t: 'text',
-        v: child.content,
-        p: {
-          style: {
-            ...style,
-            code: true,
-          },
-        },
-      });
+      html.push(wrapWith(buildHtml(escapeHtml(child.content), style), 'code'));
     } else if (child.type === 'softbreak') {
-      current.c.push({
-        t: 'softbreak',
-      });
+      html.push('<br/>')
     } else if (child.type.endsWith('_open')) {
       const type = child.type.slice(0, -5);
       if (type === 'link') {
-        const item = {
-          t: 'link',
-          c: [],
-          p: {
-            href: child.href,
-            title: child.title,
-          },
-        };
-        current.c.push(item);
-        stack.push(item);
+        html.push(htmlOpen('a', {
+          href: child.href,
+          title: child.title,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        }));
       } else {
         style = {
           ...style,
@@ -64,7 +71,7 @@ function extractInline(token): IValue[] {
     } else if (child.type.endsWith('_close')) {
       const type = child.type.slice(0, -6);
       if (type === 'link') {
-        stack.pop();
+        html.push(htmlClose('a'));
       } else {
         style = {
           ...style,
@@ -73,7 +80,7 @@ function extractInline(token): IValue[] {
       }
     }
   }
-  return root.c;
+  return html.join('');
 }
 
 function cleanNode(node: INode, depth = 0): void {
@@ -84,16 +91,13 @@ function cleanNode(node: INode, depth = 0): void {
     // keep first paragraph as content of list_item, drop others
     node.c = node.c.filter(item => {
       if (item.t === 'paragraph') {
-        if (!node.v.length) node.v.push(...item.v);
+        if (!node.v) node.v = item.v;
         return false;
       }
       return true;
     });
     if (node.p?.index != null) {
-      node.v.unshift({
-        t: 'text',
-        v: `${node.p.index}. `,
-      });
+      node.v = `${node.p.index}. ${node.v}`;
     }
   } else if (node.t === 'ordered_list') {
     let index = node.p?.start ?? 1;
@@ -110,22 +114,11 @@ function cleanNode(node: INode, depth = 0): void {
   if (node.c.length === 0) {
     delete node.c;
   } else {
-    if (node.c.length === 1 && !node.c[0].v.length) {
+    if (node.c.length === 1 && !node.c[0].v) {
       node.c = node.c[0].c;
     }
     node.c.forEach(child => cleanNode(child, depth + 1));
   }
-  let last: IValue;
-  const content = [];
-  for (const item of node.v) {
-    if (last?.t === 'text' && item.t === 'text' && shallowEqual(last.p?.style, item.p?.style)) {
-      last.v += item.v;
-    } else {
-      content.push(item);
-    }
-    last = item;
-  }
-  node.v = content;
   node.d = depth;
   delete node.p;
 }
@@ -135,7 +128,7 @@ export function buildTree(tokens): INode {
   const root: INode = {
     t: 'root',
     d: 0,
-    v: [],
+    v: '',
     c: [],
   };
   const stack = [root];
@@ -160,8 +153,8 @@ export function buildTree(tokens): INode {
       const item: INode = {
         t: type,
         d: depth,
-        v: [],
         p: payload,
+        v: '',
         c: [],
       };
       current.c.push(item);
@@ -176,7 +169,7 @@ export function buildTree(tokens): INode {
         depth = 0;
       }
     } else if (token.type === 'inline') {
-      current.v.push(...extractInline(token));
+      current.v = `${current.v || ''}${extractInline(token)}`;
     } else {
       // ignore other nodes
     }

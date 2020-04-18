@@ -1,6 +1,13 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
-import { INode, IValue, IMarkmapOptions } from './types';
+import { INode, IMarkmapOptions } from './types';
+
+const uniqId = Math.random().toString(36).slice(2, 8);
+let globalIndex = 0;
+function getId() {
+  globalIndex += 1;
+  return `mm-${uniqId}-${globalIndex}`;
+}
 
 function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) => void, key = 'c'): void {
   const walk = (item: T, parent?: T): void => callback(item, () => {
@@ -11,52 +18,9 @@ function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) 
   walk(tree);
 }
 
-let canvas: HTMLCanvasElement;
-function getTextRect(items: IValue[], options: IMarkmapOptions): [number, number] {
-  // re-use canvas object for better performance
-  if (!canvas) canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  context.font = options.nodeFont;
-  let maxWidth = 0;
-  let width = 0;
-  let height = options.lineHeight;
-  let row = 0;
-  const walk = (item: IValue): void => {
-    if (item.t === 'text') {
-      height = (row + 1) * options.lineHeight;
-      item.p = {
-        ...item.p,
-        x: width,
-        y: height,
-      };
-      if (!width && row) item.p.newline = true;
-      const metrics = context.measureText(item.v);
-      width += metrics.width;
-      if (maxWidth < width) maxWidth = width;
-    } else if (item.t === 'softbreak') {
-      width = 0;
-      row += 1;
-    } else if (item.t === 'link') {
-      item.c.forEach(walk);
-    }
-  };
-  items.forEach(walk);
-  return [maxWidth, height];
-}
-
 function linkWidth(nodeData): number {
   const data: INode = nodeData.data;
   return Math.max(6 - 2 * data.d, 1.5);
-}
-
-function getKey(v: IValue[]): string {
-  const result = ['<'];
-  v.forEach(item => {
-    if (item.t === 'text') result.push(item.v.replace(/[<|&]/g, m => `&${m}`));
-    else if (item.c) result.push(getKey(item.c));
-  });
-  result.push('>');
-  return result.join('');
 }
 
 function adjustSpacing(tree, spacing: number): void {
@@ -73,28 +37,25 @@ function getChildNodes() {
 
 export function markmap(svg, data, opts) {
   svg = svg.datum ? svg : d3.select(svg);
-  const classList = (svg.attr('class') || '').split(' ').filter(Boolean);
-  if (classList.indexOf('markmap') < 0) {
-    classList.push('markmap');
-    svg.attr('class', classList.join(' '));
-  }
-  const style = svg.append('style');
+  const styleNode = svg.append('style');
   const g = svg.append('g');
   const zoom = d3.zoom().on('zoom', handleZoom);
   const svgNode = svg.node();
   const options: IMarkmapOptions = {
     duration: 500,
-    nodeFont: '300 16px sans-serif',
-    lineHeight: 20,
+    nodeFont: '300 16px/20px sans-serif',
     spacingVertical: 5,
     spacingHorizontal: 80,
     autoFit: false,
     fitRatio: 0.95,
     color: d3.scaleOrdinal(d3.schemeCategory10),
     colorDepth: 0,
+    paddingX: 8,
     ...opts,
   };
-  const state: any = {};
+  const state: any = {
+    id: options.id || getId(),
+  };
   updateStyle();
   if (data) {
     setData(data);
@@ -107,16 +68,27 @@ export function markmap(svg, data, opts) {
     fit,
   };
 
+  function getStyleContent() {
+    const { style } = options;
+    const styleText = style ? style(state.id) : `\
+.${state.id} a { color: #0097e6; }
+.${state.id} a:hover { color: #00a8ff; }
+.${state.id} path { fill: none; }
+.${state.id} div { font: ${options.nodeFont}; white-space: nowrap; }
+.${state.id} code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${state.id} em { font-style: italic; }
+.${state.id} strong { font-weight: 500; }
+.${state.id} g > g { cursor: pointer; }
+`;
+    return styleText;
+  }
   function updateStyle() {
-    style.text(`\
-.markmap a { fill: #0097e6; }
-.markmap a:hover { fill: #00a8ff; }
-.markmap path { fill: none; }
-.markmap text { font: ${options.nodeFont} }
-.markmap tspan.markmap-em { font-style: italic; }
-.markmap tspan.markmap-strong { font-weight: 500; }
-.markmap g > g { cursor: pointer; }
-`);
+    const classList = (svg.attr('class') || '').split(' ').filter(Boolean);
+    if (classList.indexOf(state.id) < 0) {
+      classList.push(state.id);
+      svg.attr('class', classList.join(' '));
+    }
+    styleNode.text(getStyleContent());
   }
   function handleZoom() {
     const { transform } = d3.event;
@@ -137,7 +109,7 @@ export function markmap(svg, data, opts) {
         ...item.p,
         // TODO keep keys for unchanged objects
         // unique key, should be based on content
-        k: `${parent?.p?.i || ''}.${i}:${getKey(item.v)}`,
+        k: `${parent?.p?.i || ''}.${i}:${item.v}`,
       };
       next();
       if (!colorDepth || item.d === colorDepth) c += 1;
@@ -172,60 +144,49 @@ export function markmap(svg, data, opts) {
     };
     renderData(d.data);
   }
-  function handleLink(d) {
-    d3.event.preventDefault();
-    window.open(d.p.href);
-  }
-  function renderTextNode(t, d: IValue): void {
-    if (d.t === 'link') {
-      const a = t.append('a')
-        .attr('href', d.p.href)
-        .attr('title', d.p.title)
-        .on('click', handleLink);
-      const text = a.selectAll(getChildNodes).data((d: IValue) => d.c);
-      text.enter().each(function (d: IValue) {
-        const t = d3.select(this);
-        renderTextNode(t, d);
-      });
-    }
-    if (d.t === 'text') {
-      t.append('tspan')
-        .text(d.v)
-        .attr('class', (d: IValue) => {
-          const style = d.p?.style || {};
-          return [
-            style.em && 'markmap-em',
-            style.strong && 'markmap-strong',
-          ].filter(Boolean).join(' ');
-        })
-        .attr('x', (d: IValue) => d.p?.x + 8)
-        .attr('y', (d: IValue) => d.p?.y - 4);
-    }
-  }
-  function renderText(text) {
-    const textNode = text.selectAll(getChildNodes)
-      .data(d => d.data.v);
-    textNode.enter().each(function (d: IValue) {
-      const t = d3.select(this);
-      renderTextNode(t, d);
-    });
-    return text;
-  }
   function renderData(originData) {
     if (!state.data) return;
+    const container = document.createElement('div');
+    const containerClass = `${state.id}-container`;
+    container.classList.add(state.id, containerClass);
+    const style = document.createElement('style');
+    style.textContent = `
+${getStyleContent()}
+.${containerClass} {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: -100px;
+  left: -100px;
+  overflow: hidden;
+  font: ${options.nodeFont};
+}
+.${containerClass} > div {
+  display: inline-block;
+}
+`;
+    container.append(style);
+    document.body.append(container);
     const { spacingHorizontal } = options;
     const layout = flextree()
       .children(d => !d.p?.f && d.c)
       .nodeSize(d => {
-        d.outerSize = d.outerSize || getTextRect(d.data.v, options);
+        if (!d.outerSize) {
+          const el = document.createElement('div');
+          el.innerHTML = d.data.v;
+          container.append(el);
+          const rect = el.getBoundingClientRect();
+          d.outerSize = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), 16)];
+        }
         const [width, height] = d.outerSize;
-        return [height, width + (width ? 16 : 0) + spacingHorizontal];
+        return [height, width + (width ? options.paddingX * 2 : 0) + spacingHorizontal];
       })
       .spacing((a, b) => {
         return a.parent === b.parent ? options.spacingVertical : options.spacingVertical * 2;
       });
     const tree = layout.hierarchy(state.data);
     layout(tree);
+    container.remove();
     adjustSpacing(tree, spacingHorizontal);
     const descendants = tree.descendants().reverse();
     const links = tree.links();
@@ -253,7 +214,7 @@ export function markmap(svg, data, opts) {
 
     const nodeExit = node.exit().transition().duration(options.duration);
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
-    nodeExit.select('text').attr('fill-opacity', 0);
+    nodeExit.select('foreignObject').style('opacity', 0);
     nodeExit.attr('transform', d => `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
@@ -295,21 +256,25 @@ export function markmap(svg, data, opts) {
       .attr('stroke', d => options.color(d.data.p.c))
       .attr('fill', d => d.data.p?.f ? options.color(d.data.p.c) : '#fff');
 
-    nodeMerge.selectAll('text').data(d => [d], d => d.data.p.k)
+    nodeMerge.selectAll('foreignObject').data(d => [d], d => d.data.p.k)
       .join(
         enter => {
-          return enter.append('text')
-            .attr('x', 8)
+          const fo = enter.append('foreignObject')
+            .attr('x', options.paddingX)
             .attr('y', 0)
-            .attr('text-anchor', 'start')
-            .attr('fill-opacity', 0)
-            .call(renderText);
+            .style('opacity', 0)
+            .attr('height', d => d.xSize);
+          fo.append('xhtml:div')
+            .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+            .html(d => d.data.v);
+          return fo;
         },
         update => update,
         exit => exit.remove(),
       )
+      .attr('width', d => Math.max(0, d.ySizeInner - options.paddingX * 2))
       .transition().duration(options.duration)
-      .attr('fill-opacity', 1);
+      .style('opacity', 1);
 
     // Update the links
     g.selectAll('path').data(links, d => d.target.data.p.k)
