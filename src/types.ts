@@ -20,6 +20,7 @@ export interface IMarkmapOptions {
   id?: string;
   duration: number;
   nodeFont: string;
+  nodeMinHeight: number;
   spacingVertical: number;
   spacingHorizontal: number;
   autoFit: boolean;
@@ -28,4 +29,14 @@ export interface IMarkmapOptions {
   colorDepth: number;
   paddingX: number;
   style?: (id: string) => string;
+  processHtml?: (container: Node[]) => void;
+}
+
+export interface IMarkmapState {
+  id: string;
+  data?: any;
+  minX?: number;
+  maxX?: number;
+  minY?: number;
+  maxY?: number;
 }

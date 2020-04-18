@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
-import { INode, IMarkmapOptions } from './types';
+import { INode, IMarkmapOptions, IMarkmapState } from './types';
 
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;
-function getId() {
+function getId(): string {
   globalIndex += 1;
   return `mm-${uniqId}-${globalIndex}`;
 }
@@ -31,19 +31,44 @@ function adjustSpacing(tree, spacing: number): void {
   }, 'children');
 }
 
-function getChildNodes() {
-  return this.childNodes;
+function arrayFrom<T>(arrayLike: ArrayLike<T>): T[] {
+  const array = [];
+  for (let i = 0; i < arrayLike.length; i += 1) {
+    array.push(arrayLike[i]);
+  }
+  return array;
+}
+
+function childSelector(filter?: string | ((el: HTMLElement) => boolean)): () => HTMLElement[] {
+  if (typeof filter === 'string') {
+    const tagName = filter;
+    filter = (el: HTMLElement): boolean => el.tagName === tagName;
+  }
+  const filterFn = filter;
+  return function selector(): HTMLElement[] {
+    let nodes = arrayFrom((this as HTMLElement).childNodes as NodeListOf<HTMLElement>);
+    if (filterFn) nodes = nodes.filter(node => filterFn(node));
+    return nodes;
+  };
+}
+
+function addClass(className: string, ...rest: string[]): string {
+  const classList = (className || '').split(' ').filter(Boolean);
+  rest.forEach(item => {
+    if (item && classList.indexOf(item) < 0) classList.push(item);
+  });
+  return classList.join(' ');
 }
 
 export function markmap(svg, data, opts) {
   svg = svg.datum ? svg : d3.select(svg);
   const styleNode = svg.append('style');
-  const g = svg.append('g');
   const zoom = d3.zoom().on('zoom', handleZoom);
   const svgNode = svg.node();
   const options: IMarkmapOptions = {
     duration: 500,
     nodeFont: '300 16px/20px sans-serif',
+    nodeMinHeight: 16,
     spacingVertical: 5,
     spacingHorizontal: 80,
     autoFit: false,
@@ -53,9 +78,10 @@ export function markmap(svg, data, opts) {
     paddingX: 8,
     ...opts,
   };
-  const state: any = {
+  const state: IMarkmapState = {
     id: options.id || getId(),
   };
+  const g = svg.append('g').attr('class', `${state.id}-g`);
   updateStyle();
   if (data) {
     setData(data);
@@ -68,44 +94,64 @@ export function markmap(svg, data, opts) {
     fit,
   };
 
-  function getStyleContent() {
+  function getStyleContent(): string {
     const { style } = options;
     const styleText = style ? style(state.id) : `\
 .${state.id} a { color: #0097e6; }
 .${state.id} a:hover { color: #00a8ff; }
-.${state.id} path { fill: none; }
-.${state.id} div { font: ${options.nodeFont}; white-space: nowrap; }
-.${state.id} code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
-.${state.id} em { font-style: italic; }
-.${state.id} strong { font-weight: 500; }
-.${state.id} g > g { cursor: pointer; }
+.${state.id}-g > path { fill: none; }
+.${state.id}-fo > div { font: ${options.nodeFont}; white-space: nowrap; }
+.${state.id}-fo > div > code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${state.id}-fo > div > em { font-style: italic; }
+.${state.id}-fo > div > strong { font-weight: 500; }
+.${state.id}-g > g { cursor: pointer; }
 `;
     return styleText;
   }
   function updateStyle() {
-    const classList = (svg.attr('class') || '').split(' ').filter(Boolean);
-    if (classList.indexOf(state.id) < 0) {
-      classList.push(state.id);
-      svg.attr('class', classList.join(' '));
-    }
+    svg.attr('class', addClass(svg.attr('class'), state.id));
     styleNode.text(getStyleContent());
   }
   function handleZoom() {
     const { transform } = d3.event;
     g.attr('transform', transform);
   }
-  function addKeys(node: INode) {
+  function initializeData(node: INode) {
     let i = 0;
     let c = 0;
     const { colorDepth } = options;
+    const container = document.createElement('div');
+    const containerClass = `${state.id}-container`;
+    container.className = addClass(container.className, `${state.id}-fo`, containerClass);
+    const style = document.createElement('style');
+    style.textContent = `
+${getStyleContent()}
+.${containerClass} {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: -100px;
+  left: -100px;
+  overflow: hidden;
+  font: ${options.nodeFont};
+}
+.${containerClass} > div {
+  display: inline-block;
+}
+`;
+    document.body.append(style, container);
     walkTree(node, (item, next, parent) => {
       i += 1;
       options.color(`${c}`); // preload colors
+      const el = document.createElement('div');
+      el.innerHTML = item.v;
+      container.append(el);
       item.p = {
         // unique ID
         i,
         // color key
         c,
+        el,
         ...item.p,
         // TODO keep keys for unchanged objects
         // unique key, should be based on content
@@ -114,12 +160,20 @@ export function markmap(svg, data, opts) {
       next();
       if (!colorDepth || item.d === colorDepth) c += 1;
     });
+    if (options.processHtml) options.processHtml(arrayFrom(container.childNodes));
+    walkTree(node, (item, next) => {
+      const rect = item.p.el.getBoundingClientRect();
+      item.p.s = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), options.nodeMinHeight)];
+      next();
+    });
+    container.remove();
+    style.remove();
   }
   function setOptions(opts) {
     Object.assign(options, opts);
   }
   function setData(data, opts?: any) {
-    addKeys(data);
+    initializeData(data);
     state.data = data;
     if (opts) setOptions(opts);
     renderData(data);
@@ -146,39 +200,11 @@ export function markmap(svg, data, opts) {
   }
   function renderData(originData) {
     if (!state.data) return;
-    const container = document.createElement('div');
-    const containerClass = `${state.id}-container`;
-    container.classList.add(state.id, containerClass);
-    const style = document.createElement('style');
-    style.textContent = `
-${getStyleContent()}
-.${containerClass} {
-  position: absolute;
-  width: 0;
-  height: 0;
-  top: -100px;
-  left: -100px;
-  overflow: hidden;
-  font: ${options.nodeFont};
-}
-.${containerClass} > div {
-  display: inline-block;
-}
-`;
-    container.append(style);
-    document.body.append(container);
     const { spacingHorizontal } = options;
     const layout = flextree()
       .children(d => !d.p?.f && d.c)
       .nodeSize(d => {
-        if (!d.outerSize) {
-          const el = document.createElement('div');
-          el.innerHTML = d.data.v;
-          container.append(el);
-          const rect = el.getBoundingClientRect();
-          d.outerSize = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), 16)];
-        }
-        const [width, height] = d.outerSize;
+        const [width, height] = d.data.p.s;
         return [height, width + (width ? options.paddingX * 2 : 0) + spacingHorizontal];
       })
       .spacing((a, b) => {
@@ -186,7 +212,6 @@ ${getStyleContent()}
       });
     const tree = layout.hierarchy(state.data);
     layout(tree);
-    container.remove();
     adjustSpacing(tree, spacingHorizontal);
     const descendants = tree.descendants().reverse();
     const links = tree.links();
@@ -207,7 +232,7 @@ ${getStyleContent()}
     const y0 = origin.data.y0 ?? origin.y;
 
     // Update the nodes
-    const node = g.selectAll('g').data(descendants, d => d.data.p.k);
+    const node = g.selectAll(childSelector('g')).data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
       .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`)
       .on('click', handleClick);
@@ -222,7 +247,8 @@ ${getStyleContent()}
       .duration(options.duration)
       .attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
 
-    nodeMerge.selectAll('rect').data(d => [d], d => d.data.p.k)
+    nodeMerge.selectAll(childSelector('rect'))
+      .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('rect')
@@ -239,7 +265,8 @@ ${getStyleContent()}
       .attr('width', d => d.ySizeInner + 2)
       .attr('fill', d => options.color(d.data.p.c));
 
-    nodeMerge.selectAll('circle').data(d => d.data.c ? [d] : [], d => d.data.p.k)
+    nodeMerge.selectAll(childSelector('circle'))
+      .data(d => d.data.c ? [d] : [], d => d.data.p.k)
       .join(
         enter => {
           return enter.append('circle')
@@ -256,17 +283,21 @@ ${getStyleContent()}
       .attr('stroke', d => options.color(d.data.p.c))
       .attr('fill', d => d.data.p?.f ? options.color(d.data.p.c) : '#fff');
 
-    nodeMerge.selectAll('foreignObject').data(d => [d], d => d.data.p.k)
+    nodeMerge.selectAll(childSelector('foreignObject'))
+      .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
           const fo = enter.append('foreignObject')
+            .attr('class', `${state.id}-fo`)
             .attr('x', options.paddingX)
             .attr('y', 0)
             .style('opacity', 0)
             .attr('height', d => d.xSize);
           fo.append('xhtml:div')
-            .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-            .html(d => d.data.v);
+            .each(function (d) {
+              this.replaceWith(d.data.p.el.cloneNode(true));
+            })
+            .attr('xmlns', 'http://www.w3.org/1999/xhtml');
           return fo;
         },
         update => update,
@@ -277,7 +308,8 @@ ${getStyleContent()}
       .style('opacity', 1);
 
     // Update the links
-    g.selectAll('path').data(links, d => d.target.data.p.k)
+    g.selectAll(childSelector('path'))
+      .data(links, d => d.target.data.p.k)
       .join(
         enter => {
           const source: [number, number] = [
