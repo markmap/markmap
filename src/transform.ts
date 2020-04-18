@@ -1,56 +1,20 @@
 import { Remarkable } from 'remarkable';
 import { INode } from './types';
+import { wrapStyle, escapeHtml, wrapHtml, htmlOpen, htmlClose } from './util';
 
 const md = new Remarkable();
 md.block.ruler.enable([
   'deflist',
 ]);
 
-function escapeHtml(html: string): string {
-  return html.replace(/[&<"]/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '"': '&quot;',
-  }[m]));
-}
-
-function shallowEqual(a, b): boolean {
-  a = a || {};
-  b = b || {};
-  return Object.keys(a).length === Object.keys(b).length && Object.keys(a).every(k => a[k] === b[k]);
-}
-
-function htmlOpen(tagName: string, attrs?: any): string {
-  const attrStr = attrs ? Object.entries<string>(attrs)
-    .map(([key, value]) => value != null && ` ${escapeHtml(key)}="${escapeHtml(value)}"`)
-    .filter(Boolean)
-    .join('') : '';
-  return `<${tagName}${attrStr}>`;
-}
-
-function htmlClose(tagName: string): string {
-  return `</${tagName}>`;
-}
-
-function wrapWith(content: string, tagName: string, attrs?: any): string {
-  return htmlOpen(tagName, attrs) + content + htmlClose(tagName);
-}
-
-function buildHtml(text: string, style: any): string {
-  if (style.code) text = wrapWith(text, 'code');
-  if (style.em) text = wrapWith(text, 'em');
-  if (style.strong) text = wrapWith(text, 'strong');
-  return text;
-}
-
 function extractInline(token): string {
   const html = [];
   let style = {};
   for (const child of token.children) {
     if (child.type === 'text') {
-      html.push(buildHtml(escapeHtml(child.content), style));
+      html.push(wrapStyle(escapeHtml(child.content), style));
     } else if (child.type === 'code') {
-      html.push(wrapWith(buildHtml(escapeHtml(child.content), style), 'code'));
+      html.push(wrapHtml('code', wrapStyle(escapeHtml(child.content), style)));
     } else if (child.type === 'softbreak') {
       html.push('<br/>')
     } else if (child.type.endsWith('_open')) {

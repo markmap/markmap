@@ -8,39 +8,143 @@ Visualize your Markdown as mindmaps.
 
 This project is heavily inspired by [Markmap](https://github.com/dundalek/markmap).
 
-It is a complete reimplementation with some additional features:
+See [online demo](https://markmap.js.org/repl).
 
-- command-line usage
-- multiline text
-- text styles
-- links
-- friendly to browsers
+## Usage
 
-<img src="https://user-images.githubusercontent.com/3139113/72221499-52476a80-3596-11ea-8d15-c57fdfe04ce0.png" alt="markdown" width="300"> <img src="https://user-images.githubusercontent.com/3139113/72221508-7014cf80-3596-11ea-9b59-b8a97bba8e1c.png" alt="mindmap" width="300">
+### Command-line
 
-## Installation
+#### Installation
+
+Install globally:
 
 ```sh
 $ yarn global add markmap-lib
 # or
-$ npm i markmap-lib -g
+$ npm install markmap-lib -g
 ```
 
-## Usage
-
-Suppose you have a Markdown file named `README.md`.
-
-Run the command below:
+or use with `npx`:
 
 ```sh
-$ markmap README.md
-
-# without installation
-$ npx markmap-lib README.md
+$ npx markmap-lib
 ```
 
-Then you will get a `README.html` in the same directory, and hopefully it will be open in your default browser.
+#### Commands
+
+```
+Usage: markmap [options] <input>
+
+Create a markmap from a Markdown input file
+
+Options:
+  -V, --version          output the version number
+  -o, --output <output>  specify filename of the output HTML
+  --enable-mathjax       enable MathJax support
+  --no-open              do not open the output file after generation
+  -h, --help             display help for command
+```
+
+Suppose you have a Markdown file named `note.md`.
+
+Run the following command to get an interactive mindmap:
+
+```sh
+$ markmap note.md
+
+# without global installation
+$ npx markmap-lib note.md
+```
+
+Then you will get a `note.html` in the same directory, and hopefully it will be open in your default browser.
+
+#### MathJax
+
+To enable MathJax support for your Markdown, pass `--enable-mathjax`:
+
+```sh
+$ markmap --enable-mathjax note.md
+```
+
+### API
+
+#### Installation
+
+```sh
+$ yarn add markmap-lib
+# or
+$ npm install markmap-lib
+```
+
+#### Transform
+
+Transform Markdown to markmap data:
+
+```js
+import { transform } from 'markmap-lib/dist/transform.common';
+
+const data = transform(markdown);
+```
+
+Now we get the data for rendering in `data`.
+
+#### Render
+
+Render a markmap from transformed data:
+
+Create an SVG element with explicit width and height:
+
+```html
+<svg id="markmap" style="width: 800px; height: 800px"></svg>
+```
+
+Render a markmap to the SVG element:
+
+```js
+import { markmap } from 'markmap-lib/dist/view.common';
+
+markmap('#markmap', data);
+
+// or pass an SVG element directly
+const svgEl = document.querySelector('#markmap');
+markmap(svgEl, data);
+```
+
+#### MathJax
+
+To enable MathJax, you need to load MathJax before rendering markmap:
+
+```html
+<script>
+window.MathJax = {
+  options: {
+    skipHtmlTags: {
+      '[-]': ['code', 'pre']
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+```
+
+and process Html with MathJax in `options.processHtml`:
+
+```js
+import { markmap } from 'markmap-lib/dist/view.common';
+
+markmap('#markmap', data, {
+  processHtml: nodes => {
+    if (window.MathJax.typeset) MathJax.typeset(nodes);
+  },
+});
+```
+
+**Note**:
+
+- The `skipHtmlTags` option is required because inline code generated from Markdown is always wrapped in `<code>`, which is ignored by MathJax by default.
+- The MathJax library should better be loaded synchronously so that we can just use it in `options.processHtml` without a flash.
 
 ## Related
 
-- [coc-markmap](https://github.com/gera2ld/coc-markmap) - Vim / NeoVim plugin powered by [coc.nvim](https://github.com/neoclide/coc.nvim)
+- Use with Vim / Neovim: [coc-markmap](https://github.com/gera2ld/coc-markmap)
+- Use with GatsbyJS: [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)

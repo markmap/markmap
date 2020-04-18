@@ -14,6 +14,7 @@ export interface IMarkmapCreateOptions {
   content?: string;
   input?: string;
   output?: string;
+  mathJax?: boolean;
 }
 
 export interface IMarkmapOptions {
