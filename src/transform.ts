@@ -16,7 +16,7 @@ function extractInline(token): string {
     } else if (child.type === 'code') {
       html.push(wrapHtml('code', wrapStyle(escapeHtml(child.content), style)));
     } else if (child.type === 'softbreak') {
-      html.push('<br/>')
+      html.push('<br/>');
     } else if (child.type.endsWith('_open')) {
       const type = child.type.slice(0, -5);
       if (type === 'link') {

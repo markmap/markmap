@@ -19,16 +19,16 @@ export interface IMarkmapCreateOptions {
 
 export interface IMarkmapOptions {
   id?: string;
-  duration: number;
-  nodeFont: string;
-  nodeMinHeight: number;
-  spacingVertical: number;
-  spacingHorizontal: number;
-  autoFit: boolean;
-  fitRatio: number;
-  color: (key: string) => string;
-  colorDepth: number;
-  paddingX: number;
+  duration?: number;
+  nodeFont?: string;
+  nodeMinHeight?: number;
+  spacingVertical?: number;
+  spacingHorizontal?: number;
+  autoFit?: boolean;
+  fitRatio?: number;
+  color?: (key: string) => string;
+  colorDepth?: number;
+  paddingX?: number;
   style?: (id: string) => string;
   processHtml?: (container: Node[]) => void;
 }
