@@ -60,7 +60,7 @@ function addClass(className: string, ...rest: string[]): string {
   return classList.join(' ');
 }
 
-export function markmap(svg, data, opts) {
+export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
   svg = svg.datum ? svg : d3.select(svg);
   const styleNode = svg.append('style');
   const zoom = d3.zoom().on('zoom', handleZoom);
