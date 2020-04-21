@@ -179,6 +179,12 @@ ${getStyleContent()}
     if (opts) setOptions(opts);
     renderData(data);
   }
+  function transition(sel) {
+    if (options.duration) {
+      return sel.transition().duration(options.duration);
+    }
+    return sel;
+  }
   function fit() {
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     const { minX, maxX, minY, maxY } = state;
@@ -188,8 +194,7 @@ ${getStyleContent()}
     const initialZoom = d3.zoomIdentity
       .translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale)
       .scale(scale);
-    svg.transition().duration(options.duration)
-      .call(zoom.transform, initialZoom);
+    transition(svg).call(zoom.transform, initialZoom);
   }
   function handleClick(d) {
     const { data } = d;
@@ -238,17 +243,15 @@ ${getStyleContent()}
       .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`)
       .on('click', handleClick);
 
-    const nodeExit = node.exit().transition().duration(options.duration);
+    const nodeExit = transition(node.exit());
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
     nodeExit.select('foreignObject').style('opacity', 0);
     nodeExit.attr('transform', d => `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
 
     const nodeMerge = node.merge(nodeEnter);
-    nodeMerge.transition()
-      .duration(options.duration)
-      .attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
+    transition(nodeMerge).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
 
-    nodeMerge.selectAll(childSelector('rect'))
+    const rect = nodeMerge.selectAll(childSelector('rect'))
       .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
@@ -260,13 +263,13 @@ ${getStyleContent()}
         },
         update => update,
         exit => exit.remove(),
-      )
-      .transition().duration(options.duration)
+      );
+    transition(rect)
       .attr('x', -1)
       .attr('width', d => d.ySizeInner + 2)
       .attr('fill', d => options.color(d.data.p.c));
 
-    nodeMerge.selectAll(childSelector('circle'))
+    const circle = nodeMerge.selectAll(childSelector('circle'))
       .data(d => d.data.c ? [d] : [], d => d.data.p.k)
       .join(
         enter => {
@@ -278,13 +281,13 @@ ${getStyleContent()}
         },
         update => update,
         exit => exit.remove(),
-      )
-      .transition().duration(options.duration)
+      );
+    transition(circle)
       .attr('r', 6)
       .attr('stroke', d => options.color(d.data.p.c))
       .attr('fill', d => d.data.p?.f ? options.color(d.data.p.c) : '#fff');
 
-    nodeMerge.selectAll(childSelector('foreignObject'))
+    const foreignObject = nodeMerge.selectAll(childSelector('foreignObject'))
       .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
@@ -306,12 +309,12 @@ ${getStyleContent()}
         update => update,
         exit => exit.remove(),
       )
-      .attr('width', d => Math.max(0, d.ySizeInner - options.paddingX * 2))
-      .transition().duration(options.duration)
+      .attr('width', d => Math.max(0, d.ySizeInner - options.paddingX * 2));
+    transition(foreignObject)
       .style('opacity', 1);
 
     // Update the links
-    g.selectAll(childSelector('path'))
+    const path = g.selectAll(childSelector('path'))
       .data(links, d => d.target.data.p.k)
       .join(
         enter => {
@@ -328,14 +331,12 @@ ${getStyleContent()}
             origin.y + origin.ySizeInner,
             origin.x + origin.xSize / 2,
           ];
-          return exit.transition()
-            .duration(options.duration)
+          return transition(exit)
             .attr('d', linkShape({ source, target: source }))
             .remove();
         },
-      )
-      .transition()
-      .duration(options.duration)
+      );
+    transition(path)
       .attr('stroke', d => options.color(d.target.data.p.c))
       .attr('stroke-width', d => linkWidth(d.target))
       .attr('d', d => {
