@@ -102,6 +102,7 @@ export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
 .${state.id}-g > path { fill: none; }
 .${state.id}-fo > div { font: ${options.nodeFont}; white-space: nowrap; }
 .${state.id}-fo > div > code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${state.id}-fo > div > del { text-decoration: line-through; }
 .${state.id}-fo > div > em { font-style: italic; }
 .${state.id}-fo > div > strong { font-weight: 500; }
 .${state.id}-g > g { cursor: pointer; }
