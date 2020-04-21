@@ -29,6 +29,7 @@ export function wrapHtml(tagName: string, content?: string, attrs?: any): string
 
 export function wrapStyle(text: string, style: any): string {
   if (style.code) text = wrapHtml('code', text);
+  if (style.del) text = wrapHtml('del', text);
   if (style.em) text = wrapHtml('em', text);
   if (style.strong) text = wrapHtml('strong', text);
   return text;
