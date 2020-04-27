@@ -4,6 +4,7 @@ module.exports = {
     '@babel/preset-typescript',
   ],
   plugins: [
+    ['@babel/plugin-proposal-object-rest-spread', { loose: true, useBuiltIns: true }],
     ['module-resolver', {
       alias: {
         '#': './src',

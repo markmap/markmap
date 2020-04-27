@@ -7,6 +7,9 @@
   "bin": {
     "markmap": "bin/cli.js"
   },
+  "engines": {
+    "node": ">=10"
+  },
   "husky": {
     "hooks": {
       "pre-push": "npm run lint"

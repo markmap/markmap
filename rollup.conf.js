@@ -71,7 +71,7 @@ const rollupConfig = [
     input: {
       input: 'src/transform.ts',
       plugins: getRollupPlugins(),
-      external: getExternal(globalList),
+      external: globalList,
     },
     output: {
       format: 'iife',
@@ -97,7 +97,7 @@ const rollupConfig = [
     input: {
       input: 'src/view.ts',
       plugins: getRollupPlugins(),
-      external: getExternal(globalList),
+      external: globalList,
     },
     output: {
       format: 'iife',
