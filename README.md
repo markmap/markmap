@@ -10,6 +10,8 @@ This project is heavily inspired by [Markmap](https://github.com/dundalek/markma
 
 See [online demo](https://markmap.js.org/repl).
 
+Requires Node.js >= 10.
+
 ## Usage
 
 ### Command-line
