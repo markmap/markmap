@@ -7,8 +7,9 @@ const js: (string | object)[] = [
   { src: 'https://cdn.jsdelivr.net/npm/markmap-lib@process.env.VERSION/dist/view.min.js' },
 ];
 
-function buildCode(fn: Function): string {
-  return `(${fn.toString()})()`;
+function buildCode(fn: Function, ...args: any[]): string {
+  const params = args.map(arg => JSON.stringify(arg ?? null)).join(',');
+  return `(${fn.toString()})(${params})`;
 }
 
 export function fillTemplate(data: any, opts?: any): string {
@@ -16,13 +17,13 @@ export function fillTemplate(data: any, opts?: any): string {
   const extra = [JSON.stringify(data)];
   if (opts?.mathJax) {
     jsList.push(
-      buildCode(() => {
-        (window as any).MathJax = {
-          options: {
-            skipHtmlTags: { '[-]': ['code', 'pre'] },
-          },
-        };
-      }),
+      buildCode((mathJax: any) => {
+        mathJax = Object.assign({}, mathJax);
+        mathJax.options = Object.assign({}, mathJax.options, {
+          skipHtmlTags: { '[-]': ['code', 'pre'] },
+        });
+        (window as any).MathJax = mathJax;
+      }, opts.mathJax),
       { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js' },
     );
     extra.push(
