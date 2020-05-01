@@ -96,16 +96,18 @@ export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
 
   function getStyleContent(): string {
     const { style } = options;
-    const styleText = style ? style(state.id) : `\
+    const styleText = `\
 .${state.id} a { color: #0097e6; }
 .${state.id} a:hover { color: #00a8ff; }
 .${state.id}-g > path { fill: none; }
 .${state.id}-fo > div { font: ${options.nodeFont}; white-space: nowrap; }
-.${state.id}-fo > div > code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
-.${state.id}-fo > div > del { text-decoration: line-through; }
-.${state.id}-fo > div > em { font-style: italic; }
-.${state.id}-fo > div > strong { font-weight: 500; }
+.${state.id}-fo code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${state.id}-fo del { text-decoration: line-through; }
+.${state.id}-fo em { font-style: italic; }
+.${state.id}-fo strong { font-weight: 500; }
+.${state.id}-fo pre { margin: 0; }
 .${state.id}-g > g { cursor: pointer; }
+${style ? style(state.id) : ''}
 `;
     return styleText;
   }
@@ -141,7 +143,7 @@ ${getStyleContent()}
 }
 `;
     document.body.append(style, container);
-    walkTree(node, (item, next, parent) => {
+    walkTree(node, (item, next) => {
       i += 1;
       options.color(`${c}`); // preload colors
       const el = document.createElement('div');
@@ -154,17 +156,18 @@ ${getStyleContent()}
         c,
         el,
         ...item.p,
-        // TODO keep keys for unchanged objects
-        // unique key, should be based on content
-        k: `${parent?.p?.i || ''}.${i}:${item.v}`,
       };
       next();
       if (!colorDepth || item.d === colorDepth) c += 1;
     });
     if (options.processHtml) options.processHtml(arrayFrom(container.childNodes));
-    walkTree(node, (item, next) => {
+    walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
+      item.v = item.p.el.innerHTML;
       item.p.s = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), options.nodeMinHeight)];
+      // TODO keep keys for unchanged objects
+      // unique key, should be based on content
+      item.p.k = `${parent?.p?.i || ''}.${item.p.i}:${item.v}`;
       next();
     });
     container.remove();
