@@ -6,7 +6,11 @@ export function escapeHtml(html: string): string {
   }[m]));
 }
 
-export function htmlOpen(tagName: string, attrs?: any): string {
+export function escapeScript(content: string): string {
+  return content.replace(/<(\/script>)/g, '\\x3c$2');
+}
+
+export function htmlOpen(tagName: string, attrs?: any, autoClose = false): string {
   const attrStr = attrs ? Object.entries<string | boolean>(attrs)
     .map(([key, value]) => {
       if (value == null || value === false) return;
@@ -24,6 +28,7 @@ export function htmlClose(tagName: string): string {
 }
 
 export function wrapHtml(tagName: string, content?: string, attrs?: any): string {
+  if (content == null) return htmlOpen(tagName, attrs, true);
   return htmlOpen(tagName, attrs) + (content || '') + htmlClose(tagName);
 }
 

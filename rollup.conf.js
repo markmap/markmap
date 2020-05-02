@@ -1,22 +1,14 @@
 const { terser } = require('rollup-plugin-terser');
-const { getRollupPlugins, getExternal, DIST } = require('./scripts/util');
+const { getRollupPlugins, getRollupExternal, defaultOptions } = require('@gera2ld/plaid');
 const pkg = require('./package.json');
 
+const DIST = defaultOptions.distDir;
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
 const globalList = [
   'd3',
 ];
-const externalList = [
-  ...globalList,
-  'fs',
-  'path',
-  'open',
-  'remarkable',
-  'd3-flextree',
-  './template',
-  './util',
-];
+const external = getRollupExternal();
 const bundleOptions = {
   extend: true,
   esModule: false,
@@ -24,88 +16,37 @@ const bundleOptions = {
 const rollupConfig = [
   {
     input: {
-      input: 'src/index.ts',
-      plugins: getRollupPlugins(),
-      external: getExternal(externalList),
-    },
-    output: {
-      format: 'cjs',
-      file: `${DIST}/index.js`,
-    },
-  },
-  {
-    input: {
-      input: 'src/template.ts',
-      plugins: getRollupPlugins(),
-      external: getExternal(externalList),
-    },
-    output: {
-      format: 'cjs',
-      file: `${DIST}/template.js`,
-    },
-  },
-  {
-    input: {
-      input: 'src/util.ts',
-      plugins: getRollupPlugins(),
-      external: getExternal(externalList),
-    },
-    output: {
-      format: 'cjs',
-      file: `${DIST}/util.js`,
-    },
-  },
-  {
-    input: {
-      input: 'src/transform.ts',
-      plugins: getRollupPlugins(),
-      external: getExternal(externalList),
-    },
-    output: {
-      format: 'cjs',
-      file: `${DIST}/transform.common.js`,
-      ...bundleOptions,
-    },
-  },
-  {
-    input: {
-      input: 'src/transform.ts',
-      plugins: getRollupPlugins(),
+      input: 'src/view.ts',
       external: globalList,
+      plugins: getRollupPlugins({
+        esm: true,
+        extensions: defaultOptions.extensions,
+      }),
     },
     output: {
       format: 'iife',
-      file: `${DIST}/transform.js`,
+      file: `${DIST}/browser/view.js`,
       name: 'markmap',
+      globals: {
+        d3: 'd3',
+      },
       ...bundleOptions,
     },
     minify: true,
   },
   {
     input: {
-      input: 'src/view.ts',
-      plugins: getRollupPlugins(),
-      external: getExternal(externalList),
-    },
-    output: {
-      format: 'cjs',
-      file: `${DIST}/view.common.js`,
-      ...bundleOptions,
-    },
-  },
-  {
-    input: {
-      input: 'src/view.ts',
-      plugins: getRollupPlugins(),
+      input: 'src/transform.ts',
       external: globalList,
+      plugins: getRollupPlugins({
+        esm: true,
+        extensions: defaultOptions.extensions,
+      }),
     },
     output: {
       format: 'iife',
-      file: `${DIST}/view.js`,
+      file: `${DIST}/browser/transform.js`,
       name: 'markmap',
-      globals: {
-        d3: 'd3',
-      },
       ...bundleOptions,
     },
     minify: true,

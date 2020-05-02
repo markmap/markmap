@@ -4,21 +4,21 @@
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <i@gerald.top>",
   "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
+  },
   "bin": {
     "markmap": "bin/cli.js"
   },
   "engines": {
     "node": ">=10"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
-    "clean": "del dist types",
-    "build:js": "rollup -c rollup.conf.js",
+    "dev": "gulp dev",
+    "clean": "gulp clean",
+    "build:js": "gulp build",
     "prebuild": "npm run ci && npm run clean",
     "prepublishOnly": "npm run build",
     "ci": "npm run lint",
@@ -29,8 +29,8 @@
     "access": "public"
   },
   "main": "dist/index.js",
-  "unpkg": "dist/view.min.js",
-  "jsdelivr": "dist/view.min.js",
+  "unpkg": "dist/browser/view.min.js",
+  "jsdelivr": "dist/browser/view.min.js",
   "files": [
     "bin",
     "dist",
@@ -42,34 +42,29 @@
     "mindmap"
   ],
   "typings": "types/index.d.ts",
+  "repository": "git@github.com:gera2ld/markmap-lib.git",
   "devDependencies": {
     "@babel/preset-typescript": "^7.9.0",
-    "@gera2ld/plaid": "~1.5.0",
-    "@rollup/plugin-alias": "^3.0.1",
-    "@rollup/plugin-commonjs": "^11.0.2",
-    "@rollup/plugin-json": "^4.0.2",
-    "@rollup/plugin-node-resolve": "^7.1.1",
-    "@rollup/plugin-replace": "^2.3.1",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
-    "cross-env": "^7.0.2",
-    "cssnano": "^4.1.10",
-    "del-cli": "^3.0.0",
-    "eslint": "^6.8.0",
-    "husky": "^4.2.3",
-    "rollup": "^2.3.1",
-    "rollup-plugin-babel": "^4.4.0",
+    "@gera2ld/plaid": "~2.0.0",
+    "@gera2ld/plaid-rollup": "~2.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "del": "^5.1.0",
+    "fancy-log": "^1.3.3",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-replace": "^1.0.0",
+    "husky": "^4.2.5",
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@babel/runtime": "^7.9.2",
+    "@babel/runtime": "^7.9.6",
     "@types/d3": "^5.7.2",
-    "commander": "^5.0.0",
-    "d3": "^5.15.0",
+    "commander": "^5.1.0",
+    "d3": "^5.16.0",
     "d3-flextree": "^2.1.1",
     "open": "^7.0.3",
     "remarkable": "^2.0.0"
-  },
-  "repository": "git@github.com:gera2ld/markmap-lib.git"
+  }
 }

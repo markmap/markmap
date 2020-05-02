@@ -1,44 +1,46 @@
-import { wrapHtml } from './util';
+import { JSItem } from './types';
+import { persistJS, persistPlugins } from './util';
+import { mathJax, prism } from './plugins';
 
 const template: string = process.env.TEMPLATE;
 
-const js: (string | object)[] = [
-  { src: 'https://cdn.jsdelivr.net/npm/d3@5' },
-  { src: 'https://cdn.jsdelivr.net/npm/markmap-lib@process.env.VERSION/dist/view.min.js' },
-];
-
-function buildCode(fn: Function, ...args: any[]): string {
-  const params = args.map(arg => JSON.stringify(arg ?? null)).join(',');
-  return `(${fn.toString()})(${params})`;
-}
+const baseJs: JSItem[] = [
+  'https://cdn.jsdelivr.net/npm/d3@5',
+  'https://cdn.jsdelivr.net/npm/markmap-lib@process.env.VERSION/dist/browser/view.min.js',
+].map(src => ({
+  type: 'script',
+  data: {
+    src,
+  },
+}));
 
 export function fillTemplate(data: any, opts?: any): string {
-  const jsList = [...js];
-  const extra = [JSON.stringify(data)];
-  if (opts?.mathJax) {
-    jsList.push(
-      buildCode((mathJax: any) => {
-        mathJax = Object.assign({}, mathJax);
-        mathJax.options = Object.assign({}, mathJax.options, {
-          skipHtmlTags: { '[-]': ['code', 'pre'] },
-        });
-        (window as any).MathJax = mathJax;
-      }, opts.mathJax),
-      { src: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js' },
-    );
-    extra.push(
-      buildCode(() => ({
-        processHtml: nodes => {
-          (window as any).MathJax.typeset?.(nodes);
+  const { js, css, processors } = persistPlugins([
+    opts?.mathJax && mathJax,
+    opts?.prism && prism,
+  ].filter(Boolean), opts);
+  const jsList = [
+    ...persistJS(baseJs),
+    js,
+    ...persistJS([
+      {
+        type: 'iife',
+        data: {
+          fn: (data, ...processors) => {
+            const { markmap } = window as any;
+            markmap.processors = processors;
+            markmap.markmap('svg#mindmap', data);
+          },
+          getParams: ({ data, processors }) => [
+            data,
+            ...processors,
+          ],
         },
-      })),
-    )
-  }
-  const jsStr = jsList
-    .map(data => wrapHtml('script', typeof data === 'string' ? data : '', typeof data === 'string' ? null : data))
-    .join('');
+      },
+    ], { data, processors }),
+  ];
   const html = template
-    .replace('<!--JS-->', jsStr)
-    .replace('{/*extra*/}', extra.join(','));
+    .replace('<!--CSS-->', css)
+    .replace('<!--JS-->', jsList.join(''));
   return html;
 }

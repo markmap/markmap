@@ -8,7 +8,7 @@ Visualize your Markdown as mindmaps.
 
 This project is heavily inspired by [Markmap](https://github.com/dundalek/markmap).
 
-See [online demo](https://markmap.js.org/repl).
+[Try it out](https://markmap.js.org/repl).
 
 Requires Node.js >= 10.
 
@@ -83,7 +83,7 @@ $ npm install markmap-lib
 Transform Markdown to markmap data:
 
 ```js
-import { transform } from 'markmap-lib/dist/transform.common';
+import { transform } from 'markmap-lib/dist/transform';
 
 const data = transform(markdown);
 ```
@@ -103,7 +103,7 @@ Create an SVG element with explicit width and height:
 Render a markmap to the SVG element:
 
 ```js
-import { markmap } from 'markmap-lib/dist/view.common';
+import { markmap } from 'markmap-lib/dist/view';
 
 markmap('#markmap', data);
 
@@ -132,7 +132,7 @@ window.MathJax = {
 and process Html with MathJax in `options.processHtml`:
 
 ```js
-import { markmap } from 'markmap-lib/dist/view.common';
+import { markmap } from 'markmap-lib/dist/view';
 
 markmap('#markmap', data, {
   processHtml: nodes => {
