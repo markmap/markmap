@@ -7,11 +7,14 @@
     "emitDeclarationOnly": true,
     "outDir": "types",
     "allowSyntheticDefaultImports": true,
-    "jsx": "react"
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "es2019"
+    ]
   },
   "files": [
     "src/index.ts",
-    "src/view.ts",
     "src/index.d.ts"
   ]
 }

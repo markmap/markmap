@@ -30,7 +30,6 @@ export interface IMarkmapOptions {
   colorDepth?: number;
   paddingX?: number;
   style?: (id: string) => string;
-  processHtml?: (container: Node[]) => void;
 }
 
 export interface IMarkmapState {
@@ -40,4 +39,19 @@ export interface IMarkmapState {
   maxX?: number;
   minY?: number;
   maxY?: number;
+}
+
+export type JSItem = {
+  type: 'script' | 'iife';
+  data: any;
+};
+export type CSSItem = {
+  type: 'style' | 'stylesheet';
+  data: any;
+};
+
+export interface IMarkmapPlugin {
+  styles: CSSItem[];
+  scripts: JSItem[];
+  transform: (nodes, mm) => void;
 }

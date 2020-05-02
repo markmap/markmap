@@ -1,6 +1,10 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { INode, IMarkmapOptions, IMarkmapState } from './types';
+import { initializePlugins } from './util';
+import * as plugins from './plugins';
+
+export { plugins };
 
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;
@@ -60,7 +64,11 @@ function addClass(className: string, ...rest: string[]): string {
   return classList.join(' ');
 }
 
-export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
+export const markmap = Object.assign(markmapCreate, {
+  processors: [],
+});
+
+function markmapCreate(svg: any, data?: any, opts?: IMarkmapOptions) {
   svg = svg.datum ? svg : d3.select(svg);
   const styleNode = svg.append('style');
   const zoom = d3.zoom().on('zoom', handleZoom);
@@ -88,11 +96,12 @@ export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
     fit(); // always fit for the first render
   }
   svg.call(zoom);
-  return {
+  const mm = {
     setData,
     setOptions,
     fit,
   };
+  return mm;
 
   function getStyleContent(): string {
     const { style } = options;
@@ -106,6 +115,7 @@ export function markmap(svg, data?: any, opts?: IMarkmapOptions) {
 .${state.id}-fo em { font-style: italic; }
 .${state.id}-fo strong { font-weight: 500; }
 .${state.id}-fo pre { margin: 0; }
+.${state.id}-fo pre[class*=language-] { padding: 0; }
 .${state.id}-g > g { cursor: pointer; }
 ${style ? style(state.id) : ''}
 `;
@@ -125,7 +135,11 @@ ${style ? style(state.id) : ''}
     const { colorDepth } = options;
     const container = document.createElement('div');
     const containerClass = `${state.id}-container`;
-    container.className = addClass(container.className, `${state.id}-fo`, containerClass);
+    container.className = addClass(
+      container.className,
+      `${state.id}-fo`,
+      containerClass,
+    );
     const style = document.createElement('style');
     style.textContent = `
 ${getStyleContent()}
@@ -144,23 +158,29 @@ ${getStyleContent()}
 `;
     document.body.append(style, container);
     walkTree(node, (item, next) => {
+      item.c = item.c?.map(child => ({ ...child }));
       i += 1;
       options.color(`${c}`); // preload colors
       const el = document.createElement('div');
       el.innerHTML = item.v;
       container.append(el);
       item.p = {
+        ...item.p,
         // unique ID
         i,
         // color key
         c,
         el,
-        ...item.p,
       };
       next();
       if (!colorDepth || item.d === colorDepth) c += 1;
     });
-    if (options.processHtml) options.processHtml(arrayFrom(container.childNodes));
+    if (markmap.processors?.length) {
+      const nodes = arrayFrom(container.childNodes);
+      markmap.processors.forEach(processor => {
+        processor(nodes, mm);
+      });
+    }
     walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
       item.v = item.p.el.innerHTML;
@@ -177,10 +197,11 @@ ${getStyleContent()}
     Object.assign(options, opts);
   }
   function setData(data, opts?: any) {
-    initializeData(data);
+    if (!data) data = { ...state.data };
     state.data = data;
+    initializeData(data);
     if (opts) setOptions(opts);
-    renderData(data);
+    renderData();
   }
   function transition(sel) {
     if (options.duration) {
@@ -207,7 +228,7 @@ ${getStyleContent()}
     };
     renderData(d.data);
   }
-  function renderData(originData) {
+  function renderData(originData?) {
     if (!state.data) return;
     const { spacingHorizontal } = options;
     const layout = flextree()
@@ -236,7 +257,7 @@ ${getStyleContent()}
 
     if (options.autoFit) fit();
 
-    const origin = originData ? descendants.find(item => item.data === originData) : tree;
+    const origin = originData && descendants.find(item => item.data === originData) || tree;
     const x0 = origin.data.x0 ?? origin.x;
     const y0 = origin.data.y0 ?? origin.y;
 
@@ -359,4 +380,22 @@ ${getStyleContent()}
       d.data.y0 = d.y;
     });
   }
+}
+
+export async function loadPlugins(items: any[], options: any): Promise<void> {
+  items = items.map((item: any) => {
+    if (typeof item === 'string') {
+      const name = item;
+      item = plugins[name];
+      if (!item) {
+        console.warn(`[markmap] Unknown plugin: ${name}`);
+      }
+    }
+    return item;
+  })
+  .filter(Boolean);
+  markmap.processors = [
+    ...markmap.processors,
+    ...await initializePlugins(items, options),
+  ];
 }
