@@ -10,7 +10,7 @@ This project is heavily inspired by [Markmap](https://github.com/dundalek/markma
 
 [Try it out](https://markmap.js.org/repl).
 
-Requires Node.js >= 10.
+Node.js >= 10 is required.
 
 ## Usage
 
@@ -43,11 +43,12 @@ Options:
   -V, --version          output the version number
   -o, --output <output>  specify filename of the output HTML
   --enable-mathjax       enable MathJax support
+  --enable-prism         enable PrismJS support
   --no-open              do not open the output file after generation
   -h, --help             display help for command
 ```
 
-Suppose you have a Markdown file named `note.md`.
+Suppose we have a Markdown file named `note.md`.
 
 Run the following command to get an interactive mindmap:
 
@@ -58,15 +59,7 @@ $ markmap note.md
 $ npx markmap-lib note.md
 ```
 
-Then you will get a `note.html` in the same directory, and hopefully it will be open in your default browser.
-
-#### MathJax
-
-To enable MathJax support for your Markdown, pass `--enable-mathjax`:
-
-```sh
-$ markmap --enable-mathjax note.md
-```
+Then we get `note.html` in the same directory, and hopefully it will be open in your default browser.
 
 ### API
 
@@ -112,39 +105,34 @@ const svgEl = document.querySelector('#markmap');
 markmap(svgEl, data);
 ```
 
-#### MathJax
+### Plugins
 
-To enable MathJax, you need to load MathJax before rendering markmap:
+- MathJax
+- PrismJS
 
-```html
-<script>
-window.MathJax = {
-  options: {
-    skipHtmlTags: {
-      '[-]': ['code', 'pre']
-    }
-  }
-};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+#### Command-line
+
+To enable plugins in command line, just add the related option, for example:
+
+```sh
+$ markmap note.md --enable-mathjax --enable-prism
 ```
 
-and process Html with MathJax in `options.processHtml`:
+#### API
+
+`loadPlugins` loads necessary CSS and JavaScript files.
 
 ```js
-import { markmap } from 'markmap-lib/dist/view';
+import { markmap, loadPlugins } from 'markmap-lib/dist/view';
 
-markmap('#markmap', data, {
-  processHtml: nodes => {
-    if (window.MathJax.typeset) MathJax.typeset(nodes);
-  },
+loadPlugins([
+  'mathJax',
+  'prism',
+])
+.then(() => {
+  markmap('#markmap', data);
 });
 ```
-
-**Note**:
-
-- The `skipHtmlTags` option is required because inline code generated from Markdown is always wrapped in `<code>`, which is ignored by MathJax by default.
-- The MathJax library should better be loaded synchronously so that we can just use it in `options.processHtml` without a flash.
 
 ## Related
 
