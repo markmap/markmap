@@ -134,6 +134,8 @@ export function buildTree(tokens): INode {
       }
     } else if (token.type === 'inline') {
       current.v = `${current.v || ''}${extractInline(token)}`;
+    } else if (token.type === 'fence') {
+      current.v = `<pre><code class="language-${token.params}">${escapeHtml(token.content)}</code></pre>`;
     } else {
       // ignore other nodes
     }
