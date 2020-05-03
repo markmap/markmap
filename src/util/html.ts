@@ -10,7 +10,7 @@ export function escapeScript(content: string): string {
   return content.replace(/<(\/script>)/g, '\\x3c$2');
 }
 
-export function htmlOpen(tagName: string, attrs?: any, autoClose = false): string {
+export function htmlOpen(tagName: string, attrs?: any): string {
   const attrStr = attrs ? Object.entries<string | boolean>(attrs)
     .map(([key, value]) => {
       if (value == null || value === false) return;
@@ -28,7 +28,7 @@ export function htmlClose(tagName: string): string {
 }
 
 export function wrapHtml(tagName: string, content?: string, attrs?: any): string {
-  if (content == null) return htmlOpen(tagName, attrs, true);
+  if (content == null) return htmlOpen(tagName, attrs);
   return htmlOpen(tagName, attrs) + (content || '') + htmlClose(tagName);
 }
 

@@ -10,6 +10,10 @@ export const scripts: JSItem[] = [
           skipHtmlTags: { '[-]': ['code', 'pre'] },
           ...mathJax.options,
         };
+        mathJax.startup = {
+          typeset: false,
+          ...mathJax.startup,
+        };
         (window as any).MathJax = mathJax;
       },
       getParams: context => [{ ...context.mathJax }],
