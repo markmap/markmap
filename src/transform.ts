@@ -54,7 +54,7 @@ function cleanNode(node: INode, depth = 0): void {
   } else if (node.t === 'list_item') {
     // keep first paragraph as content of list_item, drop others
     node.c = node.c.filter(item => {
-      if (item.t === 'paragraph') {
+      if (['paragraph', 'fence'].includes(item.t)) {
         if (!node.v) node.v = item.v;
         return false;
       }
@@ -135,7 +135,12 @@ export function buildTree(tokens): INode {
     } else if (token.type === 'inline') {
       current.v = `${current.v || ''}${extractInline(token)}`;
     } else if (token.type === 'fence') {
-      current.v = `<pre><code class="language-${token.params}">${escapeHtml(token.content)}</code></pre>`;
+      current.c.push({
+        t: token.type,
+        d: depth + 1,
+        v: `<pre><code class="language-${token.params}">${escapeHtml(token.content)}</code></pre>`,
+        c: [],
+      });
     } else {
       // ignore other nodes
     }
