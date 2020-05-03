@@ -91,16 +91,16 @@ function markmapCreate(svg: any, data?: any, opts?: IMarkmapOptions) {
   };
   const g = svg.append('g').attr('class', `${state.id}-g`);
   updateStyle();
-  if (data) {
-    setData(data);
-    fit(); // always fit for the first render
-  }
   svg.call(zoom);
   const mm = {
     setData,
     setOptions,
     fit,
   };
+  if (data) {
+    setData(data);
+    fit(); // always fit for the first render
+  }
   return mm;
 
   function getStyleContent(): string {
