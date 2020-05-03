@@ -91,10 +91,10 @@ export function loadCSS(items: CSSItem[]): void {
 
 export async function initializePlugins(plugins: IMarkmapPlugin[], options): Promise<Function[]> {
   options = { ...options };
-  await Promise.all([plugins.map(plugin => {
+  await Promise.all(plugins.map(plugin => {
     loadCSS(plugin.styles);
     return loadJS(plugin.scripts, options);
-  })]);
+  }));
   return plugins.map(({ transform }) => transform);
 }
 
