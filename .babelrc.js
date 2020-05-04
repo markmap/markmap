@@ -5,10 +5,5 @@ module.exports = {
   ],
   plugins: [
     ['@babel/plugin-proposal-object-rest-spread', { loose: true, useBuiltIns: true }],
-    ['module-resolver', {
-      alias: {
-        '#': './src',
-      },
-    }],
-  ].filter(Boolean),
+  ],
 };
