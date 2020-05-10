@@ -1,4 +1,4 @@
-import { JSItem, CSSItem, IMarkmapPlugin } from '../types';
+import { JSItem, JSScriptItem, CSSItem, IMarkmapPlugin } from '../types';
 import { escapeScript, wrapHtml } from './html';
 
 export function buildCode(fn: Function, ...args: any[]): string {
@@ -76,7 +76,7 @@ function loadCSSItem(item: CSSItem): void {
 }
 
 export async function loadJS(items: JSItem[], options: any): Promise<void> {
-  const needPreload = items.filter(item => item.type === 'script');
+  const needPreload = items.filter(item => item.type === 'script') as JSScriptItem[];
   if (needPreload.length > 1) needPreload.forEach(item => memoizedPreloadJS(item.data.src));
   for (const item of items) {
     await loadJSItem(item, options);

@@ -1,2 +1,47 @@
 export * from './html';
 export * from './loader';
+
+const uniqId = Math.random().toString(36).slice(2, 8);
+let globalIndex = 0;
+export function getId(): string {
+  globalIndex += 1;
+  return `mm-${uniqId}-${globalIndex}`;
+}
+
+export function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) => void, key = 'c'): void {
+  const walk = (item: T, parent?: T): void => callback(item, () => {
+    item[key]?.forEach((child: T) => {
+      walk(child, item);
+    });
+  }, parent);
+  walk(tree);
+}
+
+export function arrayFrom<T>(arrayLike: ArrayLike<T>): T[] {
+  const array = [];
+  for (let i = 0; i < arrayLike.length; i += 1) {
+    array.push(arrayLike[i]);
+  }
+  return array;
+}
+
+export function addClass(className: string, ...rest: string[]): string {
+  const classList = (className || '').split(' ').filter(Boolean);
+  rest.forEach(item => {
+    if (item && classList.indexOf(item) < 0) classList.push(item);
+  });
+  return classList.join(' ');
+}
+
+export function childSelector<T extends Element>(filter?: string | ((el: T) => boolean)): () => T[] {
+  if (typeof filter === 'string') {
+    const tagName = filter;
+    filter = (el: T): boolean => el.tagName === tagName;
+  }
+  const filterFn = filter;
+  return function selector(): T[] {
+    let nodes = arrayFrom((this as HTMLElement).childNodes as NodeListOf<T>);
+    if (filterFn) nodes = nodes.filter(node => filterFn(node));
+    return nodes;
+  };
+}

@@ -1,3 +1,5 @@
+import { Markmap } from './view';
+
 export interface IHierachy<T> {
   t: string;
   p?: any;
@@ -34,17 +36,27 @@ export interface IMarkmapOptions {
 
 export interface IMarkmapState {
   id: string;
-  data?: any;
+  data?: INode;
   minX?: number;
   maxX?: number;
   minY?: number;
   maxY?: number;
 }
 
-export type JSItem = {
-  type: 'script' | 'iife';
-  data: any;
+export type JSScriptItem = {
+  type: 'script';
+  data: {
+    src: string;
+  };
 };
+export type JSIIFEItem = {
+  type: 'iife';
+  data: {
+    fn: (...args: any[]) => void;
+    getParams?: (context: any) => void | any[];
+  };
+};
+export type JSItem = JSScriptItem | JSIIFEItem;
 export type CSSItem = {
   type: 'style' | 'stylesheet';
   data: any;
@@ -53,5 +65,21 @@ export type CSSItem = {
 export interface IMarkmapPlugin {
   styles: CSSItem[];
   scripts: JSItem[];
-  transform: (nodes, mm) => void;
+  transform: (nodes: HTMLElement[], mm: Markmap) => void;
+}
+
+export interface IMarkmapFlexTreeItem {
+  parent: IMarkmapFlexTreeItem;
+  data: INode;
+  depth: number;
+  xSize: number;
+  ySize: number;
+  ySizeInner: number;
+  x: number;
+  y: number;
+}
+
+export interface IMarkmapLinkItem {
+  source: IMarkmapFlexTreeItem;
+  target: IMarkmapFlexTreeItem;
 }
