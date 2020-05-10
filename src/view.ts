@@ -357,6 +357,18 @@ ${this.getStyleContent()}
       .scale(scale);
     this.transition(this.svg).call(this.zoom.transform, initialZoom);
   }
+
+  rescale(scale: number): void {
+    const svgNode = this.svg.node();
+    const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
+    const halfWidth = offsetWidth / 2;
+    const halfHeight = offsetHeight / 2;
+    const transform = d3.zoomTransform(svgNode);
+    const newTransform = transform
+    .translate((halfWidth - transform.x) * (1 - scale) / transform.k, (halfHeight - transform.y) * (1 - scale) / transform.k)
+    .scale(scale);
+    this.transition(this.svg).call(this.zoom.transform, newTransform);
+  }
 }
 
 export function markmap(svg: string | SVGElement | ID3SVGElement, data?: INode, opts?: IMarkmapOptions): Markmap {
