@@ -27,9 +27,9 @@ export function fillTemplate(data: any, opts?: any): string {
         type: 'iife',
         data: {
           fn: (data, ...processors) => {
-            const { markmap } = (window as any).markmap;
-            markmap.processors = processors;
-            markmap('svg#mindmap', data);
+            const { Markmap } = (window as any).markmap;
+            Markmap.processors = processors;
+            Markmap.create('svg#mindmap', null, data);
           },
           getParams: ({ data, processors }) => [
             data,

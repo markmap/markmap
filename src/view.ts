@@ -369,15 +369,19 @@ ${this.getStyleContent()}
     .scale(scale);
     this.transition(this.svg).call(this.zoom.transform, newTransform);
   }
+
+  static create(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions, data?: INode): Markmap {
+    const mm = new Markmap(svg, opts);
+    if (data) {
+      mm.setData(data);
+      mm.fit(); // always fit for the first render
+    }
+    return mm;
+  }
 }
 
 export function markmap(svg: string | SVGElement | ID3SVGElement, data?: INode, opts?: IMarkmapOptions): Markmap {
-  const mm = new Markmap(svg, opts);
-  if (data) {
-    mm.setData(data);
-    mm.fit(); // always fit for the first render
-  }
-  return mm;
+  return Markmap.create(svg, opts, data);
 }
 
 export async function loadPlugins(items: any[], options: any): Promise<void> {
