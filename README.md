@@ -96,19 +96,19 @@ Create an SVG element with explicit width and height:
 Render a markmap to the SVG element:
 
 ```js
-import { markmap } from 'markmap-lib/dist/view';
+import { Markmap } from 'markmap-lib/dist/view';
 
-markmap('#markmap', data);
+Markmap.create('#markmap', null, data);
 
 // or pass an SVG element directly
 const svgEl = document.querySelector('#markmap');
-markmap(svgEl, data);
+Markmap.create(svgEl, null, data);
 ```
 
 ### Plugins
 
-- MathJax
-- PrismJS
+- `mathJax` - MathJax
+- `prism` - PrismJS
 
 #### Command-line
 
@@ -123,14 +123,14 @@ $ markmap note.md --enable-mathjax --enable-prism
 `loadPlugins` loads necessary CSS and JavaScript files.
 
 ```js
-import { markmap, loadPlugins } from 'markmap-lib/dist/view';
+import { Markmap, loadPlugins } from 'markmap-lib/dist/view';
 
 loadPlugins([
   'mathJax',
   'prism',
 ])
 .then(() => {
-  markmap('#markmap', data);
+  Markmap.create('#markmap', null, data);
 });
 ```
 
