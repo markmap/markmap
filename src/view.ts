@@ -333,13 +333,10 @@ ${this.getStyleContent()}
 
   transition<T extends d3.BaseType, U, P extends d3.BaseType, Q>(sel: d3.Selection<T, U, P, Q>): d3.Transition<T, U, P, Q> {
     const { duration } = this.options;
-    if (duration) {
-      return sel.transition().duration(duration);
-    }
-    return sel as unknown as d3.Transition<T, U, P, Q>;
+    return sel.transition().duration(duration);
   }
 
-  fit(): void {
+  fit(): Promise<void> {
     const svgNode = this.svg.node();
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     const { fitRatio } = this.options;
@@ -350,10 +347,10 @@ ${this.getStyleContent()}
     const initialZoom = d3.zoomIdentity
       .translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale)
       .scale(scale);
-    this.transition(this.svg).call(this.zoom.transform, initialZoom);
+    return this.transition(this.svg).call(this.zoom.transform, initialZoom).end();
   }
 
-  rescale(scale: number): void {
+  rescale(scale: number): Promise<void> {
     const svgNode = this.svg.node();
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     const halfWidth = offsetWidth / 2;
@@ -362,7 +359,7 @@ ${this.getStyleContent()}
     const newTransform = transform
     .translate((halfWidth - transform.x) * (1 - scale) / transform.k, (halfHeight - transform.y) * (1 - scale) / transform.k)
     .scale(scale);
-    this.transition(this.svg).call(this.zoom.transform, newTransform);
+    return this.transition(this.svg).call(this.zoom.transform, newTransform).end();
   }
 
   static create(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions, data?: INode): Markmap {
