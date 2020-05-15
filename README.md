@@ -134,6 +134,21 @@ loadPlugins([
 });
 ```
 
+MathJax options can be changed in the second parameter:
+
+```js
+loadPlugins([
+  'mathJax',
+  'prism',
+], {
+  mathJax: {
+    tex: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+    },
+  },
+});
+```
+
 ## Related
 
 - Use with Vim / Neovim: [coc-markmap](https://github.com/gera2ld/coc-markmap)
