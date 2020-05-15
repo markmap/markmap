@@ -48,8 +48,7 @@ export class Markmap {
       spacingHorizontal: 80,
       autoFit: false,
       fitRatio: 0.95,
-      color: d3.scaleOrdinal(d3.schemeCategory10),
-      colorDepth: 0,
+      color: (colorFn => (node: INode): string => colorFn(node.p.i))(d3.scaleOrdinal(d3.schemeCategory10)),
       paddingX: 8,
       ...opts,
     };
@@ -103,8 +102,7 @@ ${extraStyle}
 
   initializeData(node: INode): void {
     let i = 0;
-    let c = 0;
-    const { colorDepth, nodeFont, color, nodeMinHeight } = this.options;
+    const { nodeFont, color, nodeMinHeight } = this.options;
     const { id } = this.state;
     const container = document.createElement('div');
     const containerClass = `${id}-container`;
@@ -133,7 +131,6 @@ ${this.getStyleContent()}
     walkTree(node, (item, next) => {
       item.c = item.c?.map(child => ({ ...child }));
       i += 1;
-      color(`${c}`); // preload colors
       const el = document.createElement('div');
       el.innerHTML = item.v;
       container.append(el);
@@ -141,12 +138,10 @@ ${this.getStyleContent()}
         ...item.p,
         // unique ID
         i,
-        // color key
-        c,
         el,
       };
+      color(item); // preload colors
       next();
-      if (!colorDepth || item.d === colorDepth) c += 1;
     });
     if (Markmap.processors?.length) {
       const nodes = arrayFrom(container.childNodes);
@@ -246,7 +241,7 @@ ${this.getStyleContent()}
     this.transition(rect)
       .attr('x', -1)
       .attr('width', d => d.ySizeInner + 2)
-      .attr('fill', d => color(d.data.p.c));
+      .attr('fill', d => color(d.data));
 
     const circle = nodeMerge.selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(childSelector<SVGCircleElement>('circle'))
       .data(d => d.data.c ? [d] : [], d => d.data.p.k)
@@ -263,8 +258,8 @@ ${this.getStyleContent()}
       );
     this.transition(circle)
       .attr('r', 6)
-      .attr('stroke', d => color(d.data.p.c))
-      .attr('fill', d => d.data.p?.f ? color(d.data.p.c) : '#fff');
+      .attr('stroke', d => color(d.data))
+      .attr('fill', d => d.data.p?.f ? color(d.data) : '#fff');
 
     const foreignObject = nodeMerge.selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(childSelector<SVGForeignObjectElement>('foreignObject'))
       .data(d => [d], d => d.data.p.k)
@@ -316,7 +311,7 @@ ${this.getStyleContent()}
         },
       );
     this.transition(path)
-      .attr('stroke', d => color(d.target.data.p.c))
+      .attr('stroke', d => color(d.target.data))
       .attr('stroke-width', d => linkWidth(d.target))
       .attr('d', d => {
         const source: [number, number] = [

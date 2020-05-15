@@ -28,8 +28,7 @@ export interface IMarkmapOptions {
   spacingHorizontal?: number;
   autoFit?: boolean;
   fitRatio?: number;
-  color?: (key: string) => string;
-  colorDepth?: number;
+  color?: (node: INode) => string;
   paddingX?: number;
   style?: (id: string) => string;
 }
