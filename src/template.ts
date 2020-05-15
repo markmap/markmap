@@ -1,4 +1,4 @@
-import { JSItem } from './types';
+import { JSItem, IMarkmapCreateOptions } from './types';
 import { persistJS, persistPlugins } from './util';
 import { mathJax, prism } from './plugins';
 
@@ -14,7 +14,7 @@ const baseJs: JSItem[] = [
   },
 }));
 
-export function fillTemplate(data: any, opts?: any): string {
+export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
   const { js, css, processors } = persistPlugins([
     opts?.mathJax && mathJax,
     opts?.prism && prism,

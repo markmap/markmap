@@ -1,22 +1,56 @@
 import { Markmap } from './view';
 
 export interface IHierachy<T> {
+  /**
+   * type
+   */
   t: string;
+  /**
+   * payload
+   */
   p?: any;
+  /**
+   * children
+   */
   c?: T[];
 }
 
 export interface INode extends IHierachy<INode> {
+  /**
+   * depth
+   */
   d?: number;
+  /**
+   * value
+   */
   v: string;
 }
 
 export interface IMarkmapCreateOptions {
+  /**
+   * whether to open the generated markmap in browser
+   */
   open?: boolean;
+  /**
+   * Markdown content as string. It will be ignored if `input` is provided.
+   */
   content?: string;
+  /**
+   * Input file path of a Markdown file. If this is provided, `content` will be ignored.
+   */
   input?: string;
+  /**
+   * Output file path of the markmap HTML file. If not provided, the same basename as the Markdown input file will be used.
+   */
   output?: string;
+  /**
+   * Enable MathJax support. If an object is passed, it will be merged into MathJax options.
+   */
   mathJax?: boolean | object;
+  /**
+   * Enable Prism support for code blocks.
+   */
+  prism?: boolean;
 }
 
 export interface IMarkmapOptions {
