@@ -1,5 +1,6 @@
 import { JSItem, JSScriptItem, CSSItem, IMarkmapPlugin } from '../types';
 import { escapeScript, wrapHtml } from './html';
+import { flatMap } from './base';
 
 export function buildCode(fn: Function, ...args: any[]): string {
   const params = args.map(arg => {
@@ -121,8 +122,8 @@ export function persistCSS(items: CSSItem[]): string[] {
 }
 
 export function persistPlugins(plugins: IMarkmapPlugin[], context?: any) {
-  const js = plugins.flatMap(plugin => persistJS(plugin.scripts, context)).join('');
-  const css = plugins.flatMap(plugin => persistCSS(plugin.styles)).join('');
+  const js = flatMap(plugins, plugin => persistJS(plugin.scripts, context)).join('');
+  const css = flatMap(plugins, plugin => persistCSS(plugin.styles)).join('');
   const processors = plugins.map(({ transform }) => transform);
   return {
     js,

@@ -1,4 +1,5 @@
 import { JSItem, CSSItem } from '../types';
+import { arrayFrom, flatMap } from '../util';
 
 export const styles: CSSItem[] = [
   {
@@ -32,9 +33,9 @@ export const scripts: JSItem[] = [
   },
 ];
 
-export function transform(nodes, mm): void {
+export function transform(nodes: HTMLElement[], mm): void {
   const { Prism } = window as any;
-  const langs = nodes.flatMap(node => Array.from(node.querySelectorAll('code[class*=language-]')))
+  const langs = flatMap(nodes, node => arrayFrom(node.querySelectorAll('code[class*=language-]')))
     .map(code => {
       const lang = code.className.match(/(?:^|\s)language-(\S+)|$/)[1];
       if (Prism.languages[lang]) {
