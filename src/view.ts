@@ -3,6 +3,7 @@ import { flextree } from 'd3-flextree';
 import { INode, IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
 import { initializePlugins, getId, walkTree, arrayFrom, addClass, childSelector } from './util';
 import * as plugins from './plugins';
+import { Hook } from './util/hook';
 
 export { plugins };
 
@@ -28,7 +29,7 @@ export class Markmap {
   styleNode: d3.Selection<HTMLStyleElement, IMarkmapFlexTreeItem, HTMLElement, IMarkmapFlexTreeItem>;
   g: d3.Selection<SVGGElement, IMarkmapFlexTreeItem, HTMLElement, IMarkmapFlexTreeItem>;
   zoom: d3.ZoomBehavior<Element, unknown>;
-  static processors = [];
+  static transformHtml = new Hook<(mm: Markmap, nodes: HTMLElement[]) => void>();
 
   constructor(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions) {
     [
@@ -143,12 +144,8 @@ ${this.getStyleContent()}
       color(item); // preload colors
       next();
     });
-    if (Markmap.processors?.length) {
-      const nodes = arrayFrom(container.childNodes);
-      Markmap.processors.forEach(processor => {
-        processor(nodes, this);
-      });
-    }
+    const nodes = arrayFrom(container.childNodes) as HTMLElement[];
+    (this.constructor as IMarkmap).transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
       item.v = item.p.el.innerHTML;
@@ -166,7 +163,7 @@ ${this.getStyleContent()}
     Object.assign(this.options, opts);
   }
 
-  setData(data: INode, opts?: IMarkmapOptions): void {
+  setData(data?: INode, opts?: IMarkmapOptions): void {
     if (!data) data = { ...this.state.data };
     this.state.data = data;
     this.initializeData(data);
@@ -372,6 +369,8 @@ ${this.getStyleContent()}
   }
 }
 
+export type IMarkmap = typeof Markmap;
+
 export function markmap(svg: string | SVGElement | ID3SVGElement, data?: INode, opts?: IMarkmapOptions): Markmap {
   return Markmap.create(svg, opts, data);
 }
@@ -388,8 +387,5 @@ export async function loadPlugins(items: any[], options: any): Promise<void> {
     return item;
   })
   .filter(Boolean);
-  Markmap.processors = [
-    ...Markmap.processors,
-    ...await initializePlugins(items, options),
-  ];
+  return initializePlugins(Markmap, items, options);
 }

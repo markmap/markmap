@@ -1,4 +1,6 @@
-import { Markmap } from './view';
+import { IMarkmap } from './view';
+
+export { IMarkmap };
 
 export interface IHierachy<T> {
   /**
@@ -98,7 +100,7 @@ export type CSSItem = {
 export interface IMarkmapPlugin {
   styles: CSSItem[];
   scripts: JSItem[];
-  transform: (nodes: HTMLElement[], mm: Markmap) => void;
+  initialize?: (Markmap: IMarkmap, options) => void;
 }
 
 export interface IMarkmapFlexTreeItem {

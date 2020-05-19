@@ -15,7 +15,7 @@ const baseJs: JSItem[] = [
 }));
 
 export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
-  const { js, css, processors } = persistPlugins([
+  const { js, css, initializers } = persistPlugins([
     opts?.mathJax && mathJax,
     opts?.prism && prism,
   ].filter(Boolean), opts);
@@ -26,18 +26,18 @@ export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
       {
         type: 'iife',
         data: {
-          fn: (data, ...processors) => {
+          fn: (data, ...initializers) => {
             const { Markmap } = (window as any).markmap;
-            Markmap.processors = processors;
+            initializers.forEach(initialize => initialize(Markmap));
             Markmap.create('svg#mindmap', null, data);
           },
-          getParams: ({ data, processors }) => [
+          getParams: ({ data, initializers }) => [
             data,
-            ...processors,
+            ...initializers,
           ],
         },
       },
-    ], { data, processors }),
+    ], { data, initializers }),
   ];
   const html = template
     .replace('<!--CSS-->', css)

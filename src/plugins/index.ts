@@ -1,2 +1,2 @@
-export * as mathJax from './mathjax';
-export * as prism from './prism';
+export { plugin as mathJax } from './mathjax';
+export { plugin as prism } from './prism';

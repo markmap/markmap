@@ -1,6 +1,7 @@
 import { JSItem, JSScriptItem, CSSItem, IMarkmapPlugin } from '../types';
 import { escapeScript, wrapHtml } from './html';
 import { flatMap } from './base';
+import { IMarkmap } from '../view';
 
 export function buildCode(fn: Function, ...args: any[]): string {
   const params = args.map(arg => {
@@ -90,13 +91,15 @@ export function loadCSS(items: CSSItem[]): void {
   }
 }
 
-export async function initializePlugins(plugins: IMarkmapPlugin[], options): Promise<Function[]> {
+export async function initializePlugins(Markmap: IMarkmap, plugins: IMarkmapPlugin[], options): Promise<void> {
   options = { ...options };
   await Promise.all(plugins.map(plugin => {
     loadCSS(plugin.styles);
     return loadJS(plugin.scripts, options);
   }));
-  return plugins.map(({ transform }) => transform);
+  for (const { initialize } of plugins) {
+    if (initialize) initialize(Markmap, options);
+  }
 }
 
 export function persistJS(items: JSItem[], context?: any): string[] {
@@ -124,10 +127,10 @@ export function persistCSS(items: CSSItem[]): string[] {
 export function persistPlugins(plugins: IMarkmapPlugin[], context?: any) {
   const js = flatMap(plugins, plugin => persistJS(plugin.scripts, context)).join('');
   const css = flatMap(plugins, plugin => persistCSS(plugin.styles)).join('');
-  const processors = plugins.map(({ transform }) => transform);
+  const initializers = plugins.map(({ initialize }) => initialize).filter(Boolean);
   return {
     js,
     css,
-    processors,
+    initializers,
   };
 }

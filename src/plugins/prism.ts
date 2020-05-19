@@ -1,7 +1,7 @@
-import { JSItem, CSSItem } from '../types';
+import { JSItem, CSSItem, IMarkmap, IMarkmapPlugin } from '../types';
 import { arrayFrom, flatMap } from '../util';
 
-export const styles: CSSItem[] = [
+const styles: CSSItem[] = [
   {
     type: 'stylesheet',
     data: {
@@ -9,7 +9,7 @@ export const styles: CSSItem[] = [
     },
   },
 ];
-export const scripts: JSItem[] = [
+const scripts: JSItem[] = [
   {
     type: 'iife',
     data: {
@@ -33,9 +33,10 @@ export const scripts: JSItem[] = [
   },
 ];
 
-export function transform(nodes: HTMLElement[], mm): void {
-  const { Prism } = window as any;
-  const langs = flatMap(nodes, node => arrayFrom(node.querySelectorAll('code[class*=language-]')))
+function initialize(Markmap: IMarkmap, options): void {
+  Markmap.transformHtml.tap((mm, nodes) => {
+    const { Prism } = window as any;
+    const langs = flatMap(nodes, node => arrayFrom(node.querySelectorAll('code[class*=language-]')))
     .map(code => {
       const lang = code.className.match(/(?:^|\s)language-(\S+)|$/)[1];
       if (Prism.languages[lang]) {
@@ -45,10 +46,17 @@ export function transform(nodes: HTMLElement[], mm): void {
       }
     })
     .filter(Boolean);
-  if (langs.length) {
-    Prism.plugins.autoloader.loadLanguages(langs, () => {
-      mm.setData();
-      mm.fit();
-    });
-  }
+    if (langs.length) {
+      Prism.plugins.autoloader.loadLanguages(langs, () => {
+        mm.setData();
+        mm.fit();
+      });
+    }
+  });
 }
+
+export const plugin: IMarkmapPlugin = {
+  styles,
+  scripts,
+  initialize,
+};
