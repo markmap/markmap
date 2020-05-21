@@ -5,6 +5,10 @@ export function getId(): string {
   return `mm-${uniqId}-${globalIndex}`;
 }
 
+export function noop(): void {
+  // noop
+}
+
 export function walkTree<T>(tree: T, callback: (item: T, next: () => void, parent?: T) => void, key = 'c'): void {
   const walk = (item: T, parent?: T): void => callback(item, () => {
     item[key]?.forEach((child: T) => {

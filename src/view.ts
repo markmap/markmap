@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { INode, IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
-import { initializePlugins, getId, walkTree, arrayFrom, addClass, childSelector } from './util';
+import { initializePlugins, getId, walkTree, arrayFrom, addClass, childSelector, noop } from './util';
 import * as plugins from './plugins';
 import { Hook } from './util/hook';
 
@@ -344,7 +344,7 @@ ${this.getStyleContent()}
     const initialZoom = d3.zoomIdentity
       .translate((offsetWidth - naturalWidth * scale) / 2 - minY * scale, (offsetHeight - naturalHeight * scale) / 2 - minX * scale)
       .scale(scale);
-    return this.transition(this.svg).call(this.zoom.transform, initialZoom).end();
+    return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
   }
 
   rescale(scale: number): Promise<void> {
@@ -356,7 +356,7 @@ ${this.getStyleContent()}
     const newTransform = transform
     .translate((halfWidth - transform.x) * (1 - scale) / transform.k, (halfHeight - transform.y) * (1 - scale) / transform.k)
     .scale(scale);
-    return this.transition(this.svg).call(this.zoom.transform, newTransform).end();
+    return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
   }
 
   static create(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions, data?: INode): Markmap {
