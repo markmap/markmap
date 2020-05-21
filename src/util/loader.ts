@@ -1,6 +1,5 @@
 import { JSItem, JSScriptItem, CSSItem, IMarkmapPlugin } from '../types';
 import { escapeScript, wrapHtml } from './html';
-import { flatMap } from './base';
 import { IMarkmap } from '../view';
 
 export function buildCode(fn: Function, ...args: any[]): string {
@@ -122,15 +121,4 @@ export function persistCSS(items: CSSItem[]): string[] {
     }
     /* else if (item.type === 'style') */ return wrapHtml('style', item.data);
   });
-}
-
-export function persistPlugins(plugins: IMarkmapPlugin[], context?: any) {
-  const js = flatMap(plugins, plugin => persistJS(plugin.scripts, context)).join('');
-  const css = flatMap(plugins, plugin => persistCSS(plugin.styles)).join('');
-  const initializers = plugins.map(({ initialize }) => initialize).filter(Boolean);
-  return {
-    js,
-    css,
-    initializers,
-  };
 }

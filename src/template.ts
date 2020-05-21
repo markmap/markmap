@@ -1,6 +1,5 @@
 import { JSItem, IMarkmapCreateOptions } from './types';
-import { persistJS, persistPlugins } from './util';
-import { mathJax, prism } from './plugins';
+import { persistJS } from './util';
 
 const template: string = process.env.TEMPLATE;
 
@@ -15,32 +14,40 @@ const baseJs: JSItem[] = [
 }));
 
 export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
-  const { js, css, initializers } = persistPlugins([
-    opts?.mathJax && mathJax,
-    opts?.prism && prism,
-  ].filter(Boolean), opts);
   const jsList = [
     ...persistJS(baseJs),
-    js,
     ...persistJS([
       {
         type: 'iife',
         data: {
-          fn: (data, ...initializers) => {
-            const { Markmap } = (window as any).markmap;
-            initializers.forEach(initialize => initialize(Markmap));
-            Markmap.create('svg#mindmap', null, data);
+          fn: (data, init, items, opts) => {
+            const { Markmap, loadPlugins } = (window as any).markmap;
+            (init ? init(loadPlugins, items, opts) : Promise.resolve())
+            .then(() => {
+              Markmap.create('svg#mindmap', null, data);
+            });
           },
-          getParams: ({ data, initializers }) => [
-            data,
-            ...initializers,
-          ],
+          getParams: ({ data, opts }) => {
+            const items = [
+              opts?.mathJax && 'mathJax',
+              opts?.prism && 'prism',
+            ].filter(Boolean);
+            const args = [data];
+            if (items.length) {
+              args.push(
+                (loadPlugins, items, opts) => loadPlugins(items, opts),
+                items,
+                opts,
+              );
+            }
+            return args;
+          },
         },
       },
-    ], { data, initializers }),
+    ], { data, opts }),
   ];
   const html = template
-    .replace('<!--CSS-->', css)
+    .replace('<!--CSS-->', '')
     .replace('<!--JS-->', jsList.join(''));
   return html;
 }
