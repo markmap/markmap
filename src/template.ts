@@ -48,6 +48,6 @@ export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
   ];
   const html = template
     .replace('<!--CSS-->', '')
-    .replace('<!--JS-->', jsList.join(''));
+    .replace('<!--JS-->', () => jsList.join(''));
   return html;
 }
