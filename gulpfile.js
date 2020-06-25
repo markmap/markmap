@@ -30,7 +30,7 @@ function buildCjs() {
         }],
       ],
     }))
-    .pipe(replace('process.env.VERSION', pkg.version))
+    .pipe(replace('process.env.VERSION', JSON.stringify(pkg.version)))
     .pipe(replace('process.env.TEMPLATE', JSON.stringify(TEMPLATE)))
     .pipe(gulp.dest(DIST));
 }

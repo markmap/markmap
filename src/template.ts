@@ -2,10 +2,11 @@ import { JSItem, IMarkmapCreateOptions } from './types';
 import { persistJS } from './util';
 
 const template: string = process.env.TEMPLATE;
+const version: string = process.env.VERSION;
 
 const baseJs: JSItem[] = [
   'https://cdn.jsdelivr.net/npm/d3@5',
-  'https://cdn.jsdelivr.net/npm/markmap-lib@process.env.VERSION/dist/browser/view.min.js',
+  `https://cdn.jsdelivr.net/npm/markmap-lib@${version}/dist/browser/view.min.js`,
 ].map(src => ({
   type: 'script',
   data: {
