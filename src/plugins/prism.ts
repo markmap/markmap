@@ -1,5 +1,8 @@
 import { JSItem, CSSItem, IMarkmap, IMarkmapPlugin } from '../types';
 import { arrayFrom, flatMap } from '../util';
+import { Markmap } from '../view';
+
+const errors = {};
 
 const styles: CSSItem[] = [
   {
@@ -41,18 +44,27 @@ function initialize(Markmap: IMarkmap, options): void {
       const lang = code.className.match(/(?:^|\s)language-(\S+)|$/)[1];
       if (Prism.languages[lang]) {
         Prism.highlightElement(code);
-      } else {
+      } else if (!errors[lang]) {
         return lang;
       }
     })
     .filter(Boolean);
-    if (langs.length) {
-      Prism.plugins.autoloader.loadLanguages(langs, () => {
-        mm.setData();
-        mm.fit();
-      });
-    }
+    loadLanguagesAndRender(mm, langs);
   });
+}
+
+async function loadLanguagesAndRender(mm: Markmap, langs: string[]): Promise<void> {
+  if (!langs.length) return;
+  const { Prism } = window as any;
+  try {
+    await new Promise((resolve, reject) => {
+      Prism.plugins.autoloader.loadLanguages(langs, resolve, reject);
+    });
+  } catch (err) {
+    errors[err] = true;
+  }
+  mm.setData();
+  mm.fit();
 }
 
 export const plugin: IMarkmapPlugin = {
