@@ -25,7 +25,7 @@ export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
             const { Markmap, loadPlugins } = (window as any).markmap;
             (init ? init(loadPlugins, items, opts) : Promise.resolve())
             .then(() => {
-              Markmap.create('svg#mindmap', null, data);
+              (window as any).mm = Markmap.create('svg#mindmap', null, data);
             });
           },
           getParams: ({ data, opts }) => {

@@ -20,6 +20,6 @@ export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promis
 
   const root = transform(content || '');
   const html = fillTemplate(root, rest);
-  fs.writeFile(output, html, 'utf8');
+  await fs.writeFile(output, html, 'utf8');
   if (openFile) open(output);
 }
