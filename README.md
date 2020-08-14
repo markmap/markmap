@@ -26,7 +26,7 @@ You can also use with `npx` without installation:
 $ npx markmap-lib
 ```
 
-## Usage
+## Command-line Usage
 
 ```
 Usage: markmap [options] <input>
@@ -68,17 +68,9 @@ $ markmap -w note.md
 
 A markmap will be created and opened in your browser, and will be updated as soon as changes are saved to the source file.
 
-### API
+## API
 
-#### Installation
-
-```sh
-$ yarn add markmap-lib
-# or
-$ npm install markmap-lib
-```
-
-#### Transform
+### Transform
 
 Transform Markdown to markmap data:
 
@@ -90,7 +82,7 @@ const data = transform(markdown);
 
 Now we get the data for rendering in `data`.
 
-#### Render
+### Render
 
 Render a markmap from transformed data:
 
