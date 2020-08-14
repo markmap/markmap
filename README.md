@@ -12,27 +12,21 @@ This project is heavily inspired by [Markmap](https://github.com/dundalek/markma
 
 Node.js >= 10 is required.
 
-## Usage
-
-### Command-line
-
-#### Installation
-
-Install globally:
+## Installation
 
 ```sh
-$ yarn global add markmap-lib
+$ yarn add markmap-lib
 # or
-$ npm install markmap-lib -g
+$ npm install markmap-lib
 ```
 
-or use with `npx`:
+You can also use with `npx` without installation:
 
 ```sh
 $ npx markmap-lib
 ```
 
-#### Commands
+## Usage
 
 ```
 Usage: markmap [options] <input>
@@ -45,8 +39,11 @@ Options:
   --enable-mathjax       enable MathJax support
   --enable-prism         enable PrismJS support
   --no-open              do not open the output file after generation
+  -w, --watch            watch the input file and update output on the fly, note that this feature is for development only
   -h, --help             display help for command
 ```
+
+### Creating a markmap
 
 Suppose we have a Markdown file named `note.md`.
 
@@ -60,6 +57,16 @@ $ npx markmap-lib note.md
 ```
 
 Then we get `note.html` in the same directory, and hopefully it will be open in your default browser.
+
+### Watching changes
+
+Enable watching mode by `-w`:
+
+```sh
+$ markmap -w note.md
+```
+
+A markmap will be created and opened in your browser, and will be updated as soon as changes are saved to the source file.
 
 ### API
 
