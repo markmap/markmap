@@ -93,10 +93,10 @@ function cleanNode(node: INode, depth = 0): void {
   if (node.c.length === 0) {
     delete node.c;
   } else {
+    node.c.forEach(child => cleanNode(child, depth + 1));
     if (node.c.length === 1 && !node.c[0].v) {
       node.c = node.c[0].c;
     }
-    node.c.forEach(child => cleanNode(child, depth + 1));
   }
   node.d = depth;
 }
