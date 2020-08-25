@@ -2,13 +2,16 @@ import { Remarkable } from 'remarkable';
 import { INode } from './types';
 import { wrapStyle, escapeHtml, wrapHtml, htmlOpen, htmlClose } from './util';
 
-const md = new Remarkable();
+const md = new Remarkable({
+  html: true,
+});
 md.block.ruler.enable([
   'deflist',
 ]);
 
-function extractInline(token): string {
+function extractInline(token): [string, any] {
   const html = [];
+  const payload: any = {};
   let style = {};
   for (const child of token.children) {
     if (child.type === 'text') {
@@ -42,9 +45,15 @@ function extractInline(token): string {
           [type]: false,
         };
       }
+    } else if (child.type === 'htmltag' && /^<!--([\s\S]*?)-->$/.test(child.content)) {
+      const comment = child.content.slice(4, -3).trim();
+      // <!-- fold -->
+      if (comment === 'fold') {
+        payload.f = true;
+      }
     }
   }
-  return html.join('');
+  return [html.join(''), payload];
 }
 
 function cleanNode(node: INode, depth = 0): void {
@@ -55,7 +64,13 @@ function cleanNode(node: INode, depth = 0): void {
     // keep first paragraph as content of list_item, drop others
     node.c = node.c.filter(item => {
       if (['paragraph', 'fence'].includes(item.t)) {
-        if (!node.v) node.v = item.v;
+        if (!node.v) {
+          node.v = item.v;
+          node.p = {
+            ...node.p,
+            ...item.p,
+          };
+        }
         return false;
       }
       return true;
@@ -84,7 +99,6 @@ function cleanNode(node: INode, depth = 0): void {
     node.c.forEach(child => cleanNode(child, depth + 1));
   }
   node.d = depth;
-  delete node.p;
 }
 
 export function buildTree(tokens): INode {
@@ -133,7 +147,12 @@ export function buildTree(tokens): INode {
         depth = 0;
       }
     } else if (token.type === 'inline') {
-      current.v = `${current.v || ''}${extractInline(token)}`;
+      const [text, payload] = extractInline(token);
+      current.v = `${current.v || ''}${text}`;
+      current.p = {
+        ...current.p,
+        ...payload,
+      };
     } else if (token.type === 'fence') {
       current.c.push({
         t: token.type,
