@@ -2,7 +2,7 @@ import { IMarkmap } from './view';
 
 export { IMarkmap };
 
-export interface IHierachy<T> {
+export interface IHierarchy<T> {
   /**
    * type
    */
@@ -17,7 +17,7 @@ export interface IHierachy<T> {
   c?: T[];
 }
 
-export interface INode extends IHierachy<INode> {
+export interface INode extends IHierarchy<INode> {
   /**
    * depth
    */
