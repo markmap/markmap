@@ -2,13 +2,8 @@
   "name": "coc-markmap",
   "version": "0.2.5",
   "description": "Visualize your Markdown as mindmaps with Markmap",
-  "author": "Gerald <i@gerald.top>",
+  "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run lint"
-    }
-  },
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del dist",
@@ -28,15 +23,15 @@
   ],
   "devDependencies": {
     "@gera2ld/plaid": "~2.0.2",
-    "@gera2ld/plaid-common-ts": "~2.0.2",
+    "@gera2ld/plaid-common-ts": "~2.1.2",
     "@gera2ld/plaid-rollup": "~2.0.2",
     "coc.nvim": "^0.0.77",
-    "del-cli": "^3.0.0",
-    "husky": "^4.2.5"
+    "del-cli": "^3.0.0"
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",
-    "markmap-lib": "^0.7.4"
+    "markmap-cli": "^0.2.0",
+    "open": "^7.2.1"
   },
   "engines": {
     "coc": ">= 0.0.70"

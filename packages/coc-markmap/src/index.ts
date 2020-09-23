@@ -3,8 +3,9 @@ import {
   commands,
   workspace,
 } from 'coc.nvim';
-import { Position, Range } from 'vscode-languageserver-types'
-import { createMarkmap } from 'markmap-lib';
+import { Position, Range } from 'vscode-languageserver-types';
+import { develop, createMarkmap } from 'markmap-cli';
+import open from 'open';
 
 async function getFullText(): Promise<string> {
   const doc = await workspace.document;
@@ -32,11 +33,19 @@ async function getRangeText(line1: string, line2: string): Promise<string> {
 async function createMarkmapFromVim(content: string, options?: any): Promise<void> {
   const { nvim } = workspace;
   const basename = await nvim.eval('expand("%:p:r")');
-  createMarkmap({
-    ...options,
-    content,
-    output: basename && `${basename}.html`,
-  });
+  if (options.watch) {
+    develop({
+      ...options,
+      open: true,
+    });
+  } else {
+    const output = await createMarkmap({
+      ...options,
+      content,
+      output: basename && `${basename}.html`,
+    });
+    open(output);
+  }
 }
 
 export function activate(context: ExtensionContext): void {
@@ -71,6 +80,7 @@ export function activate(context: ExtensionContext): void {
       for (const arg of args) {
         if (arg === '--enable-mathjax') options.mathJax = true;
         else if (arg === '--enable-prism') options.prism = true;
+        else if (['-w', '--watch'].includes(arg)) options.watch = true;
         else if (!arg.startsWith('-')) positional.push(arg);
       }
       const [line1, line2] = positional;

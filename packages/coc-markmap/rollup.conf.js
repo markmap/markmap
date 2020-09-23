@@ -7,7 +7,8 @@ const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
 const external = getRollupExternal([
   'coc.nvim',
-  'markmap-lib',
+  'markmap-cli',
+  'open',
   'vscode-languageserver-types',
 ]);
 const rollupConfig = [
