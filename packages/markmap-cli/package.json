@@ -34,6 +34,7 @@
   "bugs": {
     "url": "https://github.com/gera2ld/markmap-lib/issues"
   },
+  "main": "dist/index.js",
   "files": [
     "bin",
     "dist",

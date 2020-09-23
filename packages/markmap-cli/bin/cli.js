@@ -2,6 +2,7 @@
 
 const { Command } = require('commander');
 const open = require('open');
+const markmap = require('..');
 
 const program = new Command();
 program
@@ -21,9 +22,12 @@ program
     prism: cmd.enablePrism,
   };
   if (cmd.watch) {
-    return require('../dist/dev-server').develop(options);
+    return markmap.develop({
+      ...options,
+      open: cmd.open,
+    });
   }
-  const output = await require('markmap-lib').createMarkmap(options);
+  const output = await markmap.createMarkmap(options);
   if (cmd.open) open(output);
 });
 
