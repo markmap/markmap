@@ -1,0 +1,58 @@
+{
+  "name": "markmap-cli",
+  "version": "0.2.0",
+  "description": "Create markmaps from CLI",
+  "author": "Gerald <gera2ld@live.com>",
+  "license": "MIT",
+  "keywords": [
+    "markmap",
+    "markdown",
+    "mindmap"
+  ],
+  "homepage": "https://github.com/gera2ld/markmap-lib/packages/markmap-cli#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gera2ld/markmap-lib.git"
+  },
+  "scripts": {
+    "dev": "gulp dev",
+    "clean": "gulp clean",
+    "build:js": "gulp build",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
+    "lint": "eslint --ext .ts .",
+    "build": "tsc && npm run build:js"
+  },
+  "bugs": {
+    "url": "https://github.com/gera2ld/markmap-lib/issues"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
+  "typings": "types/index.d.ts",
+  "devDependencies": {
+    "@gera2ld/plaid": "~2.0.0",
+    "@gera2ld/plaid-common-ts": "~2.1.2",
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-replace": "^1.0.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.11.2",
+    "chokidar": "^3.4.2",
+    "commander": "^5.1.0",
+    "koa": "^2.13.0",
+    "markmap-lib": "^0.8.0",
+    "open": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=10"
+  }
+}

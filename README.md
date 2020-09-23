@@ -13,3 +13,7 @@ This project is heavily inspired by [Markmap](https://github.com/dundalek/markma
 - [markmap-lib](https://github.com/gera2ld/markmap-lib/packages/markmap-lib)
 
   The core library of markmap.
+
+- [markmap-cli](https://github.com/gera2ld/markmap-lib/packages/markmap-cli)
+
+  Use markmap in command-line.
