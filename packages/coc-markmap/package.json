@@ -22,9 +22,6 @@
     "dist"
   ],
   "devDependencies": {
-    "@gera2ld/plaid": "~2.0.2",
-    "@gera2ld/plaid-common-ts": "~2.1.2",
-    "@gera2ld/plaid-rollup": "~2.0.2",
     "coc.nvim": "^0.0.77",
     "del-cli": "^3.0.0"
   },

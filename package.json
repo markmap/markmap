@@ -2,6 +2,9 @@
   "name": "markmap",
   "private": true,
   "devDependencies": {
+    "@gera2ld/plaid": "~2.0.2",
+    "@gera2ld/plaid-common-ts": "~2.1.2",
+    "@gera2ld/plaid-rollup": "~2.0.2",
     "husky": "^4.3.0",
     "lerna": "^3.22.1"
   },
@@ -9,5 +12,8 @@
     "hooks": {
       "pre-push": "lerna exec -- npm run lint"
     }
+  },
+  "scripts": {
+    "build": "lerna exec -- npm run build"
   }
 }

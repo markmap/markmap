@@ -21,6 +21,9 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         esm: true,
         extensions: defaultOptions.extensions,
+        babelConfig: {
+          root: '../..',
+        },
       }),
     },
     output: {
@@ -41,6 +44,9 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         esm: true,
         extensions: defaultOptions.extensions,
+        babelConfig: {
+          root: '../..',
+        },
       }),
     },
     output: {

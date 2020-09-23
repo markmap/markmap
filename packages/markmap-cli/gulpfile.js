@@ -14,6 +14,7 @@ function clean() {
 function build() {
   return gulp.src(['src/**/*.ts', '!**/*.d.ts'])
     .pipe(babel({
+      root: '../..',
       presets: [
         ['@babel/preset-env', {
           loose: true,

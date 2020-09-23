@@ -15,7 +15,11 @@ const rollupConfig = [
   {
     input: {
       input: 'src/index.ts',
-      plugins: getRollupPlugins(),
+      plugins: getRollupPlugins({
+        babelConfig: {
+          root: '../..',
+        },
+      }),
       external,
     },
     output: {

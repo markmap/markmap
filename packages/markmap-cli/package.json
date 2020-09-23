@@ -42,8 +42,6 @@
   ],
   "typings": "types/index.d.ts",
   "devDependencies": {
-    "@gera2ld/plaid": "~2.0.0",
-    "@gera2ld/plaid-common-ts": "~2.1.2",
     "del": "^5.1.0",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
