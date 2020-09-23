@@ -31,8 +31,8 @@ function watch(input) {
     if (!data) await safeUpdate();
     return data;
   }
-  async function getChanged(ts, timeout=10000) {
-    if (data && (isNaN(ts) || ts < data.ts)) return data;
+  async function getChanged(ts, timeout = 10000) {
+    if (data && (Number.isNaN(ts) || ts < data.ts)) return data;
     try {
       await new Promise((resolve, reject) => {
         events.once('updated', resolve);
@@ -92,7 +92,7 @@ export async function develop(options: IMarkmapCreateOptions) {
   const server = http.createServer(handle);
   server.listen(() => {
     const { port } = server.address() as AddressInfo;
-    console.log(`Listening at http://localhost:${port}`);
+    console.info(`Listening at http://localhost:${port}`);
     if (openFile) open(`http://localhost:${port}`);
   });
 }

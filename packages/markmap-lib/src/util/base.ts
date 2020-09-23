@@ -27,7 +27,10 @@ export function arrayFrom<T>(arrayLike: ArrayLike<T>): T[] {
   return array;
 }
 
-export function flatMap<T, U>(arrayLike: ArrayLike<T>, callback: (item?: T, index?: number, thisObj?: ArrayLike<T>) => U | U[]): U[] {
+export function flatMap<T, U>(
+  arrayLike: ArrayLike<T>,
+  callback: (item?: T, index?: number, thisObj?: ArrayLike<T>) => U | U[],
+): U[] {
   if ((arrayLike as Array<T>).flatMap) return (arrayLike as Array<T>).flatMap(callback);
   const array = [];
   for (let i = 0; i < arrayLike.length; i += 1) {
@@ -40,13 +43,15 @@ export function flatMap<T, U>(arrayLike: ArrayLike<T>, callback: (item?: T, inde
 
 export function addClass(className: string, ...rest: string[]): string {
   const classList = (className || '').split(' ').filter(Boolean);
-  rest.forEach(item => {
+  rest.forEach((item) => {
     if (item && classList.indexOf(item) < 0) classList.push(item);
   });
   return classList.join(' ');
 }
 
-export function childSelector<T extends Element>(filter?: string | ((el: T) => boolean)): () => T[] {
+export function childSelector<T extends Element>(
+  filter?: string | ((el: T) => boolean),
+): () => T[] {
   if (typeof filter === 'string') {
     const tagName = filter;
     filter = (el: T): boolean => el.tagName === tagName;
@@ -54,7 +59,7 @@ export function childSelector<T extends Element>(filter?: string | ((el: T) => b
   const filterFn = filter;
   return function selector(): T[] {
     let nodes = arrayFrom((this as HTMLElement).childNodes as NodeListOf<T>);
-    if (filterFn) nodes = nodes.filter(node => filterFn(node));
+    if (filterFn) nodes = nodes.filter((node) => filterFn(node));
     return nodes;
   };
 }

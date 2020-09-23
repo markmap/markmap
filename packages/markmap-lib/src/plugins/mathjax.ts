@@ -5,7 +5,7 @@ const scripts: JSItem[] = [
   {
     type: 'iife',
     data: {
-      fn: mathJax => {
+      fn: (mathJax) => {
         mathJax.options = {
           skipHtmlTags: { '[-]': ['code', 'pre'] },
           ...mathJax.options,
@@ -16,7 +16,7 @@ const scripts: JSItem[] = [
         };
         (window as any).MathJax = mathJax;
       },
-      getParams: context => [{ ...context.mathJax }],
+      getParams: (context) => [{ ...context.mathJax }],
     },
   },
   {

@@ -1,5 +1,5 @@
 export function escapeHtml(html: string): string {
-  return html.replace(/[&<"]/g, m => ({
+  return html.replace(/[&<"]/g, (m) => ({
     '&': '&amp;',
     '<': '&lt;',
     '"': '&quot;',

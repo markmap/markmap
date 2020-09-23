@@ -42,7 +42,8 @@ export interface IMarkmapCreateOptions {
    */
   input?: string;
   /**
-   * Output file path of the markmap HTML file. If not provided, the same basename as the Markdown input file will be used.
+   * Output file path of the markmap HTML file.
+   * If not provided, the same basename as the Markdown input file will be used.
    */
   output?: string;
   /**

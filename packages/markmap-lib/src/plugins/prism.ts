@@ -1,6 +1,6 @@
 import { JSItem, CSSItem, IMarkmap, IMarkmapPlugin } from '../types';
 import { arrayFrom, flatMap } from '../util';
-import { Markmap } from '../view';
+import type { Markmap } from '../view';
 
 const errors = {};
 
@@ -39,16 +39,17 @@ const scripts: JSItem[] = [
 function initialize(Markmap: IMarkmap, options): void {
   Markmap.transformHtml.tap((mm, nodes) => {
     const { Prism } = window as any;
-    const langs = flatMap(nodes, node => arrayFrom(node.querySelectorAll('code[class*=language-]')))
-    .map(code => {
-      const lang = code.className.match(/(?:^|\s)language-(\S+)|$/)[1];
-      if (Prism.languages[lang]) {
-        Prism.highlightElement(code);
-      } else if (!errors[lang]) {
-        return lang;
-      }
-    })
-    .filter(Boolean);
+    const langs = flatMap(nodes, (node) => arrayFrom(node.querySelectorAll('code[class*=language-]')))
+      .map((code) => {
+        const lang = code.className.match(/(?:^|\s)language-(\S+)|$/)[1];
+        if (Prism.languages[lang]) {
+          Prism.highlightElement(code);
+        } else if (!errors[lang]) {
+          return lang;
+        }
+        return null;
+      })
+      .filter(Boolean);
     loadLanguagesAndRender(mm, langs);
   });
 }

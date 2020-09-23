@@ -25,7 +25,11 @@ export function memoize<T extends (...args: any[]) => any>(fn: T): T {
   } as T;
 }
 
-function createElement(tagName: string, props?: any, attrs?: { [key: string]: string }): HTMLElement {
+function createElement(
+  tagName: string,
+  props?: any,
+  attrs?: { [key: string]: string },
+): HTMLElement {
   const el = document.createElement(tagName);
   if (props) {
     Object.entries(props).forEach(([key, value]) => {
@@ -57,7 +61,8 @@ function loadJSItem(item: JSItem, context: any): Promise<any> {
         onerror: reject,
       }));
     });
-  } else if (item.type === 'iife') {
+  }
+  if (item.type === 'iife') {
     const { fn, getParams } = item.data;
     fn(...getParams?.(context) || []);
   }
@@ -90,7 +95,11 @@ export function loadCSS(items: CSSItem[]): void {
   }
 }
 
-export async function initializePlugins(Markmap: IMarkmap, plugins: IMarkmapPlugin[], options): Promise<void> {
+export async function initializePlugins(
+  Markmap: IMarkmap,
+  plugins: IMarkmapPlugin[],
+  options,
+): Promise<void> {
   options = { ...options };
   await Promise.all(plugins.map(plugin => {
     loadCSS(plugin.styles);
@@ -108,6 +117,7 @@ export function persistJS(items: JSItem[], context?: any): string[] {
       const { fn, getParams } = item.data;
       return wrapHtml('script', escapeScript(buildCode(fn, ...getParams?.(context) || [])));
     }
+    return '';
   });
 }
 

@@ -2,7 +2,8 @@ node_modules
 *.log
 *.lock
 /.idea
-/dist
-/.nyc_output
-/coverage
-/types
+packages/*/dist
+.nyc_output/
+packages/*/coverage
+packages/*/types
+package-lock.json

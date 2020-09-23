@@ -59,10 +59,10 @@ function extractInline(token): [string, any] {
 function cleanNode(node: INode, depth = 0): void {
   if (node.t === 'heading') {
     // drop all paragraphs
-    node.c = node.c.filter(item => item.t !== 'paragraph');
+    node.c = node.c.filter((item) => item.t !== 'paragraph');
   } else if (node.t === 'list_item') {
     // keep first paragraph as content of list_item, drop others
-    node.c = node.c.filter(item => {
+    node.c = node.c.filter((item) => {
       if (['paragraph', 'fence'].includes(item.t)) {
         if (!node.v) {
           node.v = item.v;
@@ -80,11 +80,11 @@ function cleanNode(node: INode, depth = 0): void {
     }
   } else if (node.t === 'ordered_list') {
     let index = node.p?.start ?? 1;
-    node.c.forEach(item => {
+    node.c.forEach((item) => {
       if (item.t === 'list_item') {
         item.p = {
           ...item.p,
-          index: index,
+          index,
         };
         index += 1;
       }
@@ -93,7 +93,7 @@ function cleanNode(node: INode, depth = 0): void {
   if (node.c.length === 0) {
     delete node.c;
   } else {
-    node.c.forEach(child => cleanNode(child, depth + 1));
+    node.c.forEach((child) => cleanNode(child, depth + 1));
     if (node.c.length === 1 && !node.c[0].v) {
       node.c = node.c[0].c;
     }
@@ -138,7 +138,7 @@ export function buildTree(tokens): INode {
       current.c.push(item);
       stack.push(item);
     } else if (!current) {
-      continue
+      continue;
     } else if (token.type === `${current.t}_close`) {
       if (current.t === 'heading') {
         depth = current.d;

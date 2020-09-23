@@ -13,8 +13,7 @@
       "es2019"
     ]
   },
-  "files": [
-    "src/index.ts",
-    "src/index.d.ts"
+  "include": [
+    "src/**/*.ts"
   ]
 }
