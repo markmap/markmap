@@ -1,13 +1,11 @@
 import { promises as fs } from 'fs';
-import open from 'open';
 import { transform } from './transform';
 import { fillTemplate } from './template';
 import { IMarkmapCreateOptions } from './types';
 
-export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promise<void> {
+export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promise<string> {
   const {
     input,
-    open: openFile = true,
     ...rest
   } = options;
   let { content, output } = options;
@@ -21,5 +19,5 @@ export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promis
   const root = transform(content || '');
   const html = fillTemplate(root, rest);
   await fs.writeFile(output, html, 'utf8');
-  if (openFile) open(output);
+  return output;
 }

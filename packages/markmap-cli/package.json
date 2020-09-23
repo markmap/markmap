@@ -4,6 +4,9 @@
   "description": "Create markmaps from CLI",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
+  "bin": {
+    "markmap": "bin/cli.js"
+  },
   "keywords": [
     "markmap",
     "markdown",
@@ -32,6 +35,7 @@
     "url": "https://github.com/gera2ld/markmap-lib/issues"
   },
   "files": [
+    "bin",
     "dist",
     "types"
   ],

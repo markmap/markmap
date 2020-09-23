@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { Command } = require('commander');
+const open = require('open');
 
 const COLOR_MAP = {
   red: 31,
@@ -29,7 +30,6 @@ please consider using markmap-cli instead.
 `, 'yellow'));
 
   const options = {
-    open: cmd.open,
     input,
     output: cmd.output,
     mathJax: cmd.enableMathjax,
@@ -38,7 +38,8 @@ please consider using markmap-cli instead.
   if (cmd.watch) {
     return require('../dist/dev-server').develop(options);
   }
-  return require('..').createMarkmap(options);
+  const output = await require('..').createMarkmap(options);
+  if (cmd.open) open(output);
 });
 
 program.parse(process.argv);
