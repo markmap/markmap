@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-const { Command } = require('commander');
-const open = require('open');
-
 const COLOR_MAP = {
   red: 31,
   green: 32,
@@ -13,33 +10,23 @@ function colored(text, color) {
   return `\x1b[1;${color}m${text}\x1b[0m`;
 }
 
-const program = new Command();
-program
-.version(require('../package.json').version)
-.description('Create a markmap from a Markdown input file')
-.arguments('<input>')
-.option('-o, --output <output>', 'specify filename of the output HTML')
-.option('--enable-mathjax', 'enable MathJax support')
-.option('--enable-prism', 'enable PrismJS support')
-.option('--no-open', 'do not open the output file after generation')
-.option('-w, --watch', 'watch the input file and update output on the fly, note that this feature is for development only')
-.action((input, cmd) => {
-  console.error(colored(`
-DEPRECATED: The CLI feature of markmap-lib will be removed in v0.9.0,
+console.error(colored(`
+DEPRECATED: The CLI feature of markmap-lib is moved to markmap-cli since v0.9.0,
 please consider using markmap-cli instead.
-`, 'yellow'));
-
-  const options = {
-    input,
-    output: cmd.output,
-    mathJax: cmd.enableMathjax,
-    prism: cmd.enablePrism,
-  };
-  if (cmd.watch) {
-    return require('../dist/dev-server').develop(options);
-  }
-  const output = await require('..').createMarkmap(options);
-  if (cmd.open) open(output);
-});
-
-program.parse(process.argv);
+`, 'red'));
+console.error(colored('Using npx:', 'yellow'));
+console.error(`
+    npx markmap-cli note.md
+`);
+console.error(colored('Using yarn:', 'yellow'));
+console.error(`
+    yarn global remove markmap-lib
+    yarn global add markmap-cli
+    markmap note.md
+`);
+console.error(colored('Using npm:', 'yellow'));
+console.error(`
+    npm uninstall --global markmap-lib
+    npm install --global markmap-cli
+    markmap note.md
+`);
