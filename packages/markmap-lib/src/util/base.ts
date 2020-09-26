@@ -63,3 +63,27 @@ export function childSelector<T extends Element>(
     return nodes;
   };
 }
+
+export function wrapFunction<T extends (...args: any[]) => any>(
+  fn: T,
+  { before, after }: {
+    before?: (...args: Parameters<T>) => void,
+    after?: (res: ReturnType<T>, ...args: Parameters<T>) => void,
+  },
+  // eslint-disable-next-line function-paren-newline
+): T {
+  return function wrapped(...args: Parameters<T>) {
+    try {
+      if (before) before(...args);
+    } catch {
+      // ignore
+    }
+    const res = fn(...args);
+    try {
+      if (after) after(res, ...args);
+    } catch {
+      // ignore
+    }
+    return res;
+  } as T;
+}

@@ -1,11 +1,8 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { INode, IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
-import { initializePlugins, getId, walkTree, arrayFrom, addClass, childSelector, noop } from './util';
-import * as plugins from './plugins';
+import { getId, walkTree, arrayFrom, addClass, childSelector, noop } from './util';
 import { Hook } from './util/hook';
-
-export { plugins };
 
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
@@ -87,7 +84,7 @@ export class Markmap {
 .${id} a { color: #0097e6; }
 .${id} a:hover { color: #00a8ff; }
 .${id}-g > path { fill: none; }
-.${id}-fo > div { font: ${nodeFont}; white-space: nowrap; }
+.${id}-fo > div { display: inline-block; font: ${nodeFont}; white-space: nowrap; }
 .${id}-fo code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
 .${id}-fo del { text-decoration: line-through; }
 .${id}-fo em { font-style: italic; }
@@ -163,7 +160,7 @@ ${this.getStyleContent()}
       next();
     });
     const nodes = arrayFrom(container.childNodes) as HTMLElement[];
-    (this.constructor as IMarkmap).transformHtml.call(this, nodes);
+    Markmap.transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
       item.v = item.p.el.innerHTML;
@@ -274,7 +271,7 @@ ${this.getStyleContent()}
     this.transition(circle)
       .attr('r', 6)
       .attr('stroke', d => color(d.data))
-      .attr('fill', d => (d.data.p?.f ? color(d.data) : '#fff'));
+      .attr('fill', d => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
 
     const foreignObject = nodeMerge.selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(childSelector<SVGForeignObjectElement>('foreignObject'))
       .data(d => [d], d => d.data.p.k)
@@ -411,19 +408,4 @@ export function markmap(
   opts?: IMarkmapOptions,
 ): Markmap {
   return Markmap.create(svg, opts, data);
-}
-
-export async function loadPlugins(items: any[], options: any): Promise<void> {
-  items = items.map((item: any) => {
-    if (typeof item === 'string') {
-      const name = item;
-      item = plugins[name];
-      if (!item) {
-        console.warn(`[markmap] Unknown plugin: ${name}`);
-      }
-    }
-    return item;
-  })
-    .filter(Boolean);
-  return initializePlugins(Markmap, items, options);
 }

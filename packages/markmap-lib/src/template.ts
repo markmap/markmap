@@ -1,5 +1,5 @@
-import { JSItem, IMarkmapCreateOptions } from './types';
-import { persistJS } from './util';
+import { JSItem, INode, IAssets } from './types';
+import { persistJS, persistCSS } from './util';
 
 const template: string = process.env.TEMPLATE;
 const version: string = process.env.VERSION;
@@ -14,9 +14,14 @@ const baseJs: JSItem[] = [
   },
 }));
 
-export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
+export function fillTemplate(data: INode, opts: IAssets): string {
+  const { scripts, styles } = opts;
+  const cssList = [
+    ...styles ? persistCSS(styles) : [],
+  ];
   const jsList = [
     ...persistJS(baseJs),
+    ...scripts ? persistJS(scripts) : [],
     ...persistJS([
       {
         type: 'iife',
@@ -48,7 +53,7 @@ export function fillTemplate(data: any, opts?: IMarkmapCreateOptions): string {
     ], { data, opts }),
   ];
   const html = template
-    .replace('<!--CSS-->', '')
+    .replace('<!--CSS-->', () => cssList.join(''))
     .replace('<!--JS-->', () => jsList.join(''));
   return html;
 }

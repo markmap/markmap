@@ -1,2 +1,8 @@
-export { plugin as mathJax } from './mathjax';
-export { plugin as prism } from './prism';
+import * as katex from './katex';
+import * as prism from './prism';
+
+export * from './base';
+export const plugins = [
+  katex,
+  prism,
+];

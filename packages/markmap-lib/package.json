@@ -55,6 +55,8 @@
     "d3-flextree": "^2.1.1",
     "koa": "^2.13.0",
     "open": "^7.0.3",
-    "remarkable": "^2.0.0"
+    "prismjs": "^1.21.0",
+    "remarkable": "^2.0.0",
+    "remarkable-katex": "^1.1.6"
   }
 }

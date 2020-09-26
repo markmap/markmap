@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const fs = require('fs').promises;
 const { Command } = require('commander');
 const open = require('open');
 const markmap = require('..');
@@ -10,24 +11,22 @@ program
 .description('Create a markmap from a Markdown input file')
 .arguments('<input>')
 .option('-o, --output <output>', 'specify filename of the output HTML')
-.option('--enable-mathjax', 'enable MathJax support')
-.option('--enable-prism', 'enable PrismJS support')
 .option('--no-open', 'do not open the output file after generation')
 .option('-w, --watch', 'watch the input file and update output on the fly, note that this feature is for development only')
 .action(async (input, cmd) => {
-  const options = {
-    input,
-    output: cmd.output,
-    mathJax: cmd.enableMathjax,
-    prism: cmd.enablePrism,
-  };
+  const content = await fs.readFile(input, 'utf8');
+  const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
   if (cmd.watch) {
     return markmap.develop({
-      ...options,
+      input,
+      output,
       open: cmd.open,
     });
   }
-  const output = await markmap.createMarkmap(options);
+  await markmap.createMarkmap({
+    content,
+    output,
+  });
   if (cmd.open) open(output);
 });
 

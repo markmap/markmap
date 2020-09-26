@@ -28,32 +28,25 @@ export interface INode extends IHierarchy<INode> {
   v: string;
 }
 
+export interface IAssets {
+  styles?: CSSItem[];
+  scripts?: JSItem[];
+}
+
 export interface IMarkmapCreateOptions {
   /**
    * whether to open the generated markmap in browser
    */
   open?: boolean;
   /**
-   * Markdown content as string. It will be ignored if `input` is provided.
+   * Markdown content as string.
    */
   content?: string;
-  /**
-   * Input file path of a Markdown file. If this is provided, `content` will be ignored.
-   */
-  input?: string;
   /**
    * Output file path of the markmap HTML file.
    * If not provided, the same basename as the Markdown input file will be used.
    */
   output?: string;
-  /**
-   * Enable MathJax support. If an object is passed, it will be merged into MathJax options.
-   */
-  mathJax?: boolean | object;
-  /**
-   * Enable Prism support for code blocks.
-   */
-  prism?: boolean;
 }
 
 export interface IMarkmapOptions {
@@ -98,12 +91,6 @@ export type CSSItem = {
   data: any;
 };
 
-export interface IMarkmapPlugin {
-  styles: CSSItem[];
-  scripts: JSItem[];
-  initialize?: (Markmap: IMarkmap, options) => void;
-}
-
 export interface IMarkmapFlexTreeItem {
   parent: IMarkmapFlexTreeItem;
   data: INode;
@@ -118,4 +105,18 @@ export interface IMarkmapFlexTreeItem {
 export interface IMarkmapLinkItem {
   source: IMarkmapFlexTreeItem;
   target: IMarkmapFlexTreeItem;
+}
+
+export interface IAssetsMap {
+  [key: string]: IAssets,
+}
+
+export interface ITransformResult {
+  root: INode;
+  features: any;
+}
+
+export interface ITransformPlugin {
+  name: string;
+  transform: () => IAssets;
 }

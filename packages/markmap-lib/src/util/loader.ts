@@ -1,6 +1,5 @@
-import { JSItem, JSScriptItem, CSSItem, IMarkmapPlugin } from '../types';
+import { JSItem, JSScriptItem, CSSItem } from '../types';
 import { escapeScript, wrapHtml } from './html';
-import { IMarkmap } from '../view';
 
 export function buildCode(fn: Function, ...args: any[]): string {
   const params = args.map(arg => {
@@ -92,21 +91,6 @@ export async function loadJS(items: JSItem[], options: any): Promise<void> {
 export function loadCSS(items: CSSItem[]): void {
   for (const item of items) {
     loadCSSItem(item);
-  }
-}
-
-export async function initializePlugins(
-  Markmap: IMarkmap,
-  plugins: IMarkmapPlugin[],
-  options,
-): Promise<void> {
-  options = { ...options };
-  await Promise.all(plugins.map(plugin => {
-    loadCSS(plugin.styles);
-    return loadJS(plugin.scripts, options);
-  }));
-  for (const { initialize } of plugins) {
-    if (initialize) initialize(Markmap, options);
   }
 }
 

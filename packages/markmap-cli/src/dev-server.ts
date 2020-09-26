@@ -5,9 +5,8 @@ import http from 'http';
 import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
-import { transform } from 'markmap-lib/dist/transform';
+import { transform, getAssets } from 'markmap-lib/dist/transform';
 import { fillTemplate } from 'markmap-lib/dist/template';
-import type { IMarkmapCreateOptions } from 'markmap-lib/dist/types';
 
 function watch(input) {
   let data;
@@ -15,8 +14,8 @@ function watch(input) {
   const events = new EventEmitter();
   async function update() {
     const content = await fs.readFile(input, 'utf8');
-    const d = transform(content || '');
-    data = { ts: Date.now(), d };
+    const result = transform(content || '');
+    data = { ts: Date.now(), ...result };
     events.emit('updated');
     promise = null;
   }
@@ -53,21 +52,23 @@ function watch(input) {
   };
 }
 
-export async function develop(options: IMarkmapCreateOptions) {
-  const {
-    input,
-    open: openFile = true,
-    ...rest
-  } = options;
+export async function develop({
+  input, output, open: openFile,
+}: {
+  input: string;
+  output: string;
+  open: boolean;
+}) {
   const watcher = watch(input);
-  const html = fillTemplate(null, rest) + `<script>
+  const assets = getAssets();
+  const html = fillTemplate(null, assets) + `<script>
 {
   let ts = 0;
   function refresh() {
     fetch(\`/data?ts=\${ts}\`).then(res => res.json()).then(res => {
       if (res.ts && res.ts > ts) {
         ts = res.ts;
-        mm.setData(res.d);
+        mm.setData(res.root);
         mm.fit();
       }
       setTimeout(refresh, 300);

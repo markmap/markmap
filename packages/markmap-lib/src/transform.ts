@@ -1,60 +1,14 @@
 import { Remarkable } from 'remarkable';
-import { INode } from './types';
-import { wrapStyle, escapeHtml, wrapHtml, htmlOpen, htmlClose } from './util';
+import { INode, CSSItem, JSItem, ITransformResult, ITransformPlugin, IAssets, IAssetsMap } from './types';
+import { escapeHtml } from './util';
+import { transformHooks, plugins as builtInPlugins } from './plugins';
 
-const md = new Remarkable({
-  html: true,
-});
-md.block.ruler.enable([
-  'deflist',
-]);
+export { builtInPlugins };
 
-function extractInline(token): [string, any] {
-  const html = [];
-  const payload: any = {};
-  let style = {};
-  for (const child of token.children) {
-    if (child.type === 'text') {
-      html.push(wrapStyle(escapeHtml(child.content), style));
-    } else if (child.type === 'code') {
-      html.push(wrapHtml('code', wrapStyle(escapeHtml(child.content), style)));
-    } else if (child.type === 'softbreak') {
-      html.push('<br/>');
-    } else if (child.type.endsWith('_open')) {
-      const type = child.type.slice(0, -5);
-      if (type === 'link') {
-        html.push(htmlOpen('a', {
-          href: child.href,
-          title: child.title,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-        }));
-      } else {
-        style = {
-          ...style,
-          [type]: true,
-        };
-      }
-    } else if (child.type.endsWith('_close')) {
-      const type = child.type.slice(0, -6);
-      if (type === 'link') {
-        html.push(htmlClose('a'));
-      } else {
-        style = {
-          ...style,
-          [type]: false,
-        };
-      }
-    } else if (child.type === 'htmltag' && /^<!--([\s\S]*?)-->$/.test(child.content)) {
-      const comment = child.content.slice(4, -3).trim();
-      // <!-- fold -->
-      if (comment === 'fold') {
-        payload.f = true;
-      }
-    }
-  }
-  return [html.join(''), payload];
-}
+let md;
+let assetsMap: IAssetsMap = {};
+let plugins: ITransformPlugin[] = [];
+setPlugins(builtInPlugins);
 
 function cleanNode(node: INode, depth = 0): void {
   if (node.t === 'heading') {
@@ -101,13 +55,14 @@ function cleanNode(node: INode, depth = 0): void {
   node.d = depth;
 }
 
-export function buildTree(tokens): INode {
+export function buildTree(md, tokens): INode {
   // TODO deal with <dl><dt>
   const root: INode = {
     t: 'root',
     d: 0,
     v: '',
     c: [],
+    p: {},
   };
   const stack = [root];
   let depth = 0;
@@ -147,12 +102,8 @@ export function buildTree(tokens): INode {
         depth = 0;
       }
     } else if (token.type === 'inline') {
-      const [text, payload] = extractInline(token);
+      const text = md.renderer.render([token], md.options, {});
       current.v = `${current.v || ''}${text}`;
-      current.p = {
-        ...current.p,
-        ...payload,
-      };
     } else if (token.type === 'fence') {
       current.c.push({
         t: token.type,
@@ -167,10 +118,43 @@ export function buildTree(tokens): INode {
   return root;
 }
 
-export function transform(content: string): INode {
+export function setPlugins(newPlugins: ITransformPlugin[]): void {
+  plugins = newPlugins;
+  md = new Remarkable({
+    html: true,
+  });
+  md.block.ruler.enable([
+    'deflist',
+  ]);
+  assetsMap = {};
+  for (const { name, transform } of plugins) {
+    assetsMap[name] = transform();
+  }
+}
+
+export function transform(content: string): ITransformResult {
+  const features: any = {};
+  transformHooks.parser.call(md, features);
   const tokens = md.parse(content || '', {});
-  let root = buildTree(tokens);
+  let root = buildTree(md, tokens);
   cleanNode(root);
   if (root.c?.length === 1) root = root.c[0];
-  return root;
+  return { root, features };
+}
+
+export function getAssets(keys?: string[]): IAssets {
+  const styles: CSSItem[] = [];
+  const scripts: JSItem[] = [];
+  keys ??= Object.keys(assetsMap);
+  for (const assets of keys.map(key => assetsMap[key])) {
+    if (assets) {
+      if (assets.styles) styles.push(...assets.styles);
+      if (assets.scripts) scripts.push(...assets.scripts);
+    }
+  }
+  return { styles, scripts };
+}
+
+export function getUsedAssets(features): IAssets {
+  return getAssets(Object.keys(features).filter(key => features[key]));
 }
