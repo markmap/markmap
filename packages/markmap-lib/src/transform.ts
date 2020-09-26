@@ -1,6 +1,5 @@
 import { Remarkable } from 'remarkable';
 import { INode, CSSItem, JSItem, ITransformResult, ITransformPlugin, IAssets, IAssetsMap } from './types';
-import { escapeHtml } from './util';
 import { transformHooks, plugins as builtInPlugins } from './plugins';
 
 export { builtInPlugins };
@@ -108,7 +107,7 @@ export function buildTree(md, tokens): INode {
       current.c.push({
         t: token.type,
         d: depth + 1,
-        v: `<pre><code class="language-${token.params}">${escapeHtml(token.content)}</code></pre>`,
+        v: md.renderer.render([token], md.options, {}),
         c: [],
       });
     } else {
