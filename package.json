@@ -57,6 +57,7 @@
   "dependencies": {
     "@babel/runtime": "^7.9.6",
     "@types/d3": "^5.7.2",
+    "chokidar": "^3.4.2",
     "commander": "^5.1.0",
     "d3": "^5.16.0",
     "d3-flextree": "^2.1.1",
