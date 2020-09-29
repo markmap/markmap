@@ -77,6 +77,8 @@ export type JSScriptItem = {
   type: 'script';
   data: {
     src: string;
+    async?: boolean;
+    defer?: boolean;
   };
 };
 export type JSIIFEItem = {
