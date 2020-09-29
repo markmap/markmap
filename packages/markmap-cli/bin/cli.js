@@ -3,7 +3,12 @@
 const fs = require('fs').promises;
 const { Command } = require('commander');
 const open = require('open');
+const updateNotifier = require('update-notifier');
 const markmap = require('..');
+const pkg = require('../package.json');
+
+const notifier = updateNotifier({ pkg });
+notifier.notify();
 
 const program = new Command();
 program

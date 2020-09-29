@@ -53,7 +53,8 @@
     "commander": "^5.1.0",
     "koa": "^2.13.0",
     "markmap-lib": "^0.8.0",
-    "open": "^7.0.3"
+    "open": "^7.0.3",
+    "update-notifier": "^4.1.1"
   },
   "engines": {
     "node": ">=10"
