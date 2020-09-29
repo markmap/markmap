@@ -1,10 +1,9 @@
 import Prism from 'prismjs';
 import loadLanguages from 'prismjs/components/';
-import { IAssets } from '../types';
-import { transformHooks } from './base';
+import { IAssets, ITransformHooks } from '../types';
 
 export const name = 'prism';
-export function transform(): IAssets {
+export function transform(transformHooks: ITransformHooks): IAssets {
   transformHooks.parser.tap((md, features) => {
     md.set({
       highlight: (str, lang) => {

@@ -1,6 +1,7 @@
 import { IMarkmap } from './view';
+import { ITransformHooks } from './plugins/base';
 
-export { IMarkmap };
+export { IMarkmap, ITransformHooks };
 
 export interface IHierarchy<T> {
   /**
@@ -118,5 +119,10 @@ export interface ITransformResult {
 
 export interface ITransformPlugin {
   name: string;
-  transform: () => IAssets;
+  transform: (transformHooks: ITransformHooks) => IAssets;
+}
+
+export interface IWrapContext<T extends (...args: any[]) => any> {
+  args: Parameters<T>,
+  result?: ReturnType<T>,
 }

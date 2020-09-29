@@ -1,12 +1,14 @@
 import { Remarkable } from 'remarkable';
-import { INode, CSSItem, JSItem, ITransformResult, ITransformPlugin, IAssets, IAssetsMap } from './types';
-import { transformHooks, plugins as builtInPlugins } from './plugins';
+import { INode, CSSItem, JSItem, ITransformResult, ITransformPlugin, IAssets, IAssetsMap, ITransformHooks, IWrapContext } from './types';
+import { createTransformHooks, plugins as builtInPlugins } from './plugins';
+import { wrapFunction } from './util';
 
 export { builtInPlugins };
 
 let md;
 let assetsMap: IAssetsMap = {};
 let plugins: ITransformPlugin[] = [];
+let transformHooks: ITransformHooks;
 setPlugins(builtInPlugins);
 
 function cleanNode(node: INode, depth = 0): void {
@@ -101,7 +103,16 @@ export function buildTree(md, tokens): INode {
         depth = 0;
       }
     } else if (token.type === 'inline') {
+      const revoke = transformHooks.htmltag.tap((ctx) => {
+        const comment = ctx.result.match(/^<!--([\s\S]*?)-->$/);
+        const data = comment?.[1].trim();
+        if (data === 'fold') {
+          current.p.f = true;
+          ctx.result = '';
+        }
+      });
       const text = md.renderer.render([token], md.options, {});
+      revoke();
       current.v = `${current.v || ''}${text}`;
     } else if (token.type === 'fence') {
       current.c.push({
@@ -119,15 +130,21 @@ export function buildTree(md, tokens): INode {
 
 export function setPlugins(newPlugins: ITransformPlugin[]): void {
   plugins = newPlugins;
+  transformHooks = createTransformHooks();
   md = new Remarkable({
     html: true,
   });
   md.block.ruler.enable([
     'deflist',
   ]);
+  md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
+    after: (ctx: IWrapContext<any>) => {
+      transformHooks.htmltag.call(ctx);
+    },
+  });
   assetsMap = {};
   for (const { name, transform } of plugins) {
-    assetsMap[name] = transform();
+    assetsMap[name] = transform(transformHooks);
   }
 }
 

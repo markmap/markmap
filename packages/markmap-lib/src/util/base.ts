@@ -1,3 +1,5 @@
+import { IWrapContext } from '../types';
+
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;
 export function getId(): string {
@@ -67,23 +69,24 @@ export function childSelector<T extends Element>(
 export function wrapFunction<T extends (...args: any[]) => any>(
   fn: T,
   { before, after }: {
-    before?: (...args: Parameters<T>) => void,
-    after?: (res: ReturnType<T>, ...args: Parameters<T>) => void,
+    before?: (ctx: IWrapContext<T>) => void,
+    after?: (ctx: IWrapContext<T>) => void,
   },
   // eslint-disable-next-line function-paren-newline
 ): T {
   return function wrapped(...args: Parameters<T>) {
+    const ctx: IWrapContext<T> = { args };
     try {
-      if (before) before(...args);
+      if (before) before(ctx);
     } catch {
       // ignore
     }
-    const res = fn(...args);
+    ctx.result = fn(...args);
     try {
-      if (after) after(res, ...args);
+      if (after) after(ctx);
     } catch {
       // ignore
     }
-    return res;
+    return ctx.result;
   } as T;
 }
