@@ -12,7 +12,7 @@
     "markdown",
     "mindmap"
   ],
-  "homepage": "https://github.com/gera2ld/markmap-lib/packages/markmap-cli#readme",
+  "homepage": "https://github.com/gera2ld/markmap/packages/markmap-cli#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -32,7 +32,7 @@
     "build": "tsc && npm run build:js"
   },
   "bugs": {
-    "url": "https://github.com/gera2ld/markmap-lib/issues"
+    "url": "https://github.com/gera2ld/markmap/issues"
   },
   "main": "dist/index.js",
   "files": [

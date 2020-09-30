@@ -20,7 +20,7 @@ $ yarn add markmap-lib
 $ npm install markmap-lib
 ```
 
-See [markmap-cli](https://github.com/gera2ld/markmap-lib/packages/markmap-cli) for command-line usage.
+See [markmap-cli](https://github.com/gera2ld/markmap/packages/markmap-cli) for command-line usage.
 
 ## API
 
