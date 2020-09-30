@@ -4,7 +4,6 @@ import {
   commands,
   workspace,
 } from 'coc.nvim';
-import { Position, Range } from 'vscode-languageserver-types';
 import { develop, createMarkmap } from 'markmap-cli';
 
 let devServer: ReturnType<develop>;
@@ -15,14 +14,8 @@ async function getFullText(): Promise<string> {
 }
 
 async function getSelectedText(): Promise<string> {
-  const { nvim } = workspace;
   const doc = await workspace.document;
-  await nvim.command('normal! `<');
-  const start = await workspace.getCursorPosition();
-  await nvim.command('normal! `>');
-  let end = await workspace.getCursorPosition();
-  end = Position.create(end.line, end.character + 1);
-  const range = Range.create(start, end);
+  const range = await workspace.getSelectedRange('v', doc);
   return doc.textDocument.getText(range);
 }
 
