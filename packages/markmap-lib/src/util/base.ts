@@ -1,4 +1,4 @@
-import { IWrapContext } from '../types';
+import { IWrapContext, IDeferred } from '../types';
 
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;
@@ -89,4 +89,13 @@ export function wrapFunction<T extends (...args: any[]) => any>(
     }
     return ctx.result;
   } as T;
+}
+
+export function defer<T>(): IDeferred<T> {
+  const obj: any = {};
+  obj.promise = new Promise<T>((resolve, reject) => {
+    obj.resolve = resolve;
+    obj.reject = reject;
+  });
+  return obj as IDeferred<T>;
 }

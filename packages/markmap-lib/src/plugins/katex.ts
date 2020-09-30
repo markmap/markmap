@@ -1,6 +1,6 @@
 import remarkableKatex from 'remarkable-katex';
 import { IAssets, ITransformHooks } from '../types';
-import { wrapFunction } from '../util';
+import { wrapFunction, defer } from '../util';
 
 export const name = 'katex';
 export function transform(transformHooks: ITransformHooks): IAssets {
@@ -25,7 +25,9 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       {
         type: 'iife',
         data: {
-          fn: () => {
+          fn: (defer, getMarkmap) => {
+            const deferred = defer();
+            getMarkmap().registerRefreshPromise(deferred.promise);
             (window as any).WebFontConfig = {
               custom: {
                 families: [
@@ -36,9 +38,12 @@ export function transform(transformHooks: ITransformHooks): IAssets {
                 ],
               },
               active: () => {
-                (window as any).mm.setData();
+                deferred.resolve();
               },
             };
+          },
+          getParams({ getMarkmap }) {
+            return [defer, getMarkmap];
           },
         },
       },

@@ -24,6 +24,39 @@ type ID3SVGElement = d3.Selection<
   IMarkmapFlexTreeItem
 >;
 
+function createViewHooks() {
+  return {
+    transformHtml: new Hook<(mm: Markmap, nodes: HTMLElement[]) => void>(),
+  };
+}
+
+const refreshPromises: Promise<any>[] = [];
+
+export function registerRefreshPromise(promise: Promise<any>) {
+  refreshPromises.push(promise);
+}
+
+function onPromiseResolve(promises: Promise<any>[], callback: () => void) {
+  let scheduled: Promise<any> | void;
+  const callbackSoon = () => {
+    if (!scheduled) {
+      scheduled = Promise.resolve().then(() => {
+        scheduled = undefined;
+        callback();
+      }).catch(noop);
+    }
+  };
+  promises.forEach(promise => {
+    promise
+      .then(callbackSoon, noop)
+      .then(() => {
+        // No need to wait for the promise in the future
+        const i = promises.indexOf(promise);
+        if (i >= 0) promises.splice(i, 1);
+      });
+  });
+}
+
 export class Markmap {
   options: IMarkmapOptions;
 
@@ -42,7 +75,7 @@ export class Markmap {
 
   zoom: d3.ZoomBehavior<Element, unknown>;
 
-  static transformHtml = new Hook<(mm: Markmap, nodes: HTMLElement[]) => void>();
+  viewHooks: ReturnType<typeof createViewHooks>;
 
   constructor(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions) {
     [
@@ -51,6 +84,7 @@ export class Markmap {
     ].forEach(key => {
       this[key] = this[key].bind(this);
     });
+    this.viewHooks = createViewHooks();
     this.svg = (svg as ID3SVGElement).datum ? (svg as ID3SVGElement) : d3.select(svg as string);
     this.styleNode = this.svg.append('style');
     this.zoom = d3.zoom().on('zoom', this.handleZoom);
@@ -160,7 +194,7 @@ ${this.getStyleContent()}
       next();
     });
     const nodes = arrayFrom(container.childNodes) as HTMLElement[];
-    Markmap.transformHtml.call(this, nodes);
+    this.viewHooks.transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
       item.v = item.p.el.innerHTML;
@@ -396,16 +430,11 @@ ${this.getStyleContent()}
       mm.setData(data);
       mm.fit(); // always fit for the first render
     }
+    onPromiseResolve(refreshPromises, () => {
+      mm.setData();
+    });
     return mm;
   }
 }
 
 export type IMarkmap = typeof Markmap;
-
-export function markmap(
-  svg: string | SVGElement | ID3SVGElement,
-  data?: INode,
-  opts?: IMarkmapOptions,
-): Markmap {
-  return Markmap.create(svg, opts, data);
-}

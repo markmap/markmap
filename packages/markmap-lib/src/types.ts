@@ -124,3 +124,9 @@ export interface IWrapContext<T extends (...args: any[]) => any> {
   args: Parameters<T>,
   result?: ReturnType<T>,
 }
+
+export interface IDeferred<T> {
+  promise: Promise<T>;
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}

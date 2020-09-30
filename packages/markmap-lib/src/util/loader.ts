@@ -1,7 +1,7 @@
 import { JSItem, JSScriptItem, CSSItem } from '../types';
 import { escapeScript, wrapHtml } from './html';
 
-export function buildCode(fn: Function, ...args: any[]): string {
+export function buildCode(fn: Function, args: any[]): string {
   const params = args.map(arg => {
     if (typeof arg === 'function') return arg.toString();
     return JSON.stringify(arg ?? null);
@@ -80,11 +80,11 @@ function loadCSSItem(item: CSSItem): void {
   }
 }
 
-export async function loadJS(items: JSItem[], options: any): Promise<void> {
+export async function loadJS(items: JSItem[], context: any): Promise<void> {
   const needPreload = items.filter(item => item.type === 'script') as JSScriptItem[];
   if (needPreload.length > 1) needPreload.forEach(item => memoizedPreloadJS(item.data.src));
   for (const item of items) {
-    await loadJSItem(item, options);
+    await loadJSItem(item, context);
   }
 }
 
@@ -99,7 +99,7 @@ export function persistJS(items: JSItem[], context?: any): string[] {
     if (item.type === 'script') return wrapHtml('script', '', item.data);
     if (item.type === 'iife') {
       const { fn, getParams } = item.data;
-      return wrapHtml('script', escapeScript(buildCode(fn, ...getParams?.(context) || [])));
+      return wrapHtml('script', escapeScript(buildCode(fn, getParams?.(context) || [])));
     }
     return '';
   });

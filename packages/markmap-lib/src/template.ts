@@ -19,26 +19,31 @@ export function fillTemplate(data: INode, opts: IAssets): string {
   const cssList = [
     ...styles ? persistCSS(styles) : [],
   ];
+  const context = {
+    getMarkmap: () => (window as any).markmap,
+    data,
+    opts,
+  };
   const jsList = [
     ...persistJS(baseJs),
-    ...scripts ? persistJS(scripts) : [],
+    ...scripts ? persistJS(scripts, context) : [],
     ...persistJS([
       {
         type: 'iife',
         data: {
-          fn: (data, init, items, opts) => {
-            const { Markmap, loadPlugins } = (window as any).markmap;
+          fn: (getMarkmap, data, init, items, opts) => {
+            const { Markmap, loadPlugins } = getMarkmap();
             (init ? init(loadPlugins, items, opts) : Promise.resolve())
               .then(() => {
                 (window as any).mm = Markmap.create('svg#mindmap', null, data);
               });
           },
-          getParams: ({ data, opts }) => {
+          getParams: ({ getMarkmap, data, opts }) => {
             const items = [
               opts?.mathJax && 'mathJax',
               opts?.prism && 'prism',
             ].filter(Boolean);
-            const args = [data];
+            const args = [getMarkmap, data];
             if (items.length) {
               args.push(
                 (loadPlugins, items, opts) => loadPlugins(items, opts),
@@ -50,7 +55,7 @@ export function fillTemplate(data: INode, opts: IAssets): string {
           },
         },
       },
-    ], { data, opts }),
+    ], context),
   ];
   const html = template
     .replace('<!--CSS-->', () => cssList.join(''))
