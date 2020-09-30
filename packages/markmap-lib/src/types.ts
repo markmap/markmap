@@ -36,10 +36,6 @@ export interface IAssets {
 
 export interface IMarkmapCreateOptions {
   /**
-   * whether to open the generated markmap in browser
-   */
-  open?: boolean;
-  /**
    * Markdown content as string.
    */
   content?: string;

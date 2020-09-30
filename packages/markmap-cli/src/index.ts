@@ -6,6 +6,9 @@ export * from 'markmap-lib';
 export * from './dev-server';
 
 export async function createMarkmap(options: IMarkmapCreateOptions & {
+  /**
+   * whether to open the generated markmap in browser
+   */
   open?: boolean;
 } = {}): Promise<void> {
   const output = await createMarkmapFile(options);
