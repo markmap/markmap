@@ -31,8 +31,8 @@ program
   await markmap.createMarkmap({
     content,
     output,
+    open: cmd.open,
   });
-  if (cmd.open) open(output);
 });
 
 program.parse(process.argv);

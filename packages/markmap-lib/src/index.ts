@@ -3,6 +3,8 @@ import { transform, getUsedAssets } from './transform';
 import { fillTemplate } from './template';
 import { IMarkmapCreateOptions } from './types';
 
+export * from './types';
+
 export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promise<string> {
   const { root, features } = transform(options.content || '');
   const assets = getUsedAssets(features);

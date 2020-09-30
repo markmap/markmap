@@ -1,3 +1,4 @@
+import path from 'path';
 import {
   ExtensionContext,
   commands,
@@ -5,7 +6,6 @@ import {
 } from 'coc.nvim';
 import { Position, Range } from 'vscode-languageserver-types';
 import { develop, createMarkmap } from 'markmap-cli';
-import open from 'open';
 
 async function getFullText(): Promise<string> {
   const doc = await workspace.document;
@@ -32,24 +32,25 @@ async function getRangeText(line1: string, line2: string): Promise<string> {
 
 async function createMarkmapFromVim(content: string, options?: any): Promise<void> {
   const { nvim } = workspace;
-  const basename = await nvim.eval('expand("%:p:r")');
+  const input = await nvim.eval('expand("%:p")');
   if (options.watch) {
     develop({
-      ...options,
+      input,
       open: true,
     });
   } else {
-    const output = await createMarkmap({
+    const basename = path.basename(input, path.extname(input));
+    createMarkmap({
       ...options,
       content,
       output: basename && `${basename}.html`,
+      open: true,
     });
-    open(output);
   }
 }
 
 export function activate(context: ExtensionContext): void {
-  const config = workspace.getConfiguration('markmap');
+  // const config = workspace.getConfiguration('markmap');
 
   context.subscriptions.push(workspace.registerKeymap(
     ['n'],
@@ -73,14 +74,9 @@ export function activate(context: ExtensionContext): void {
     'markmap.create',
     async (...args: string[]) => {
       const positional = [];
-      const options: any = {
-        mathJax: config.get<object>('mathJax'),
-        prism: config.get<object>('prism'),
-      };
+      const options: any = {};
       for (const arg of args) {
-        if (arg === '--enable-mathjax') options.mathJax = true;
-        else if (arg === '--enable-prism') options.prism = true;
-        else if (['-w', '--watch'].includes(arg)) options.watch = true;
+        if (['-w', '--watch'].includes(arg)) options.watch = true;
         else if (!arg.startsWith('-')) positional.push(arg);
       }
       const [line1, line2] = positional;

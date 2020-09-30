@@ -53,10 +53,9 @@ function watch(input) {
 }
 
 export async function develop({
-  input, output, open: openFile,
+  input, open: openFile,
 }: {
   input: string;
-  output: string;
   open: boolean;
 }) {
   const watcher = watch(input);

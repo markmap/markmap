@@ -27,8 +27,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",
-    "markmap-cli": "^0.2.0",
-    "open": "^7.2.1"
+    "markmap-cli": "^0.2.0"
   },
   "engines": {
     "coc": ">= 0.0.70"
@@ -44,11 +43,6 @@
     "configuration": {
       "title": "coc-markmap",
       "properties": {
-        "markmap.mathJax": {
-          "type": "object",
-          "description": "Options that will be passed to MathJax directly",
-          "default": {}
-        }
       }
     }
   },
