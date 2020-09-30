@@ -83,6 +83,10 @@ function loadCSSItem(item: CSSItem): void {
 export async function loadJS(items: JSItem[], context: any): Promise<void> {
   const needPreload = items.filter(item => item.type === 'script') as JSScriptItem[];
   if (needPreload.length > 1) needPreload.forEach(item => memoizedPreloadJS(item.data.src));
+  context = {
+    getMarkmap: () => (window as any).markmap,
+    ...context,
+  };
   for (const item of items) {
     await loadJSItem(item, context);
   }

@@ -22,7 +22,6 @@ export function fillTemplate(data: INode, opts: IAssets): string {
   const context = {
     getMarkmap: () => (window as any).markmap,
     data,
-    opts,
   };
   const jsList = [
     ...persistJS(baseJs),
@@ -31,27 +30,12 @@ export function fillTemplate(data: INode, opts: IAssets): string {
       {
         type: 'iife',
         data: {
-          fn: (getMarkmap, data, init, items, opts) => {
-            const { Markmap, loadPlugins } = getMarkmap();
-            (init ? init(loadPlugins, items, opts) : Promise.resolve())
-              .then(() => {
-                (window as any).mm = Markmap.create('svg#mindmap', null, data);
-              });
+          fn: (getMarkmap, data) => {
+            const { Markmap } = getMarkmap();
+            (window as any).mm = Markmap.create('svg#mindmap', null, data);
           },
-          getParams: ({ getMarkmap, data, opts }) => {
-            const items = [
-              opts?.mathJax && 'mathJax',
-              opts?.prism && 'prism',
-            ].filter(Boolean);
-            const args = [getMarkmap, data];
-            if (items.length) {
-              args.push(
-                (loadPlugins, items, opts) => loadPlugins(items, opts),
-                items,
-                opts,
-              );
-            }
-            return args;
+          getParams: ({ getMarkmap, data }) => {
+            return [getMarkmap, data];
           },
         },
       },

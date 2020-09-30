@@ -4,6 +4,8 @@ import { INode, IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLi
 import { getId, walkTree, arrayFrom, addClass, childSelector, noop } from './util';
 import { Hook } from './util/hook';
 
+export { loadJS, loadCSS } from './util';
+
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
   return Math.max(6 - 2 * data.d, 1.5);
