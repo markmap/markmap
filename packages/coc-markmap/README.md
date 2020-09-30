@@ -62,7 +62,3 @@ command! -range=% Markmap CocCommand markmap.create <line1> <line2>
 ```
 
 Now you have the `:Markmap` command to create a Markmap, either from the whole file or selected lines.
-
-## Related
-
-- [markmap-lib](https://github.com/gera2ld/markmap-lib) - Standalone command line version

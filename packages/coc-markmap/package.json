@@ -15,7 +15,8 @@
     "lint": "eslint --ext .ts ."
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.common.js",
   "files": [
