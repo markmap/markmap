@@ -1,10 +1,10 @@
 # coc-markmap
 
-Visualize your Markdown as mindmaps with [markmap-lib](https://github.com/gera2ld/markmap-lib).
+Visualize your Markdown as mindmaps with [markmap-lib](https://github.com/gera2ld/markmap/tree/master/packages/markmap-lib).
 
 This is an extension for [coc.nvim](https://github.com/neoclide/coc.nvim).
 
-If you prefer a CLI version, see [markmap-lib](https://github.com/gera2ld/markmap-lib).
+If you prefer a CLI version, see [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli).
 
 Note: *coc-markmap* allows generating markmaps from current buffer or selected text, while the CLI version can only create markmaps from Markdown files.
 
@@ -26,14 +26,13 @@ Open a Markdown, and execute:
 
 ```viml
 :CocCommand markmap.create
-
-" enable MathJax
-:CocCommand markmap.create --enable-mathjax
 ```
 
 An HTML file with the same basename as the Markdown file will be created and opened in your default browser.
 
 Visualization of selected text is also supported.
+
+Transforming plugins are enabled by default, including syntax highlight with [PrismJS](https://prismjs.com/) and math typesetting with [Katex](https://katex.org/).
 
 ## Configurations
 
@@ -42,22 +41,6 @@ Visualization of selected text is also supported.
 You can change some global configurations for this extension in `coc-settings.json`.
 
 First open the settings file with `:CocConfig`.
-
-#### markmap.mathJax
-
-Overrides [the default options of MathJax](http://docs.mathjax.org/en/latest/options/input/tex.html#option-descriptions).
-
-For example, with the following configuration MathJax will recognize inline mathematics between `$...$`:
-
-```json
-{
-  "markmap.mathJax": {
-    "tex": {
-      "inlineMath": [ ["$","$"], ["\\(","\\)"] ]
-    }
-  }
-}
-```
 
 ### Key mappings
 

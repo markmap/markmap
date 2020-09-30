@@ -2,7 +2,7 @@
 
 Visualize your Markdown as mindmaps.
 
-This project is heavily inspired by [Markmap](https://github.com/dundalek/markmap).
+This project is heavily inspired by [dundalek's markmap](https://github.com/dundalek/markmap).
 
 👉 [Try it out](https://markmap.js.org/repl).
 
