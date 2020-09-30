@@ -7,6 +7,8 @@ import {
 import { Position, Range } from 'vscode-languageserver-types';
 import { develop, createMarkmap } from 'markmap-cli';
 
+let devServer: ReturnType<develop>;
+
 async function getFullText(): Promise<string> {
   const doc = await workspace.document;
   return doc.textDocument.getText();
@@ -34,7 +36,8 @@ async function createMarkmapFromVim(content: string, options?: any): Promise<voi
   const { nvim } = workspace;
   const input = await nvim.eval('expand("%:p")');
   if (options.watch) {
-    develop({
+    if (devServer) devServer.close();
+    devServer = await develop({
       input,
       open: true,
     });

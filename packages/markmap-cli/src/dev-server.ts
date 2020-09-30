@@ -11,7 +11,13 @@ import { fillTemplate } from 'markmap-lib/dist/template';
 function watch(input) {
   let data;
   let promise;
+  let watcher = chokidar.watch(input).on('all', safeUpdate);
   const events = new EventEmitter();
+  return {
+    get,
+    getChanged,
+    revoke,
+  };
   async function update() {
     const content = await fs.readFile(input, 'utf8');
     const result = transform(content || '');
@@ -22,9 +28,6 @@ function watch(input) {
   function safeUpdate() {
     if (!promise) promise = update();
     return promise;
-  }
-  function check() {
-    chokidar.watch(input).on('all', safeUpdate);
   }
   async function get() {
     if (!data) await safeUpdate();
@@ -45,20 +48,15 @@ function watch(input) {
       return {};
     }
   }
-  check();
-  return {
-    get,
-    getChanged,
-  };
+  function revoke() {
+    if (watcher) {
+      watcher.close();
+      watcher = null;
+    }
+  }
 }
 
-export async function develop({
-  input, open: openFile,
-}: {
-  input: string;
-  open: boolean;
-}) {
-  const watcher = watch(input);
+function setUpServer(watcher, openFile: boolean) {
   const assets = getAssets();
   const html = fillTemplate(null, assets) + `<script>
 {
@@ -95,4 +93,24 @@ export async function develop({
     console.info(`Listening at http://localhost:${port}`);
     if (openFile) open(`http://localhost:${port}`);
   });
+  let closing: Promise<void>;
+  return {
+    close() {
+      if (!closing) {
+        closing = new Promise((resolve, reject) => server.close((err?: Error) => {
+          if (err) reject(err);
+          else resolve();
+        }));
+      }
+      return closing;
+    },
+  };
+}
+
+export async function develop(options: {
+  input: string;
+  open: boolean;
+}) {
+  const watcher = watch(options.input);
+  return setUpServer(watcher, options.open);
 }

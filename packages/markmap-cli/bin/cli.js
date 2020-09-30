@@ -22,7 +22,7 @@ program
   const content = await fs.readFile(input, 'utf8');
   const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
   if (cmd.watch) {
-    return markmap.develop({
+    await markmap.develop({
       input,
       output,
       open: cmd.open,
