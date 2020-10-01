@@ -29,7 +29,7 @@ See [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markma
 Transform Markdown to markmap data:
 
 ```js
-import { transform, getUsedAssets, getUsed } from 'markmap-lib/dist/transform';
+import { transform, getUsedAssets, getAssets } from 'markmap-lib/dist/transform';
 
 // 1. transform markdown
 const { root, features } = transform(markdown);
@@ -38,7 +38,7 @@ const { root, features } = transform(markdown);
 // either get assets required by used features
 const { styles, scripts } = getUsedAssets(features);
 // or get all possible assets that could be used later
-const { styles, scripts } = getUsed(features);
+const { styles, scripts } = getAssets();
 ```
 
 Now we have the data for rendering.
