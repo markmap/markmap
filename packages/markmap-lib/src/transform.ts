@@ -1,5 +1,16 @@
 import { Remarkable } from 'remarkable';
-import { INode, CSSItem, JSItem, ITransformResult, ITransformPlugin, IAssets, IAssetsMap, ITransformHooks, IWrapContext } from './types';
+import {
+  INode,
+  CSSItem,
+  JSItem,
+  ITransformResult,
+  ITransformPlugin,
+  IAssets,
+  IAssetsMap,
+  ITransformHooks,
+  IWrapContext,
+  IFeatures
+} from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 import { wrapFunction } from './util';
 
@@ -149,7 +160,7 @@ export function setPlugins(newPlugins: ITransformPlugin[]): void {
 }
 
 export function transform(content: string): ITransformResult {
-  const features: any = {};
+  const features: IFeatures = {};
   transformHooks.parser.call(md, features);
   const tokens = md.parse(content || '', {});
   let root = buildTree(md, tokens);
@@ -171,6 +182,6 @@ export function getAssets(keys?: string[]): IAssets {
   return { styles, scripts };
 }
 
-export function getUsedAssets(features): IAssets {
+export function getUsedAssets(features: IFeatures): IAssets {
   return getAssets(Object.keys(features).filter(key => features[key]));
 }

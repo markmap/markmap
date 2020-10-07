@@ -110,9 +110,11 @@ export interface IAssetsMap {
   [key: string]: IAssets,
 }
 
+export interface IFeatures { [key: string]: boolean; }
+
 export interface ITransformResult {
   root: INode;
-  features: any;
+  features: IFeatures;
 }
 
 export interface ITransformPlugin {
