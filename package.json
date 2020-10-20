@@ -10,10 +10,11 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "lerna exec -- npm run lint"
+      "pre-push": " npm run lint"
     }
   },
   "scripts": {
-    "build": "lerna exec -- npm run build"
+    "build": "lerna exec -- npm run build",
+    "lint": "lerna exec -- npm run lint"
   }
 }

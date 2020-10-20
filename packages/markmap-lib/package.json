@@ -29,15 +29,13 @@
   "jsdelivr": "dist/browser/view.min.js",
   "files": [
     "bin",
-    "dist",
-    "types"
+    "dist"
   ],
   "keywords": [
     "markdown",
     "markmap",
     "mindmap"
   ],
-  "typings": "types/index.d.ts",
   "repository": "git@github.com:gera2ld/markmap-lib.git",
   "devDependencies": {
     "del": "^5.1.0",

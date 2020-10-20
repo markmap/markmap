@@ -14,7 +14,7 @@ const baseJs: JSItem[] = [
   },
 }));
 
-export function fillTemplate(data: INode, opts: IAssets): string {
+export function fillTemplate(data: INode | undefined, opts: IAssets): string {
   const { scripts, styles } = opts;
   const cssList = [
     ...styles ? persistCSS(styles) : [],

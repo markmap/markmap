@@ -9,7 +9,7 @@ import {
   IAssetsMap,
   ITransformHooks,
   IWrapContext,
-  IFeatures
+  IFeatures,
 } from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 import { wrapFunction } from './util';
