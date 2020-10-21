@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  - pull_request
+  
+jobs:
+  block:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install deps
+        run: yarn
+      - name: Lint
+        run: yarn lint
