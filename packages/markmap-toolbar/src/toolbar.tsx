@@ -19,7 +19,7 @@ function renderBrand() {
 
 function renderItem({ title, content, onClick }: IToolbarItem) {
   return (
-    <div title={title} innerHTML={content} onClick={onClick} />
+    <div className="mm-toolbar-item" title={title} innerHTML={content} onClick={onClick} />
   );
 }
 
