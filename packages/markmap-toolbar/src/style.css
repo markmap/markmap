@@ -1,0 +1,31 @@
+.mm-toolbar {
+  @apply flex items-center rounded bg-white border border-gray-300 leading-none;
+  user-select: none;
+  &:hover {
+    @apply border-gray-400;
+  }
+  svg {
+    display: block;
+  }
+  > * {
+    @apply m-1 cursor-pointer;
+    > * {
+      @apply text-gray-500;
+    }
+    &:hover {
+      @apply bg-gray-200 rounded;
+      > * {
+        @apply text-gray-800;
+      }
+    }
+  }
+
+  &-brand {
+    > img {
+      @apply w-4 h-4;
+    }
+    > a {
+      @apply inline-block text-xs no-underline pr-1;
+    }
+  }
+}
