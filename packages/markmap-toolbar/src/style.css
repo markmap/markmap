@@ -11,6 +11,10 @@
     @apply m-1 cursor-pointer;
     > * {
       @apply text-gray-500;
+      min-width: 20px;
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
     }
     &:hover {
       @apply bg-gray-200 rounded;
