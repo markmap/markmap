@@ -14,10 +14,10 @@
     "dev": "gulp dev",
     "clean": "gulp clean",
     "build:js": "gulp build",
-    "prebuild": "npm run ci && npm run clean",
-    "prepublishOnly": "npm run build",
-    "ci": "npm run lint",
-    "build": "tsc && npm run build:js",
+    "prebuild": "yarn ci && yarn clean",
+    "prepublishOnly": "yarn build",
+    "ci": "yarn lint",
+    "build": "tsc && yarn build:js",
     "lint": "eslint --ext .ts ."
   },
   "publishConfig": {

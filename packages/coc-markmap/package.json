@@ -8,10 +8,10 @@
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del dist",
     "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "npm run ci && npm run clean",
-    "prepublishOnly": "npm run build",
-    "ci": "npm run lint",
-    "build": "npm run build:js",
+    "prebuild": "yarn ci && yarn clean",
+    "prepublishOnly": "yarn build",
+    "ci": "yarn lint",
+    "build": "yarn build:js",
     "lint": "eslint --ext .ts ."
   },
   "publishConfig": {
@@ -23,8 +23,7 @@
     "dist"
   ],
   "devDependencies": {
-    "coc.nvim": "^0.0.77",
-    "del-cli": "^3.0.0"
+    "coc.nvim": "^0.0.77"
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",

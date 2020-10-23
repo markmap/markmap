@@ -11,10 +11,9 @@ module.exports = {
       ignoredNodes: ['TSTypeParameterInstantiation']
     }],
     '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
+    '@typescript-eslint/no-shadow': 'off',
     'import/no-cycle': 'off',
     'no-continue': 'off',
-    'no-shadow': 'off',
     'object-curly-newline': 'off',
     'prefer-template': 'off',
   },

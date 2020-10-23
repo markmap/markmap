@@ -25,11 +25,11 @@
     "dev": "gulp dev",
     "clean": "gulp clean",
     "build:js": "gulp build",
-    "prebuild": "npm run ci && npm run clean",
-    "prepublishOnly": "npm run build",
-    "ci": "npm run lint",
+    "prebuild": "yarn ci && yarn clean",
+    "prepublishOnly": "yarn build",
+    "ci": "yarn lint",
     "lint": "eslint --ext .ts .",
-    "build": "tsc && npm run build:js"
+    "build": "tsc && yarn build:js"
   },
   "bugs": {
     "url": "https://github.com/gera2ld/markmap/issues"
