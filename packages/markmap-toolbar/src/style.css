@@ -1,5 +1,5 @@
 .mm-toolbar {
-  @apply flex items-center rounded bg-white border border-gray-300 leading-none;
+  @apply flex items-center rounded bg-white border border-solid border-gray-300 leading-none;
   user-select: none;
   &:hover {
     @apply border-gray-400;
