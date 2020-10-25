@@ -21,3 +21,7 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 - [coc-markmap](https://github.com/gera2ld/markmap/tree/master/packages/coc-markmap)
 
   Use with [coc.nvim](https://github.com/neoclide/coc.nvim) in Vim / Neovim, creating markmaps from your text buffer.
+
+## Related
+
+- Markmap for VSCode: <https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode>
