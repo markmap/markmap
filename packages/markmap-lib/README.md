@@ -12,12 +12,16 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 
 Node.js >= 10 is required.
 
-## Installation
+## Install
 
 ```sh
 $ yarn add markmap-lib
-# or
-$ npm install markmap-lib
+```
+
+`d3` is also required if you are using `dist/view.js` with bundlers:
+
+```sh
+$ yarn add d3
 ```
 
 See [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli) for command-line usage.
@@ -50,6 +54,7 @@ Render a markmap from transformed data:
 Create an SVG element with explicit width and height:
 
 ```html
+<script src="https://cdn.jsdelivr.net/npm/d3@5"></script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-lib/dist/browser/view.min.js"></script>
 
 <svg id="markmap" style="width: 800px; height: 800px"></svg>

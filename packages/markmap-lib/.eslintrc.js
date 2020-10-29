@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-shadow': 'off',
     'import/no-cycle': 'off',
+    'import/no-extraneous-dependencies': 'off',
     'no-continue': 'off',
     'object-curly-newline': 'off',
     'prefer-template': 'off',
