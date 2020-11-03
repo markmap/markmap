@@ -144,6 +144,7 @@ export function setPlugins(newPlugins: ITransformPlugin[]): void {
   transformHooks = createTransformHooks();
   md = new Remarkable({
     html: true,
+    maxNesting: Infinity,
   });
   md.block.ruler.enable([
     'deflist',
