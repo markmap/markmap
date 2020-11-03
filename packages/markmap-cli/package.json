@@ -1,6 +1,6 @@
 {
   "name": "markmap-cli",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Create markmaps from CLI",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -52,7 +52,7 @@
     "chokidar": "^3.4.2",
     "commander": "^5.1.0",
     "koa": "^2.13.0",
-    "markmap-lib": "^0.9.2",
+    "markmap-lib": "^0.9.3",
     "open": "^7.0.3",
     "update-notifier": "^4.1.1"
   },
