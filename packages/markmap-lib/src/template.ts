@@ -1,12 +1,12 @@
-import { JSItem, INode, IAssets } from './types';
-import { persistJS, persistCSS } from './util';
+import { JSItem, INode, persistJS, persistCSS } from 'markmap-common';
+import { IAssets } from './types';
 
 const template: string = process.env.TEMPLATE;
-const version: string = process.env.VERSION;
+const version: string = process.env.VIEW_VERSION;
 
 const baseJs: JSItem[] = [
   'https://cdn.jsdelivr.net/npm/d3@5',
-  `https://cdn.jsdelivr.net/npm/markmap-lib@${version}/dist/browser/view.min.js`,
+  `https://cdn.jsdelivr.net/npm/markmap-view@${version}`,
 ].map((src) => ({
   type: 'script',
   data: {

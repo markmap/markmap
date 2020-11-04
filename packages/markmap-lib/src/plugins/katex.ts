@@ -1,6 +1,6 @@
 import remarkableKatex from 'remarkable-katex';
+import { wrapFunction, defer } from 'markmap-common';
 import { IAssets, ITransformHooks } from '../types';
-import { wrapFunction, defer } from '../util';
 
 export const name = 'katex';
 export function transform(transformHooks: ITransformHooks): IAssets {

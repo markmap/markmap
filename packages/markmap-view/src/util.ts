@@ -1,13 +1,4 @@
-import { JSItem, JSScriptItem, CSSItem } from '../types';
-import { escapeScript, wrapHtml } from './html';
-
-export function buildCode(fn: Function, args: any[]): string {
-  const params = args.map(arg => {
-    if (typeof arg === 'function') return arg.toString();
-    return JSON.stringify(arg ?? null);
-  }).join(',');
-  return `(${fn.toString()})(${params})`;
-}
+import { JSItem, JSScriptItem, CSSItem } from 'markmap-common';
 
 export function memoize<T extends (...args: any[]) => any>(fn: T): T {
   const cache = {};
@@ -96,27 +87,4 @@ export function loadCSS(items: CSSItem[]): void {
   for (const item of items) {
     loadCSSItem(item);
   }
-}
-
-export function persistJS(items: JSItem[], context?: any): string[] {
-  return items.map(item => {
-    if (item.type === 'script') return wrapHtml('script', '', item.data);
-    if (item.type === 'iife') {
-      const { fn, getParams } = item.data;
-      return wrapHtml('script', escapeScript(buildCode(fn, getParams?.(context) || [])));
-    }
-    return '';
-  });
-}
-
-export function persistCSS(items: CSSItem[]): string[] {
-  return items.map(item => {
-    if (item.type === 'stylesheet') {
-      return wrapHtml('link', null, {
-        rel: 'stylesheet',
-        ...item.data,
-      });
-    }
-    /* else if (item.type === 'style') */ return wrapHtml('style', item.data);
-  });
 }

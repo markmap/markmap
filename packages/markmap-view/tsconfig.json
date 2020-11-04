@@ -5,12 +5,9 @@
     "moduleResolution": "node",
     "declaration": true,
     "emitDeclarationOnly": true,
-    "outDir": "dist",
+    "outDir": "types",
     "allowSyntheticDefaultImports": true,
-    "lib": [
-      "dom",
-      "es2019"
-    ]
+    "jsx": "react"
   },
   "include": [
     "src/**/*.ts"

@@ -3,11 +3,9 @@ const gulp = require('gulp');
 const babel = require('gulp-babel');
 const replace = require('gulp-replace');
 const log = require('fancy-log');
-const rollup = require('rollup');
 const del = require('del');
 const { defaultOptions } = require('@gera2ld/plaid');
-const rollupConfig = require('./rollup.conf');
-const pkg = require('./package.json');
+const pkgView = require(require.resolve('markmap-view/package.json'));
 
 const DIST = defaultOptions.distDir;
 const TEMPLATE = fs.readFileSync('templates/markmap.html', 'utf8');
@@ -31,16 +29,9 @@ function buildCjs() {
         }],
       ],
     }))
-    .pipe(replace('process.env.VERSION', JSON.stringify(pkg.version)))
+    .pipe(replace('process.env.VIEW_VERSION', JSON.stringify(pkgView.version)))
     .pipe(replace('process.env.TEMPLATE', JSON.stringify(TEMPLATE)))
     .pipe(gulp.dest(DIST));
-}
-
-function buildRollup() {
-  return Promise.all(rollupConfig.map(async (config) => {
-    const bundle = await rollup.rollup(config);
-    await bundle.write(config.output);
-  }));
 }
 
 function wrapError(handle) {
@@ -56,8 +47,7 @@ function watch() {
   gulp.watch('src/**', build);
 }
 
-const safeBuildJs = wrapError(buildRollup);
-const build = gulp.parallel(buildCjs, safeBuildJs);
+const build = buildCjs;
 
 exports.clean = clean;
 exports.build = build;

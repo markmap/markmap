@@ -1,4 +1,4 @@
-import { IWrapContext, IDeferred } from '../types';
+import { IWrapContext, IDeferred } from './types';
 
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;

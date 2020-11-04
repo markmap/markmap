@@ -1,8 +1,10 @@
 import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
-import { INode, IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
-import { getId, walkTree, arrayFrom, addClass, childSelector, noop } from './util';
-import { Hook } from './util/hook';
+import {
+  INode,
+  Hook, getId, walkTree, arrayFrom, addClass, childSelector, noop,
+} from 'markmap-common';
+import { IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
 
 export { loadJS, loadCSS } from './util';
 
@@ -438,5 +440,3 @@ ${this.getStyleContent()}
     return mm;
   }
 }
-
-export type IMarkmap = typeof Markmap;

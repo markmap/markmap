@@ -1,5 +1,4 @@
-import { IWrapContext } from '../types';
-import { Hook } from '../util/hook';
+import { IWrapContext, Hook } from 'markmap-common';
 
 export function createTransformHooks() {
   return {
@@ -7,5 +6,3 @@ export function createTransformHooks() {
     htmltag: new Hook<(ctx: IWrapContext<any>) => void>(),
   };
 }
-
-export type ITransformHooks = ReturnType<typeof createTransformHooks>;

@@ -1,0 +1,36 @@
+{
+  "name": "markmap-common",
+  "version": "0.0.0",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn lint"
+    }
+  },
+  "scripts": {
+    "dev": "rollup -wc rollup.conf.js",
+    "clean": "del dist types",
+    "build:js": "rollup -c rollup.conf.js",
+    "prebuild": "yarn ci && yarn clean",
+    "prepublishOnly": "yarn build",
+    "ci": "yarn lint",
+    "lint": "eslint --ext .ts,.tsx .",
+    "build": "tsc && yarn build:js"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "typings": "types/index.d.ts",
+  "dependencies": {
+    "@babel/runtime": "^7.12.1"
+  }
+}

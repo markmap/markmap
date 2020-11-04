@@ -1,18 +1,15 @@
 {
-  "name": "markmap-cli",
-  "version": "0.3.3",
-  "description": "Create markmaps from CLI",
+  "name": "markmap-view",
+  "version": "0.0.0",
+  "description": "View markmaps in browser",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
-  "bin": {
-    "markmap": "bin/cli.js"
-  },
   "keywords": [
     "markmap",
     "markdown",
     "mindmap"
   ],
-  "homepage": "https://github.com/gera2ld/markmap/packages/markmap-cli#readme",
+  "homepage": "https://github.com/gera2ld/markmap/packages/markmap-view#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -35,26 +32,20 @@
     "url": "https://github.com/gera2ld/markmap/issues"
   },
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "unpkg": "dist/index.min.js",
+  "jsdelivr": "dist/index.min.js",
   "files": [
-    "bin",
     "dist",
     "types"
   ],
   "typings": "types/index.d.ts",
-  "devDependencies": {
-    "del": "^5.1.0",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-replace": "^1.0.0"
-  },
   "dependencies": {
-    "@babel/runtime": "^7.11.2",
-    "chokidar": "^3.4.2",
-    "commander": "^5.1.0",
-    "koa": "^2.13.0",
-    "markmap-lib": "^0.9.3",
-    "open": "^7.0.3",
-    "update-notifier": "^4.1.1"
+    "@babel/runtime": "^7.9.6",
+    "@types/d3": "^5.7.2",
+    "d3": "^5.16.0",
+    "d3-flextree": "^2.1.1",
+    "markmap-common": "^0.0.0"
   },
   "engines": {
     "node": ">=10"

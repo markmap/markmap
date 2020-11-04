@@ -3,16 +3,18 @@ import {
   INode,
   CSSItem,
   JSItem,
+  IWrapContext,
+  wrapFunction,
+} from 'markmap-common';
+import {
   ITransformResult,
   ITransformPlugin,
   IAssets,
   IAssetsMap,
   ITransformHooks,
-  IWrapContext,
   IFeatures,
 } from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
-import { wrapFunction } from './util';
 
 export { builtInPlugins };
 
