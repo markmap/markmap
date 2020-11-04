@@ -8,6 +8,12 @@ const DIST = defaultOptions.distDir;
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 const TEMPLATE = fs.readFileSync('templates/markmap.html', 'utf8');
 
+const replaceValues = {
+  'process.env.D3_VERSION': JSON.stringify(d3Version),
+  'process.env.VIEW_VERSION': JSON.stringify(viewVersion),
+  'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
+};
+
 const external = getRollupExternal([
   ...require('module').builtinModules,
   ...Object.keys(pkg.dependencies),
@@ -26,16 +32,31 @@ const rollupConfig = [
         babelConfig: {
           root: '../..',
         },
-        replaceValues: {
-          'process.env.D3_VERSION': JSON.stringify(d3Version),
-          'process.env.VIEW_VERSION': JSON.stringify(viewVersion),
-          'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
-        },
+        replaceValues,
       }),
     },
     output: {
       format: 'cjs',
       file: `${DIST}/index.js`,
+      ...bundleOptions,
+    },
+  },
+  {
+    input: {
+      input: 'src/index.ts',
+      external,
+      plugins: getRollupPlugins({
+        esm: true,
+        extensions: defaultOptions.extensions,
+        babelConfig: {
+          root: '../..',
+        },
+        replaceValues,
+      }),
+    },
+    output: {
+      format: 'esm',
+      file: `${DIST}/index.esm.js`,
       ...bundleOptions,
     },
   },

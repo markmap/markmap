@@ -22,6 +22,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "typings": "types/index.d.ts",
   "files": [
     "dist",
