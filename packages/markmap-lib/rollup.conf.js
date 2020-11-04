@@ -1,14 +1,17 @@
-const { getRollupPlugins, defaultOptions } = require('@gera2ld/plaid');
+const fs = require('fs');
+const { getRollupPlugins, getRollupExternal, defaultOptions } = require('@gera2ld/plaid');
+const viewVersion = require('markmap-view/package.json').version;
+const d3Version = require('d3/package.json').version;
 const pkg = require('./package.json');
 
 const DIST = defaultOptions.distDir;
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
+const TEMPLATE = fs.readFileSync('templates/markmap.html', 'utf8');
 
-// Bundle @babel/runtime to avoid requiring esm version in the output
-const external = [
+const external = getRollupExternal([
   ...require('module').builtinModules,
   ...Object.keys(pkg.dependencies),
-];
+]);
 const bundleOptions = {
   extend: true,
   esModule: false,
@@ -19,10 +22,14 @@ const rollupConfig = [
       input: 'src/index.ts',
       external,
       plugins: getRollupPlugins({
-        esm: true,
         extensions: defaultOptions.extensions,
         babelConfig: {
           root: '../..',
+        },
+        replaceValues: {
+          'process.env.D3_VERSION': JSON.stringify(d3Version),
+          'process.env.VIEW_VERSION': JSON.stringify(viewVersion),
+          'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
         },
       }),
     },

@@ -8,9 +8,9 @@
     "node": ">=10"
   },
   "scripts": {
-    "dev": "gulp dev",
-    "clean": "gulp clean",
-    "build:js": "gulp build",
+    "dev": "rollup -wc rollup.conf.js",
+    "clean": "del dist",
+    "build:js": "rollup -c rollup.conf.js",
     "prebuild": "yarn ci && yarn clean",
     "prepublishOnly": "yarn build",
     "ci": "yarn lint",
@@ -22,8 +22,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.js",
+  "typings": "types/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "types"
   ],
   "keywords": [
     "markdown",
@@ -32,11 +34,6 @@
   ],
   "repository": "git@github.com:gera2ld/markmap.git",
   "devDependencies": {
-    "del": "^5.1.0",
-    "fancy-log": "^1.3.3",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-replace": "^1.0.0",
     "markmap-view": "^0.0.0"
   },
   "dependencies": {

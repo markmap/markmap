@@ -5,13 +5,12 @@ const DIST = 'dist';
 const FILENAME = 'index';
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
-const external = getRollupExternal([
-  'path',
+const external = [
+  ...require('module').builtinModules,
   'coc.nvim',
   'markmap-cli',
-  'open',
   'vscode-languageserver-types',
-]);
+];
 const rollupConfig = [
   {
     input: {

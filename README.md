@@ -37,7 +37,7 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 Transform Markdown to markmap data:
 
 ```js
-import { transform, getUsedAssets, getAssets } from 'markmap-lib/dist/transform';
+import { transform, getUsedAssets, getAssets } from 'markmap-lib';
 
 // 1. transform markdown
 const { root, features } = transform(markdown);

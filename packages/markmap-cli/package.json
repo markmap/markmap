@@ -42,17 +42,13 @@
   ],
   "typings": "types/index.d.ts",
   "devDependencies": {
-    "del": "^5.1.0",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-replace": "^1.0.0"
+    "@babel/runtime": "^7.11.2",
+    "markmap-lib": "^0.9.3"
   },
   "dependencies": {
-    "@babel/runtime": "^7.11.2",
     "chokidar": "^3.4.2",
     "commander": "^5.1.0",
     "koa": "^2.13.0",
-    "markmap-lib": "^0.9.3",
     "open": "^7.0.3",
     "update-notifier": "^4.1.1"
   },

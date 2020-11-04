@@ -5,6 +5,9 @@ import { IMarkmapCreateOptions } from './types';
 
 export * from './types';
 
+export * from './template';
+export * from './transform';
+
 export async function createMarkmap(options: IMarkmapCreateOptions = {}): Promise<string> {
   const { root, features } = transform(options.content || '');
   const assets = getUsedAssets(features);

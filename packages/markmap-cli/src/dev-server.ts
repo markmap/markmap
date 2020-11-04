@@ -5,8 +5,7 @@ import http from 'http';
 import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
-import { transform, getAssets } from 'markmap-lib/dist/transform';
-import { fillTemplate } from 'markmap-lib/dist/template';
+import { transform, getAssets, fillTemplate } from 'markmap-lib';
 
 function watch(input) {
   let data;
