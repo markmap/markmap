@@ -5,7 +5,8 @@ const replace = require('gulp-replace');
 const log = require('fancy-log');
 const del = require('del');
 const { defaultOptions } = require('@gera2ld/plaid');
-const pkgView = require(require.resolve('markmap-view/package.json'));
+const viewVersion = require('markmap-view/package.json').version;
+const d3Version = require('d3/package.json').version;
 
 const DIST = defaultOptions.distDir;
 const TEMPLATE = fs.readFileSync('templates/markmap.html', 'utf8');
@@ -29,7 +30,8 @@ function buildCjs() {
         }],
       ],
     }))
-    .pipe(replace('process.env.VIEW_VERSION', JSON.stringify(pkgView.version)))
+    .pipe(replace('process.env.D3_VERSION', JSON.stringify(d3Version)))
+    .pipe(replace('process.env.VIEW_VERSION', JSON.stringify(viewVersion)))
     .pipe(replace('process.env.TEMPLATE', JSON.stringify(TEMPLATE)))
     .pipe(gulp.dest(DIST));
 }
