@@ -140,12 +140,12 @@ ${extraStyle}
     this.styleNode.text(this.getStyleContent());
   }
 
-  handleZoom(): void {
-    const { transform } = d3.event;
+  handleZoom(e): void {
+    const { transform } = e;
     this.g.attr('transform', transform);
   }
 
-  handleClick(d: IMarkmapFlexTreeItem): void {
+  handleClick(e, d: IMarkmapFlexTreeItem): void {
     const { data } = d;
     data.p = {
       ...data.p,

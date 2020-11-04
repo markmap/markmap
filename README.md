@@ -56,7 +56,7 @@ Now we are ready for rendering a markmap in browser.
 Create an SVG element with explicit width and height:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/d3@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@6"></script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
 
 <svg id="markmap" style="width: 800px; height: 800px"></svg>
