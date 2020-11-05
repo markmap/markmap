@@ -1,4 +1,9 @@
 {
+  "command": {
+    "publish": {
+      "graphType": "all"
+    }
+  },
   "packages": [
     "packages/*"
   ],
