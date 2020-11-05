@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/gera2ld/markmap/issues"
   },
-  "main": "dist/index.js",
+  "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "unpkg": "dist/index.min.js",
   "jsdelivr": "dist/index.min.js",

@@ -39,6 +39,24 @@ const rollupConfig = [
   {
     input: {
       input: 'src/index.ts',
+      external: globalList,
+      plugins: getRollupPlugins({
+        extensions: defaultOptions.extensions,
+        babelConfig: {
+          root: '../..',
+        },
+      }),
+    },
+    output: {
+      format: 'cjs',
+      file: `${DIST}/index.cjs.js`,
+      name: 'markmap',
+      ...bundleOptions,
+    },
+  },
+  {
+    input: {
+      input: 'src/index.ts',
       external,
       plugins: getRollupPlugins({
         esm: true,
