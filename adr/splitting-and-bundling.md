@@ -38,6 +38,8 @@ After bundling into a single package, we get a single copy of the code, and opti
 
 - Smaller `node_modules` size
 
+  ~30MB -> 6.3MB
+
 - Breaking changes
 
   ```diff
