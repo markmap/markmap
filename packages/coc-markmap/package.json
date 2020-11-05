@@ -1,6 +1,6 @@
 {
   "name": "coc-markmap",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",
-    "markmap-cli": "^0.4.0"
+    "markmap-cli": "^0.4.1"
   },
   "engines": {
     "coc": ">= 0.0.70"
