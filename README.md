@@ -11,18 +11,22 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 ## Packages
 
 - [markmap-lib](https://github.com/gera2ld/markmap/tree/master/packages/markmap-lib)
+  ![NPM](https://img.shields.io/npm/v/markmap-lib.svg)
 
   Transform Markdown to data used by markmap.
 
 - [markmap-view](https://github.com/gera2ld/markmap/tree/master/packages/markmap-view)
+  ![NPM](https://img.shields.io/npm/v/markmap-view.svg)
 
   Render markmap in browser.
 
 - [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli)
+  ![NPM](https://img.shields.io/npm/v/markmap-cli.svg)
 
   Use markmap in command-line.
 
 - [coc-markmap](https://github.com/gera2ld/markmap/tree/master/packages/coc-markmap)
+  ![NPM](https://img.shields.io/npm/v/coc-markmap.svg)
 
   Use with [coc.nvim](https://github.com/neoclide/coc.nvim) in Vim / Neovim, creating markmaps from your text buffer.
 
