@@ -32,7 +32,7 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 
 ## Related
 
-- Markmap for VSCode: <https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode>
+- Markmap is also available in [VSCode](https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode) and [Open VSX](https://open-vsx.org/extension/gera2ld/markmap-vscode).
 
 ## Usage
 
