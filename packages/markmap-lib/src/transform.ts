@@ -128,10 +128,14 @@ export function buildTree(md, tokens): INode {
       revoke();
       current.v = `${current.v || ''}${text}`;
     } else if (token.type === 'fence') {
+      let result = md.renderer.render([token], md.options, {});
+      // Remarkable only adds className to `<code>` but not `<pre>`, copy it to make PrismJS style work.
+      const matches = result.match(/<code( class="[^"]*")>/);
+      if (matches) result = result.replace('<pre>', `<pre${matches[1]}>`);
       current.c.push({
         t: token.type,
         d: depth + 1,
-        v: md.renderer.render([token], md.options, {}),
+        v: result,
         c: [],
       });
     } else {

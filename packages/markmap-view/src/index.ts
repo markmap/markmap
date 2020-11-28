@@ -123,12 +123,12 @@ export class Markmap {
 .${id} a:hover { color: #00a8ff; }
 .${id}-g > path { fill: none; }
 .${id}-fo > div { display: inline-block; font: ${nodeFont}; white-space: nowrap; }
-.${id}-fo code { padding: .2em .4em; font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${id}-fo code { font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
+.${id}-fo :not(pre) > code { padding: .2em .4em; }
 .${id}-fo del { text-decoration: line-through; }
 .${id}-fo em { font-style: italic; }
 .${id}-fo strong { font-weight: bolder; }
-.${id}-fo pre { margin: 0; }
-.${id}-fo pre[class*=language-] { padding: 0; }
+.${id}-fo pre { margin: 0; padding: .2em .4em; }
 .${id}-g > g { cursor: pointer; }
 ${extraStyle}
 `;
