@@ -25,7 +25,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       {
         type: 'stylesheet',
         data: {
-          href: 'https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.css',
+          href: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/themes/prism.css`,
         },
       },
     ],

@@ -2,6 +2,7 @@ const fs = require('fs');
 const { getRollupPlugins, getRollupExternal, defaultOptions } = require('@gera2ld/plaid');
 const viewVersion = require('markmap-view/package.json').version;
 const d3Version = require('d3/package.json').version;
+const prismVersion = require('prismjs/package.json').version;
 const pkg = require('./package.json');
 
 const DIST = defaultOptions.distDir;
@@ -12,6 +13,7 @@ const replaceValues = {
   'process.env.D3_VERSION': JSON.stringify(d3Version),
   'process.env.VIEW_VERSION': JSON.stringify(viewVersion),
   'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
+  'process.env.PRISM_VERSION': JSON.stringify(prismVersion),
 };
 
 const external = getRollupExternal([
@@ -60,6 +62,29 @@ const rollupConfig = [
       ...bundleOptions,
     },
   },
+  ...[false, true].map(minimize => ({
+    input: {
+      input: 'src/index.ts',
+      plugins: getRollupPlugins({
+        minimize,
+        esm: true,
+        extensions: [
+          '.browser.ts',
+          ...defaultOptions.extensions,
+        ],
+        babelConfig: {
+          root: '../..',
+        },
+        replaceValues,
+      }),
+    },
+    output: {
+      format: 'umd',
+      file: `${DIST}/browser/index${minimize ? '.min' : ''}.js`,
+      name: 'markmap',
+      ...bundleOptions,
+    },
+  })),
 ];
 
 rollupConfig.forEach((item) => {
