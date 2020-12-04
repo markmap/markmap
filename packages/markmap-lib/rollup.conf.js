@@ -65,6 +65,9 @@ const rollupConfig = [
   ...[false, true].map(minimize => ({
     input: {
       input: 'src/index.ts',
+      external: [
+        'katex',
+      ],
       plugins: getRollupPlugins({
         minimize,
         esm: true,
@@ -82,6 +85,9 @@ const rollupConfig = [
       format: 'umd',
       file: `${DIST}/browser/index${minimize ? '.min' : ''}.js`,
       name: 'markmap',
+      globals: {
+        katex: 'window.katex',
+      },
       ...bundleOptions,
     },
   })),
