@@ -2,11 +2,11 @@ import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import {
   INode,
-  Hook, getId, walkTree, arrayFrom, addClass, childSelector, noop,
+  Hook, getId, walkTree, arrayFrom, addClass, childSelector, noop, loadJS, loadCSS,
 } from 'markmap-common';
 import { IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
 
-export { loadJS, loadCSS } from './util';
+export { loadJS, loadCSS };
 
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
@@ -34,32 +34,10 @@ function createViewHooks() {
   };
 }
 
-const refreshPromises: Promise<any>[] = [];
-
-export function registerRefreshPromise(promise: Promise<any>) {
-  refreshPromises.push(promise);
-}
-
-function onPromiseResolve(promises: Promise<any>[], callback: () => void) {
-  let scheduled: Promise<any> | void;
-  const callbackSoon = () => {
-    if (!scheduled) {
-      scheduled = Promise.resolve().then(() => {
-        scheduled = undefined;
-        callback();
-      }).catch(noop);
-    }
-  };
-  promises.forEach(promise => {
-    promise
-      .then(callbackSoon, noop)
-      .then(() => {
-        // No need to wait for the promise in the future
-        const i = promises.indexOf(promise);
-        if (i >= 0) promises.splice(i, 1);
-      });
-  });
-}
+/**
+ * A global hook to refresh all markmaps when called.
+ */
+export const refreshHook = new Hook<() => void>();
 
 export class Markmap {
   options: IMarkmapOptions;
@@ -80,6 +58,8 @@ export class Markmap {
   zoom: d3.ZoomBehavior<Element, unknown>;
 
   viewHooks: ReturnType<typeof createViewHooks>;
+
+  revokers: (() => void)[] = [];
 
   constructor(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions) {
     [
@@ -112,6 +92,9 @@ export class Markmap {
     this.g = this.svg.append('g').attr('class', `${this.state.id}-g`);
     this.updateStyle();
     this.svg.call(this.zoom);
+    this.revokers.push(refreshHook.tap(() => {
+      this.setData();
+    }));
   }
 
   getStyleContent(): string {
@@ -424,6 +407,11 @@ ${this.getStyleContent()}
     return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
   }
 
+  destroy() {
+    this.svg.remove();
+    this.revokers.forEach(fn => { fn(); });
+  }
+
   static create(
     svg: string | SVGElement | ID3SVGElement,
     opts?: IMarkmapOptions,
@@ -434,9 +422,6 @@ ${this.getStyleContent()}
       mm.setData(data);
       mm.fit(); // always fit for the first render
     }
-    onPromiseResolve(refreshPromises, () => {
-      mm.setData();
-    });
     return mm;
   }
 }

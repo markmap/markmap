@@ -1,19 +1,5 @@
-import { JSItem, JSScriptItem, CSSItem } from 'markmap-common';
-
-export function memoize<T extends (...args: any[]) => any>(fn: T): T {
-  const cache = {};
-  return function memoized(...args: any[]): T {
-    const key = `${args[0]}`;
-    let data = cache[key];
-    if (!data) {
-      data = {
-        value: fn(...args),
-      };
-      cache[key] = data;
-    }
-    return data.value;
-  } as T;
-}
+import { JSItem, JSScriptItem, CSSItem } from './types';
+import { memoize } from './util';
 
 function createElement(
   tagName: string,
@@ -71,7 +57,7 @@ function loadCSSItem(item: CSSItem): void {
   }
 }
 
-export async function loadJS(items: JSItem[], context: any): Promise<void> {
+export async function loadJS(items: JSItem[], context?: any): Promise<void> {
   const needPreload = items.filter(item => item.type === 'script') as JSScriptItem[];
   if (needPreload.length > 1) needPreload.forEach(item => memoizedPreloadJS(item.data.src));
   context = {

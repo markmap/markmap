@@ -99,3 +99,18 @@ export function defer<T>(): IDeferred<T> {
   });
   return obj as IDeferred<T>;
 }
+
+export function memoize<T extends (...args: any[]) => any>(fn: T): T {
+  const cache = {};
+  return function memoized(...args: any[]): T {
+    const key = `${args[0]}`;
+    let data = cache[key];
+    if (!data) {
+      data = {
+        value: fn(...args),
+      };
+      cache[key] = data;
+    }
+    return data.value;
+  } as T;
+}

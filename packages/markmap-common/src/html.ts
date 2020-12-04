@@ -50,21 +50,6 @@ export function buildCode(fn: Function, args: any[]): string {
   return `(${fn.toString()})(${params})`;
 }
 
-export function memoize<T extends (...args: any[]) => any>(fn: T): T {
-  const cache = {};
-  return function memoized(...args: any[]): T {
-    const key = `${args[0]}`;
-    let data = cache[key];
-    if (!data) {
-      data = {
-        value: fn(...args),
-      };
-      cache[key] = data;
-    }
-    return data.value;
-  } as T;
-}
-
 export function persistJS(items: JSItem[], context?: any): string[] {
   return items.map(item => {
     if (item.type === 'script') return wrapHtml('script', '', item.data);
