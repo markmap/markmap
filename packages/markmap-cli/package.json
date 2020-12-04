@@ -25,11 +25,11 @@
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del dist",
     "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "yarn ci && yarn clean",
-    "prepublishOnly": "yarn build",
-    "ci": "yarn lint",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
     "lint": "eslint --ext .ts .",
-    "build": "tsc && yarn build:js"
+    "build": "tsc && npm run build:js"
   },
   "bugs": {
     "url": "https://github.com/gera2ld/markmap/issues"

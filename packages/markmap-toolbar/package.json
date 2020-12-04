@@ -4,20 +4,15 @@
   "description": "Extensible toolbar for markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
-  "husky": {
-    "hooks": {
-      "pre-push": "yarn lint"
-    }
-  },
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del dist types",
     "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "yarn ci && yarn clean",
-    "prepublishOnly": "yarn build",
-    "ci": "yarn lint",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
     "lint": "eslint --ext .ts,.tsx .",
-    "build": "tsc && yarn build:js"
+    "build": "tsc && npm run build:js"
   },
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",

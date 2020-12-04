@@ -11,10 +11,10 @@
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del dist",
     "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "yarn ci && yarn clean",
-    "prepublishOnly": "yarn build",
-    "ci": "yarn lint",
-    "build": "tsc && yarn build:js",
+    "prebuild": "npm run ci && npm run clean",
+    "prepublishOnly": "npm run build",
+    "ci": "npm run lint",
+    "build": "tsc && npm run build:js",
     "lint": "eslint --ext .ts ."
   },
   "publishConfig": {
