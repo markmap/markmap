@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import open from 'open';
 import {
-  transform, getUsedAssets, fillTemplate,
+  Transformer, fillTemplate,
 } from 'markmap-lib';
 import type { IMarkmapCreateOptions } from 'markmap-lib';
 
@@ -14,8 +14,9 @@ export async function createMarkmap(options: IMarkmapCreateOptions & {
    */
   open?: boolean;
 } = {}): Promise<void> {
-  const { root, features } = transform(options.content || '');
-  const assets = getUsedAssets(features);
+  const transformer = new Transformer();
+  const { root, features } = transformer.transform(options.content || '');
+  const assets = transformer.getUsedAssets(features);
   const html = fillTemplate(root, assets);
   const output = options.output || 'markmap.html';
   await fs.writeFile(output, html, 'utf8');

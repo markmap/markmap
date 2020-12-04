@@ -5,9 +5,9 @@ import http from 'http';
 import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
-import { transform, getAssets, fillTemplate } from 'markmap-lib';
+import { Transformer, fillTemplate } from 'markmap-lib';
 
-function watch(input) {
+function watch(transformer, input) {
   let data;
   let promise;
   let watcher = chokidar.watch(input).on('all', safeUpdate);
@@ -19,7 +19,7 @@ function watch(input) {
   };
   async function update() {
     const content = await fs.readFile(input, 'utf8');
-    const result = transform(content || '');
+    const result = transformer.transform(content || '');
     data = { ts: Date.now(), ...result };
     events.emit('updated');
     promise = null;
@@ -55,8 +55,8 @@ function watch(input) {
   }
 }
 
-function setUpServer(watcher, openFile: boolean) {
-  const assets = getAssets();
+function setUpServer(transformer, watcher, openFile: boolean) {
+  const assets = transformer.getAssets();
   const html = fillTemplate(null, assets) + `<script>
 {
   let ts = 0;
@@ -110,6 +110,7 @@ export async function develop(options: {
   input: string;
   open: boolean;
 }) {
-  const watcher = watch(options.input);
-  return setUpServer(watcher, options.open);
+  const transformer = new Transformer();
+  const watcher = watch(transformer, options.input);
+  return setUpServer(transformer, watcher, options.open);
 }
