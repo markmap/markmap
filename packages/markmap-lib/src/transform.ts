@@ -77,6 +77,7 @@ export class Transformer {
     this.hooks = createTransformHooks();
     const md = new Remarkable({
       html: true,
+      breaks: true,
       maxNesting: Infinity,
     });
     md.block.ruler.enable([
