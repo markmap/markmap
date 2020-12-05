@@ -28,7 +28,7 @@ const memoizedPreloadJS = memoize((url: string) => {
   }));
 });
 
-function loadJSItem(item: JSItem, context: any): Promise<any> {
+function loadJSItem(item: JSItem, context: any): Promise<void> {
   if (item.type === 'script') {
     return new Promise((resolve, reject) => {
       document.head.append(createElement('script', {
@@ -36,6 +36,8 @@ function loadJSItem(item: JSItem, context: any): Promise<any> {
         onload: resolve,
         onerror: reject,
       }));
+      // Run inline script synchronously
+      if (!item.data?.src) resolve();
     });
   }
   if (item.type === 'iife') {
@@ -58,7 +60,7 @@ function loadCSSItem(item: CSSItem): void {
 }
 
 export async function loadJS(items: JSItem[], context?: any): Promise<void> {
-  const needPreload = items.filter(item => item.type === 'script') as JSScriptItem[];
+  const needPreload = items.filter(item => item.type === 'script' && item.data?.src) as JSScriptItem[];
   if (needPreload.length > 1) needPreload.forEach(item => memoizedPreloadJS(item.data.src));
   context = {
     getMarkmap: () => (window as any).markmap,
