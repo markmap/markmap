@@ -40,13 +40,13 @@ async function main() {
     {
       type: 'script',
       data: {
-        src: `https://cdn.jsdelivr.com/npm/d3@${process.env.D3_VERSION}`,
+        src: `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
       },
     },
     {
       type: 'script',
       data: {
-        src: `https://cdn.jsdelivr.com/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
+        src: `https://cdn.jsdelivr.net/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
       },
     },
   ]);

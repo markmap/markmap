@@ -23,5 +23,5 @@ Load markmaps automatically in HTML.
   - view
 </div>
 
-<script src="https://cdn.jsdelivr.com/npm/markmap-autoloader"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
 ```
