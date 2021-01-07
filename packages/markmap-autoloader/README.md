@@ -8,6 +8,8 @@ Load markmaps automatically in HTML.
 
 ## Usage
 
+HTML:
+
 ```html
 <style>
 .markmap > svg {
@@ -22,6 +24,41 @@ Load markmaps automatically in HTML.
   - transformer
   - view
 </div>
+```
 
+Autoload all `.markmap`:
+
+```html
 <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
 ```
+
+Load manually:
+
+```html
+<script>
+window.markmap = {
+  autoLoader: { manual: true },
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
+<script>
+// Render in 5s
+setTimeout(() => {
+  markmap.autoLoader.renderAll();
+}, 5000);
+</script>
+```
+
+## API
+
+### markmap.autoLoader.renderAll()
+
+Render all `.markmap`s.
+
+### markmap.autoLoader.renderAllUnder(el)
+
+Render all `.markmap`s under container `el`.
+
+### markmap.autoLoader.render(el)
+
+Render markmap in `el`, which is supposed to have the class name `markmap`.

@@ -38,7 +38,7 @@ const rollupConfig = [
     output: {
       format: 'iife',
       file: `${DIST}/index${minimize ? '.min' : ''}.js`,
-      name: 'markmap',
+      name: 'markmap.autoLoader',
       ...bundleOptions,
     },
   })),
