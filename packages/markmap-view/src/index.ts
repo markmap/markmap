@@ -40,6 +40,20 @@ function createViewHooks() {
 export const refreshHook = new Hook<() => void>();
 
 export class Markmap {
+  static defaultOptions: IMarkmapOptions = {
+    duration: 500,
+    nodeFont: '300 16px/20px sans-serif',
+    nodeMinHeight: 16,
+    spacingVertical: 5,
+    spacingHorizontal: 80,
+    autoFit: false,
+    fitRatio: 0.95,
+    color: (colorFn => (node: INode): string => colorFn(node.p.i))(
+      d3.scaleOrdinal(d3.schemeCategory10),
+    ),
+    paddingX: 8,
+  };
+
   options: IMarkmapOptions;
 
   state: IMarkmapState;
@@ -73,17 +87,7 @@ export class Markmap {
     this.styleNode = this.svg.append('style');
     this.zoom = d3.zoom().on('zoom', this.handleZoom);
     this.options = {
-      duration: 500,
-      nodeFont: '300 16px/20px sans-serif',
-      nodeMinHeight: 16,
-      spacingVertical: 5,
-      spacingHorizontal: 80,
-      autoFit: false,
-      fitRatio: 0.95,
-      color: (colorFn => (node: INode): string => colorFn(node.p.i))(
-        d3.scaleOrdinal(d3.schemeCategory10),
-      ),
-      paddingX: 8,
+      ...Markmap.defaultOptions,
       ...opts,
     };
     this.state = {
