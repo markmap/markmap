@@ -52,6 +52,6 @@ export interface IWrapContext<T extends (...args: any[]) => any> {
 
 export interface IDeferred<T> {
   promise: Promise<T>;
-  resolve: (value?: any) => void;
+  resolve: (value: T) => void;
   reject: (error?: any) => void;
 }

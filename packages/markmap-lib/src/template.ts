@@ -13,13 +13,18 @@ const baseJs: JSItem[] = [
   },
 }));
 
-export function fillTemplate(data: INode | undefined, opts: IAssets): string {
-  const { scripts, styles } = opts;
+export function fillTemplate(
+  data: INode | undefined,
+  assets: IAssets,
+  getOptions?: () => any,
+): string {
+  const { scripts, styles } = assets;
   const cssList = [
     ...styles ? persistCSS(styles) : [],
   ];
   const context = {
     getMarkmap: () => (window as any).markmap,
+    getOptions,
     data,
   };
   const jsList = [
@@ -29,12 +34,12 @@ export function fillTemplate(data: INode | undefined, opts: IAssets): string {
       {
         type: 'iife',
         data: {
-          fn: (getMarkmap, data) => {
+          fn: (getMarkmap, getOptions, data) => {
             const { Markmap } = getMarkmap();
-            (window as any).mm = Markmap.create('svg#mindmap', null, data);
+            (window as any).mm = Markmap.create('svg#mindmap', getOptions?.(), data);
           },
-          getParams: ({ getMarkmap, data }) => {
-            return [getMarkmap, data];
+          getParams: ({ getMarkmap, getOptions, data }) => {
+            return [getMarkmap, getOptions, data];
           },
         },
       },
