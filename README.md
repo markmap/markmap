@@ -1,5 +1,7 @@
 # markmap
 
+[![Join the chat at https://gitter.im/gera2ld/markmap](https://badges.gitter.im/gera2ld/markmap.svg)](https://gitter.im/gera2ld/markmap?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Visualize your Markdown as mindmaps.
 
 This project is heavily inspired by [dundalek's markmap](https://github.com/dundalek/markmap).
