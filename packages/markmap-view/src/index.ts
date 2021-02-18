@@ -106,6 +106,7 @@ export class Markmap {
     const { id } = this.state;
     const extraStyle = typeof style === 'function' ? style(id) : '';
     const styleText = `\
+.${id} { line-height: 1; }
 .${id} a { color: #0097e6; }
 .${id} a:hover { color: #00a8ff; }
 .${id}-g > path { fill: none; }
