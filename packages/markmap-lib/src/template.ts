@@ -3,7 +3,7 @@ import { IAssets } from './types';
 
 const template: string = process.env.TEMPLATE;
 
-const baseJs: JSItem[] = [
+const BASE_JS: JSItem[] = [
   `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
   `https://cdn.jsdelivr.net/npm/markmap-view@${process.env.VIEW_VERSION}`,
 ].map((src) => ({
@@ -16,21 +16,31 @@ const baseJs: JSItem[] = [
 export function fillTemplate(
   data: INode | undefined,
   assets: IAssets,
-  getOptions?: () => any,
+  extra?: {
+    baseJs?: JSItem[],
+    getOptions?: () => any,
+  } | (() => any),
 ): string {
+  if (typeof extra === 'function') {
+    extra = { getOptions: extra };
+  }
+  extra = {
+    baseJs: BASE_JS,
+    ...extra,
+  };
   const { scripts, styles } = assets;
   const cssList = [
     ...styles ? persistCSS(styles) : [],
   ];
   const context = {
     getMarkmap: () => (window as any).markmap,
-    getOptions,
+    getOptions: extra.getOptions,
     data,
   };
   const jsList = [
-    ...persistJS(baseJs),
-    ...scripts ? persistJS(scripts, context) : [],
+    ...persistJS(extra.baseJs),
     ...persistJS([
+      ...scripts || [],
       {
         type: 'iife',
         data: {
