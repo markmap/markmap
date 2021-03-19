@@ -113,6 +113,9 @@ export class Transformer {
       if (token.type.endsWith('_open')) {
         const type = token.type.slice(0, -5);
         const payload: any = {};
+        if (token.lines) {
+          payload.lines = token.lines;
+        }
         if (type === 'heading') {
           depth = token.hLevel;
           while (current?.d >= depth) {

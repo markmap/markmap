@@ -8,6 +8,13 @@ import { IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem 
 
 export { loadJS, loadCSS };
 
+interface IPadding {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
   return Math.max(6 - 2 * data.d, 1.5);
@@ -19,6 +26,11 @@ function adjustSpacing(tree: IMarkmapFlexTreeItem, spacing: number): void {
     d.y += spacing;
     next();
   }, 'children');
+}
+
+function minBy(numbers: number[], by: (v: number) => number): number {
+  const index = d3.minIndex(numbers, by);
+  return numbers[index];
 }
 
 type ID3SVGElement = d3.Selection<
@@ -376,7 +388,10 @@ ${this.getStyleContent()}
     return sel.transition().duration(duration);
   }
 
-  fit(): Promise<void> {
+  /**
+   * Fit the content to the viewport.
+   */
+  async fit(): Promise<void> {
     const svgNode = this.svg.node();
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     const { fitRatio } = this.options;
@@ -397,7 +412,59 @@ ${this.getStyleContent()}
     return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
   }
 
-  rescale(scale: number): Promise<void> {
+  /**
+   * Pan the content to make the provided node visible in the viewport.
+   */
+  async ensureView(node: INode, padding: Partial<IPadding> | undefined): Promise<void> {
+    let g: SVGGElement | undefined;
+    let itemData: IMarkmapFlexTreeItem | undefined;
+    this.g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
+      .each(function walk(d) {
+        if (d.data === node) {
+          g = this;
+          itemData = d;
+        }
+      });
+    if (!g || !itemData) return;
+    const svgNode = this.svg.node();
+    const relRect = svgNode.getBoundingClientRect();
+    const transform = d3.zoomTransform(svgNode);
+    const [left, right] = [
+      itemData.y,
+      itemData.y + itemData.ySizeInner + 2,
+    ].map(x => x * transform.k + transform.x);
+    const [top, bottom] = [
+      itemData.x - itemData.xSize / 2,
+      itemData.x + itemData.xSize / 2,
+    ].map(y => y * transform.k + transform.y);
+    // Skip if the node includes or is included in the container.
+    const pd: IPadding = {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      ...padding,
+    };
+    const dxs = [
+      pd.left - left,
+      relRect.width - pd.right - right,
+    ];
+    const dys = [
+      pd.top - top,
+      relRect.height - pd.bottom - bottom,
+    ];
+    const dx = dxs[0] * dxs[1] > 0 ? minBy(dxs, Math.abs) / transform.k : 0;
+    const dy = dys[0] * dys[1] > 0 ? minBy(dys, Math.abs) / transform.k : 0;
+    if (dx || dy) {
+      const newTransform = transform.translate(dx, dy);
+      return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
+    }
+  }
+
+  /**
+   * Scale content with it pinned at the center of the viewport.
+   */
+  async rescale(scale: number): Promise<void> {
     const svgNode = this.svg.node();
     const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
     const halfWidth = offsetWidth / 2;
