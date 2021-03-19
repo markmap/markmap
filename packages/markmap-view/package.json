@@ -1,6 +1,6 @@
 {
   "name": "markmap-view",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "View markmaps in browser",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -46,7 +46,7 @@
     "@types/d3": "^6.0.0",
     "d3": "^6.2.0",
     "d3-flextree": "^2.1.1",
-    "markmap-common": "^0.1.3"
+    "markmap-common": "^0.1.4"
   },
   "engines": {
     "node": ">=10"

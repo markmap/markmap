@@ -1,6 +1,6 @@
 {
   "name": "markmap-autoloader",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Load markmaps automatically in HTML",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -43,10 +43,10 @@
     "node": ">=10"
   },
   "dependencies": {
-    "markmap-common": "^0.1.3"
+    "markmap-common": "^0.1.4"
   },
   "devDependencies": {
-    "markmap-lib": "^0.11.2",
-    "markmap-view": "^0.2.2"
+    "markmap-lib": "^0.11.3",
+    "markmap-view": "^0.2.3"
   }
 }
