@@ -33,6 +33,10 @@ function minBy(numbers: number[], by: (v: number) => number): number {
   return numbers[index];
 }
 
+function stopPropagation(e) {
+  e.stopPropagation();
+}
+
 type ID3SVGElement = d3.Selection<
   SVGElement,
   IMarkmapFlexTreeItem,
@@ -122,6 +126,7 @@ export class Markmap {
 .${id} a { color: #0097e6; }
 .${id} a:hover { color: #00a8ff; }
 .${id}-g > path { fill: none; }
+.${id}-g > g > circle { cursor: pointer; }
 .${id}-fo > div { display: inline-block; font: ${nodeFont}; white-space: nowrap; }
 .${id}-fo code { font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
 .${id}-fo :not(pre) > code { padding: .2em .4em; }
@@ -129,7 +134,6 @@ export class Markmap {
 .${id}-fo em { font-style: italic; }
 .${id}-fo strong { font-weight: bolder; }
 .${id}-fo pre { margin: 0; padding: .2em .4em; }
-.${id}-g > g { cursor: pointer; }
 ${extraStyle}
 `;
     return styleText;
@@ -264,8 +268,7 @@ ${this.getStyleContent()}
     const node = this.g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
       .data(descendants, d => d.data.p.k);
     const nodeEnter = node.enter().append('g')
-      .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`)
-      .on('click', this.handleClick);
+      .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`);
 
     const nodeExit = this.transition(node.exit<IMarkmapFlexTreeItem>());
     nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
@@ -301,7 +304,8 @@ ${this.getStyleContent()}
             .attr('stroke-width', '1.5')
             .attr('cx', d => d.ySizeInner)
             .attr('cy', d => d.xSize)
-            .attr('r', 0);
+            .attr('r', 0)
+            .on('click', this.handleClick);
         },
         update => update,
         exit => exit.remove(),
@@ -320,7 +324,9 @@ ${this.getStyleContent()}
             .attr('x', paddingX)
             .attr('y', 0)
             .style('opacity', 0)
-            .attr('height', d => d.xSize);
+            .attr('height', d => d.xSize)
+            .on('mousedown', stopPropagation)
+            .on('dblclick', stopPropagation);
           fo.append<HTMLDivElement>('xhtml:div')
             .select(function select(d) {
               const node = d.data.p.el.cloneNode(true);
