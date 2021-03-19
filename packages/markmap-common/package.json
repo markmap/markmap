@@ -6,13 +6,14 @@
   "license": "MIT",
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
-    "clean": "del dist types",
-    "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "npm run ci && npm run clean",
-    "prepublishOnly": "npm run build",
-    "ci": "npm run lint",
+    "clean": "del-cli dist types",
+    "prebuild": "run-s ci clean",
+    "prepublishOnly": "run-s build",
+    "ci": "run-s lint",
     "lint": "eslint --ext .ts,.tsx .",
-    "build": "tsc && npm run build:js"
+    "build:types": "tsc",
+    "build:js": "rollup -c rollup.conf.js",
+    "build": "run-s build:types build:js"
   },
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

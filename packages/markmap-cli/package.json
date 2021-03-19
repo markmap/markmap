@@ -23,13 +23,14 @@
   },
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
-    "clean": "del dist",
-    "build:js": "rollup -c rollup.conf.js",
-    "prebuild": "npm run ci && npm run clean",
-    "prepublishOnly": "npm run build",
-    "ci": "npm run lint",
+    "clean": "del-cli dist",
+    "prebuild": "run-s ci clean",
+    "prepublishOnly": "run-s build",
+    "ci": "run-s lint",
     "lint": "eslint --ext .ts .",
-    "build": "tsc && npm run build:js"
+    "build:types": "tsc",
+    "build:js": "rollup -c rollup.conf.js",
+    "build": "run-s build:types build:js"
   },
   "bugs": {
     "url": "https://github.com/gera2ld/markmap/issues"
