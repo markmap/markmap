@@ -10,12 +10,8 @@
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist",
-    "prebuild": "run-s ci clean",
-    "prepublishOnly": "run-s build",
-    "ci": "run-s lint",
     "build:types": "tsc",
     "build:js": "rollup -c rollup.conf.js",
-    "build": "run-s build:types build:js",
     "lint": "eslint --ext .ts ."
   },
   "publishConfig": {

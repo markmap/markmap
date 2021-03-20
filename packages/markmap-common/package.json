@@ -7,13 +7,9 @@
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist types",
-    "prebuild": "run-s ci clean",
-    "prepublishOnly": "run-s build",
-    "ci": "run-s lint",
     "lint": "eslint --ext .ts,.tsx .",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js",
-    "build": "run-s build:types build:js"
+    "build:js": "rollup -c rollup.conf.js"
   },
   "main": "dist/index.js",
   "module": "dist/index.esm.js",

@@ -12,8 +12,12 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build": "lerna exec -- npm run build",
-    "lint": "lerna exec -- npm run lint"
+    "build": "run-s lint clean build:types build:js",
+    "lint": "lerna run lint",
+    "clean": "lerna run clean",
+    "build:types": "lerna run build:types",
+    "build:js": "lerna run build:js",
+    "prepublishOnly": "yarn build"
   },
   "workspaces": [
     "packages/*"

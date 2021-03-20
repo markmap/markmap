@@ -24,13 +24,9 @@
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist",
-    "prebuild": "run-s ci clean",
-    "prepublishOnly": "run-s build",
-    "ci": "run-s lint",
     "lint": "eslint --ext .ts .",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js",
-    "build": "run-s build:types build:js"
+    "build:js": "rollup -c rollup.conf.js"
   },
   "bugs": {
     "url": "https://github.com/gera2ld/markmap/issues"
@@ -43,15 +39,15 @@
   ],
   "typings": "types/index.d.ts",
   "devDependencies": {
-    "@babel/runtime": "^7.11.2",
+    "@babel/runtime": "^7.13.10",
     "markmap-lib": "^0.11.3"
   },
   "dependencies": {
-    "chokidar": "^3.4.2",
-    "commander": "^5.1.0",
-    "koa": "^2.13.0",
-    "open": "^7.0.3",
-    "update-notifier": "^4.1.1"
+    "chokidar": "^3.5.1",
+    "commander": "^7.1.0",
+    "koa": "^2.13.1",
+    "open": "^8.0.3",
+    "update-notifier": "^5.1.0"
   },
   "engines": {
     "node": ">=10"
