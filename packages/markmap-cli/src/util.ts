@@ -55,3 +55,14 @@ export function addToolbar(assets: IAssets): IAssets {
     ],
   };
 }
+
+export class Defer<T> {
+  resolve: (value: T) => void;
+
+  reject: (err: Error) => void;
+
+  promise = new Promise((resolve, reject) => {
+    this.resolve = resolve;
+    this.reject = reject;
+  });
+}

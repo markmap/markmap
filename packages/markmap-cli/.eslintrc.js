@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
     'import/no-extraneous-dependencies': 'off',
+    'max-classes-per-file': 'off',
     'no-continue': 'off',
     'no-shadow': 'off',
     'object-curly-newline': 'off',
