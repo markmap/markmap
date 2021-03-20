@@ -3,6 +3,11 @@ const pkg = require('./package.json');
 
 const DIST = defaultOptions.distDir;
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
+const TOOLBAR_VERSION = require('markmap-toolbar/package.json').version;
+
+const replaceValues = {
+  'process.env.TOOLBAR_VERSION': JSON.stringify(TOOLBAR_VERSION),
+};
 
 // Bundle @babel/runtime to avoid requiring esm version in the output
 const external = [
@@ -24,6 +29,7 @@ const rollupConfig = [
         babelConfig: {
           root: '../..',
         },
+        replaceValues,
       }),
     },
     output: {

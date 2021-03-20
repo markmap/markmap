@@ -6,57 +6,73 @@ import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
 import { Transformer, fillTemplate } from 'markmap-lib';
+import { IDevelopOptions, addToolbar } from './util';
 
-function watch(transformer, input) {
-  let data;
-  let promise;
-  let watcher = chokidar.watch(input).on('all', safeUpdate);
-  const events = new EventEmitter();
-  return {
-    get,
-    getChanged,
-    revoke,
-  };
-  async function update() {
-    const content = await fs.readFile(input, 'utf8');
-    const result = transformer.transform(content || '');
-    data = { ts: Date.now(), ...result };
-    events.emit('updated');
-    promise = null;
+interface IFileUpdate {
+  ts?: number;
+  content?: string;
+}
+
+interface IFileProvider {
+  get: () => Promise<IFileUpdate>;
+  getUpdate: (ts: number, timeout?: number) => Promise<IFileUpdate>;
+  dispose: () => void;
+}
+
+class FileSystemProvider implements IFileProvider {
+  private data: IFileUpdate;
+
+  private events = new EventEmitter();
+
+  private promise: Promise<void>;
+
+  private watcher: chokidar.FSWatcher;
+
+  constructor(private fileName: string) {
+    this.watcher = chokidar.watch(fileName).on('all', () => this.safeUpdate());
   }
-  function safeUpdate() {
-    if (!promise) promise = update();
-    return promise;
+
+  private async update() {
+    const content = await fs.readFile(this.fileName, 'utf8');
+    this.data = { ts: Date.now(), content };
+    this.events.emit('updated');
+    this.promise = null;
   }
-  async function get() {
-    if (!data) await safeUpdate();
-    return data;
+
+  private safeUpdate() {
+    if (!this.promise) this.promise = this.update();
+    return this.promise;
   }
-  async function getChanged(ts, timeout = 10000) {
-    if (data && (Number.isNaN(ts) || ts < data.ts)) return data;
+
+  async get() {
+    if (!this.data) await this.safeUpdate();
+    return this.data;
+  }
+
+  async getUpdate(ts: number | undefined, timeout = 10000): Promise<IFileUpdate> {
+    if (this.data && (Number.isNaN(ts) || ts < this.data.ts)) return this.data;
     try {
       await new Promise((resolve, reject) => {
-        events.once('updated', resolve);
+        this.events.once('updated', resolve);
         setTimeout(() => {
-          events.off('updated', resolve);
+          this.events.off('updated', resolve);
           reject();
         }, timeout);
       });
-      return data;
+      return this.data;
     } catch {
       return {};
     }
   }
-  function revoke() {
-    if (watcher) {
-      watcher.close();
-      watcher = null;
-    }
+
+  dispose() {
+    this.watcher.close();
   }
 }
 
-function setUpServer(transformer, watcher, openFile: boolean) {
-  const assets = transformer.getAssets();
+function setUpServer(transformer: Transformer, provider: IFileProvider, options: IDevelopOptions) {
+  let assets = transformer.getAssets();
+  if (options.toolbar) assets = addToolbar(assets);
   const html = fillTemplate(null, assets) + `<script>
 {
   let ts = 0;
@@ -64,8 +80,10 @@ function setUpServer(transformer, watcher, openFile: boolean) {
     fetch(\`/data?ts=\${ts}\`).then(res => res.json()).then(res => {
       if (res.ts && res.ts > ts) {
         ts = res.ts;
-        mm.setData(res.root);
-        mm.fit();
+        if (res.result) {
+          mm.setData(res.result.root);
+          mm.fit();
+        }
       }
       setTimeout(refresh, 300);
     });
@@ -79,7 +97,9 @@ function setUpServer(transformer, watcher, openFile: boolean) {
     if (ctx.path === '/') {
       ctx.body = html;
     } else if (ctx.path === '/data') {
-      ctx.body = await watcher.getChanged(ctx.query.ts);
+      const update = await provider.getUpdate(ctx.query.ts);
+      const result = transformer.transform(update.content || '');
+      ctx.body = { ts: update.ts, result };
     } else {
       await next();
     }
@@ -90,7 +110,7 @@ function setUpServer(transformer, watcher, openFile: boolean) {
   server.listen(() => {
     const { port } = server.address() as AddressInfo;
     console.info(`Listening at http://localhost:${port}`);
-    if (openFile) open(`http://localhost:${port}`);
+    if (options.open) open(`http://localhost:${port}`);
   });
   let closing: Promise<void>;
   return {
@@ -106,11 +126,8 @@ function setUpServer(transformer, watcher, openFile: boolean) {
   };
 }
 
-export async function develop(options: {
-  input: string;
-  open: boolean;
-}) {
+export async function develop(fileName: string, options: IDevelopOptions) {
   const transformer = new Transformer();
-  const watcher = watch(transformer, options.input);
-  return setUpServer(transformer, watcher, options.open);
+  const provider = new FileSystemProvider(fileName);
+  return setUpServer(transformer, provider, options);
 }
