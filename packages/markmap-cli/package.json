@@ -1,6 +1,6 @@
 {
   "name": "markmap-cli",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Create markmaps from CLI",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -40,7 +40,7 @@
   "typings": "types/index.d.ts",
   "devDependencies": {
     "@babel/runtime": "^7.13.10",
-    "markmap-lib": "^0.11.4"
+    "markmap-lib": "^0.11.5"
   },
   "dependencies": {
     "chokidar": "^3.5.1",
