@@ -1,6 +1,6 @@
 {
   "name": "markmap-lib",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -35,7 +35,7 @@
   ],
   "repository": "git@github.com:gera2ld/markmap.git",
   "devDependencies": {
-    "markmap-view": "^0.2.5"
+    "markmap-view": "^0.2.6"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
