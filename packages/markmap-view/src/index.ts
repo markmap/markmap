@@ -221,9 +221,8 @@ ${this.getStyleContent()}
   }
 
   setData(data?: INode, opts?: IMarkmapOptions): void {
-    if (!data) data = { ...this.state.data };
-    this.state.data = data;
-    this.initializeData(data);
+    if (data) this.state.data = data;
+    this.initializeData(this.state.data);
     if (opts) this.setOptions(opts);
     this.renderData();
   }
