@@ -20,7 +20,18 @@ export { builtInPlugins };
 
 function cleanNode(node: INode, depth = 0): void {
   if (node.t === 'heading') {
-    // drop all paragraphs
+    // make paragraphs the description of the item before them
+    node.c.forEach((item, index) => {
+      if (item.t === 'paragraph') {
+        if (index === 0) {
+          node.description = item.v;
+        } else {
+          node.c[index-1].description = item.v;
+        }
+      }
+    })
+
+    // paragraph aren't needed further
     node.c = node.c.filter((item) => item.t !== 'paragraph');
   } else if (node.t === 'list_item') {
     // keep first paragraph as content of list_item, drop others
@@ -110,12 +121,14 @@ export class Transformer {
     let depth = 0;
     for (const token of tokens) {
       let current = stack[stack.length - 1];
+
       if (token.type.endsWith('_open')) {
-        const type = token.type.slice(0, -5);
         const payload: any = {};
         if (token.lines) {
           payload.lines = token.lines;
         }
+
+        const type = token.type.slice(0, -5);
         if (type === 'heading') {
           depth = token.hLevel;
           while (current?.d >= depth) {
@@ -128,6 +141,7 @@ export class Transformer {
             payload.start = token.order;
           }
         }
+
         const item: INode = {
           t: type,
           d: depth,

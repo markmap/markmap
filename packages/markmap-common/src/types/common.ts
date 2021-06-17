@@ -22,6 +22,10 @@ export interface INode extends IHierarchy<INode> {
    * value
    */
   v: string;
+  /**
+   * description
+   */
+  description?: string;
 }
 
 export type JSScriptItem = {

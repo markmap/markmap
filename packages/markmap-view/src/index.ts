@@ -94,7 +94,8 @@ export class Markmap {
   constructor(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions) {
     [
       'handleZoom',
-      'handleClick',
+      'handleCircleClick',
+      'handleDescriptionToggleClick'
     ].forEach(key => {
       this[key] = this[key].bind(this);
     });
@@ -134,6 +135,7 @@ export class Markmap {
 .${id}-fo em { font-style: italic; }
 .${id}-fo strong { font-weight: bolder; }
 .${id}-fo pre { margin: 0; padding: .2em .4em; }
+.${id}-fo .description { }
 ${extraStyle}
 `;
     return styleText;
@@ -149,11 +151,20 @@ ${extraStyle}
     this.g.attr('transform', transform);
   }
 
-  handleClick(e, d: IMarkmapFlexTreeItem): void {
+  handleCircleClick(e, d: IMarkmapFlexTreeItem): void {
     const { data } = d;
     data.p = {
       ...data.p,
       f: !data.p?.f,
+    };
+    this.renderData(d.data);
+  }
+
+  handleDescriptionToggleClick(e, d: IMarkmapFlexTreeItem): void {
+    const { data } = d;
+    data.p = {
+      ...data.p,
+      hideDescription: !data.p?.hideDescription,
     };
     this.renderData(d.data);
   }
@@ -191,6 +202,14 @@ ${this.getStyleContent()}
       i += 1;
       const el = document.createElement('div');
       el.innerHTML = item.v;
+
+      if (item.description){
+        const nodeDescription = document.createElement('p');
+        nodeDescription.innerHTML = item.description;
+        nodeDescription.className = 'description';
+        el.append(nodeDescription);
+      }
+
       container.append(el);
       item.p = {
         ...item.p,
@@ -229,8 +248,17 @@ ${this.getStyleContent()}
 
   renderData(originData?: INode): void {
     if (!this.state.data) return;
-    const { spacingHorizontal, paddingX, spacingVertical, autoFit, color } = this.options;
+
+    const {
+      spacingHorizontal,
+      paddingX,
+      spacingVertical,
+      autoFit,
+      color,
+    } = this.options;
     const { id } = this.state;
+
+    // Configure layout
     const layout = flextree()
       .children((d: INode) => !d.p?.f && d.c)
       .nodeSize((d: IMarkmapFlexTreeItem) => {
@@ -240,12 +268,15 @@ ${this.getStyleContent()}
       .spacing((a: IMarkmapFlexTreeItem, b: IMarkmapFlexTreeItem) => {
         return a.parent === b.parent ? spacingVertical : spacingVertical * 2;
       });
+
+    // Generate layout
     const tree = layout.hierarchy(this.state.data);
     layout(tree);
+
     adjustSpacing(tree, spacingHorizontal);
+
+    // Update drawing boundaries
     const descendants: IMarkmapFlexTreeItem[] = tree.descendants().reverse();
-    const links: IMarkmapLinkItem[] = tree.links();
-    const linkShape = d3.linkHorizontal();
     const minX = d3.min<any, number>(descendants, d => d.x - d.xSize / 2);
     const maxX = d3.max<any, number>(descendants, d => d.x + d.xSize / 2);
     const minY = d3.min<any, number>(descendants, d => d.y);
@@ -256,28 +287,39 @@ ${this.getStyleContent()}
       minY,
       maxY,
     });
-
     if (autoFit) this.fit();
 
+    // Work relative to this node. Can be root or a node which is to be unfolded.
     const origin = originData && descendants.find(item => item.data === originData) || tree;
     const x0 = origin.data.p.x0 ?? origin.x;
     const y0 = origin.data.p.y0 ?? origin.y;
 
-    // Update the nodes
-    const node = this.g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
+    /// Generate DOM nodes for each element
+    // Update the container nodes
+    const nodes = this
+      .g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
       .data(descendants, d => d.data.p.k);
-    const nodeEnter = node.enter().append('g')
-      .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`);
 
-    const nodeExit = this.transition(node.exit<IMarkmapFlexTreeItem>());
-    nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
-    nodeExit.select('foreignObject').style('opacity', 0);
-    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
+    const nodesEntering = nodes.enter().append('g')
+      .attr('transform',
+        d => `translate(${
+          y0 + origin.ySizeInner - d.ySizeInner},${
+          x0 + origin.xSize / 2 - d.xSize})`);
 
-    const nodeMerge = node.merge(nodeEnter);
-    this.transition(nodeMerge).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
+    const nodesExiting = this.transition(nodes.exit<IMarkmapFlexTreeItem>());
+    nodesExiting.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
+    nodesExiting.select('foreignObject').style('opacity', 0);
+    nodesExiting.attr('transform',
+      d => `translate(${
+        origin.y + origin.ySizeInner - d.ySizeInner},${
+        origin.x + origin.xSize / 2 - d.xSize})`).remove();
 
-    const rect = nodeMerge.selectAll<SVGRectElement, IMarkmapFlexTreeItem>(childSelector<SVGRectElement>('rect'))
+    const nodesOnScreen = nodes.merge(nodesEntering);
+    this.transition(nodesOnScreen).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
+
+    // Update lines under nodes
+    const rect = nodesOnScreen
+      .selectAll<SVGRectElement, IMarkmapFlexTreeItem>(childSelector<SVGRectElement>('rect'))
       .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
@@ -295,7 +337,9 @@ ${this.getStyleContent()}
       .attr('width', d => d.ySizeInner + 2)
       .attr('fill', d => color(d.data));
 
-    const circle = nodeMerge.selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(childSelector<SVGCircleElement>('circle'))
+    // Update branch splits
+    const circle = nodesOnScreen
+      .selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(childSelector<SVGCircleElement>('circle'))
       .data(d => (d.data.c ? [d] : []), d => d.data.p.k)
       .join(
         enter => {
@@ -304,7 +348,7 @@ ${this.getStyleContent()}
             .attr('cx', d => d.ySizeInner)
             .attr('cy', d => d.xSize)
             .attr('r', 0)
-            .on('click', this.handleClick);
+            .on('click', this.handleCircleClick);
         },
         update => update,
         exit => exit.remove(),
@@ -314,7 +358,9 @@ ${this.getStyleContent()}
       .attr('stroke', d => color(d.data))
       .attr('fill', d => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
 
-    const foreignObject = nodeMerge.selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(childSelector<SVGForeignObjectElement>('foreignObject'))
+    // Update node content
+    const foreignObjects = nodesOnScreen
+      .selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(childSelector<SVGForeignObjectElement>('foreignObject'))
       .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
@@ -339,11 +385,35 @@ ${this.getStyleContent()}
         exit => exit.remove(),
       )
       .attr('width', d => Math.max(0, d.ySizeInner - paddingX * 2));
-    this.transition(foreignObject)
+    this.transition(foreignObjects)
       .style('opacity', 1);
 
-    // Update the links
-    const path = this.g.selectAll<SVGPathElement, IMarkmapLinkItem>(childSelector<SVGPathElement>('path'))
+
+    const descriptions = foreignObjects
+      .selectAll<HTMLDivElement, IMarkmapFlexTreeItem>('DIV')
+      .selectAll<HTMLParagraphElement, IMarkmapFlexTreeItem>('.description')
+      .data(d => d? [d] : [], d => d?.data.p.k)
+      .join(enter => {
+        return enter
+          .append<HTMLParagraphElement>(d => {
+            const paragraph = document.createElement('p');
+            paragraph.className = 'description';
+            paragraph.innerHTML = d.data.description ?? '';
+            return paragraph;
+          })
+          .on('click', this.handleDescriptionToggleClick);
+      },
+      update => update,
+      exit => exit.remove()
+    );
+    this.transition(descriptions)
+      .style('opacity', d => d.data.p?.hideDescription? 0: 1);
+
+    // Update links between the circles and the lines under a node's text
+    const links: IMarkmapLinkItem[] = tree.links();
+    const linkShape = d3.linkHorizontal();
+    const path = this
+      .g.selectAll<SVGPathElement, IMarkmapLinkItem>(childSelector<SVGPathElement>('path'))
       .data(links, d => d.target.data.p.k)
       .join(
         enter => {

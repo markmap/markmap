@@ -8,7 +8,8 @@
     "@gera2ld/plaid-rollup": "~2.3.0",
     "del-cli": "^3.0.1",
     "husky": "^5.1.3",
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "yarn": "^1.22.10"
   },
   "scripts": {
     "prepare": "husky install",
