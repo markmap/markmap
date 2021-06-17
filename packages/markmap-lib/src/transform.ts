@@ -26,10 +26,10 @@ function cleanNode(node: INode, depth = 0): void {
         if (index === 0) {
           node.description = item.v;
         } else {
-          node.c[index-1].description = item.v;
+          node.c[index - 1].description = item.v;
         }
       }
-    })
+    });
 
     // paragraph aren't needed further
     node.c = node.c.filter((item) => item.t !== 'paragraph');

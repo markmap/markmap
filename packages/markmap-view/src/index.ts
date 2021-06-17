@@ -95,7 +95,7 @@ export class Markmap {
     [
       'handleZoom',
       'handleCircleClick',
-      'handleDescriptionToggleClick'
+      'handleDescriptionToggleClick',
     ].forEach(key => {
       this[key] = this[key].bind(this);
     });
@@ -201,18 +201,35 @@ ${this.getStyleContent()}
       item.c = item.c?.map(child => ({ ...child }));
       i += 1;
       const el = document.createElement('div');
-      el.innerHTML = item.v;
 
-      if (item.description){
+      const nodeTitle = document.createElement('p');
+      nodeTitle.innerHTML = item.v;
+      nodeTitle.className = 'title';
+      el.append(nodeTitle);
+      // element needs to be appended to DOM for `getBoundingClientRect` to work
+      container.append(el);
+      const titleRect = nodeTitle.getBoundingClientRect();
+
+      let descriptionRect: DOMRect;
+      if (item.description) {
         const nodeDescription = document.createElement('p');
         nodeDescription.innerHTML = item.description;
         nodeDescription.className = 'description';
         el.append(nodeDescription);
+        descriptionRect = nodeDescription.getBoundingClientRect();
       }
 
-      container.append(el);
       item.p = {
         ...item.p,
+        // multiple sizes to allow resizing on toggling of description
+        titleSize: [
+          Math.ceil(titleRect.width),
+          Math.max(Math.ceil(titleRect.height), nodeMinHeight),
+        ],
+        descriptionSize: [
+          Math.ceil(descriptionRect?.width || 0),
+          Math.max(Math.ceil(descriptionRect?.height || 0), nodeMinHeight),
+        ],
         // unique ID
         i,
         el,
@@ -223,9 +240,6 @@ ${this.getStyleContent()}
     const nodes = arrayFrom(container.childNodes) as HTMLElement[];
     this.viewHooks.transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
-      const rect = item.p.el.getBoundingClientRect();
-      item.v = item.p.el.innerHTML;
-      item.p.s = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), nodeMinHeight)];
       // TODO keep keys for unchanged objects
       // unique key, should be based on content
       item.p.k = `${parent?.p?.i || ''}.${item.p.i}:${item.v}`;
@@ -262,8 +276,16 @@ ${this.getStyleContent()}
     const layout = flextree()
       .children((d: INode) => !d.p?.f && d.c)
       .nodeSize((d: IMarkmapFlexTreeItem) => {
-        const [width, height] = d.data.p.s;
-        return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
+        const [titleWidth, titleHeight] = d.data.p.titleSize;
+        const [descriptionWidth, descriptionHeight] =
+          d.data.p.hideDescription ? [ 0, 0 ] : d.data.p.descriptionSize;
+
+        const height = titleHeight + descriptionHeight;
+        const width = Math.max(titleWidth, descriptionWidth);
+        return [
+          height,
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal
+        ];
       })
       .spacing((a: IMarkmapFlexTreeItem, b: IMarkmapFlexTreeItem) => {
         return a.parent === b.parent ? spacingVertical : spacingVertical * 2;
@@ -329,9 +351,17 @@ ${this.getStyleContent()}
             .attr('width', 0)
             .attr('height', linkWidth);
         },
-        update => update,
+        update => {
+          // TODO
+          return update
+            .attr('x', d => d.ySizeInner)
+            .attr('y', d => d.xSize - linkWidth(d) / 2)
+            .attr('width', 0)
+            .attr('height', linkWidth);
+        },
         exit => exit.remove(),
       );
+    // TODO
     this.transition(rect)
       .attr('x', -1)
       .attr('width', d => d.ySizeInner + 2)
@@ -350,9 +380,16 @@ ${this.getStyleContent()}
             .attr('r', 0)
             .on('click', this.handleCircleClick);
         },
-        update => update,
+        update => {
+          // TODO
+          return update
+            .attr('stroke-width', '1.5')
+            .attr('cx', d => d.ySizeInner)
+            .attr('cy', d => d.xSize);
+        },
         exit => exit.remove(),
       );
+    // TODO
     this.transition(circle)
       .attr('r', 6)
       .attr('stroke', d => color(d.data))
@@ -388,11 +425,10 @@ ${this.getStyleContent()}
     this.transition(foreignObjects)
       .style('opacity', 1);
 
-
     const descriptions = foreignObjects
       .selectAll<HTMLDivElement, IMarkmapFlexTreeItem>('DIV')
       .selectAll<HTMLParagraphElement, IMarkmapFlexTreeItem>('.description')
-      .data(d => d? [d] : [], d => d?.data.p.k)
+      .data(d => (d && !d.data.p.hideDescription ? [d] : []), d => d?.data.p.k)
       .join(enter => {
         return enter
           .append<HTMLParagraphElement>(d => {
@@ -401,13 +437,13 @@ ${this.getStyleContent()}
             paragraph.innerHTML = d.data.description ?? '';
             return paragraph;
           })
+          .style('opacity', 0)
           .on('click', this.handleDescriptionToggleClick);
       },
       update => update,
-      exit => exit.remove()
-    );
+      exit => exit.remove());
     this.transition(descriptions)
-      .style('opacity', d => d.data.p?.hideDescription? 0: 1);
+      .style('opacity', 1);
 
     // Update links between the circles and the lines under a node's text
     const links: IMarkmapLinkItem[] = tree.links();
