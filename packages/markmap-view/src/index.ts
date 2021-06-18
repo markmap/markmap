@@ -136,7 +136,8 @@ export class Markmap {
 .${id}-fo em { font-style: italic; }
 .${id}-fo strong { font-weight: bolder; }
 .${id}-fo pre { margin: 0; padding: .2em .4em; }
-.${id}-fo > div > .title { padding: .2em .4em; }
+.${id}-fo > div > .title { padding: .2em; }
+.${id}-fo > div > .description { padding: 0 .2em; }
 ${extraStyle}
 `;
     return styleText;
@@ -231,6 +232,7 @@ ${this.getStyleContent()}
           Math.ceil(descriptionRect?.width || 0),
           Math.max(Math.ceil(descriptionRect?.height || 0), nodeMinHeight),
         ],
+        hideDescription: item.description ? false : true,
         // unique ID
         i,
         el,
