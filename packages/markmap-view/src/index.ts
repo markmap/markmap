@@ -128,6 +128,7 @@ export class Markmap {
 .${id} a:hover { color: #00a8ff; }
 .${id}-g > path { fill: none; }
 .${id}-g > g > circle { cursor: pointer; }
+.${id}-g > g > polygon { cursor: pointer; }
 .${id}-fo > div { display: inline-block; font: ${nodeFont}; white-space: nowrap; }
 .${id}-fo code { font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
 .${id}-fo :not(pre) > code { padding: .2em .4em; }
@@ -135,7 +136,7 @@ export class Markmap {
 .${id}-fo em { font-style: italic; }
 .${id}-fo strong { font-weight: bolder; }
 .${id}-fo pre { margin: 0; padding: .2em .4em; }
-.${id}-fo .description { }
+.${id}-fo > div > .title { padding: .2em .4em; }
 ${extraStyle}
 `;
     return styleText;
@@ -330,6 +331,7 @@ ${this.getStyleContent()}
 
     const nodesExiting = this.transition(nodes.exit<IMarkmapFlexTreeItem>());
     nodesExiting.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
+    nodesExiting.select('polygon').style('opacity', 0);
     nodesExiting.select('foreignObject').style('opacity', 0);
     nodesExiting
       .attr('transform',
@@ -426,23 +428,72 @@ ${this.getStyleContent()}
     this.transition(foreignObjects)
       .style('opacity', 1);
 
+    // Update descriptions
+    // TODO: descriptions just disappear now when toggled. They need a transition.
     foreignObjects
       .selectAll<HTMLDivElement, IMarkmapFlexTreeItem>('DIV')
       .selectAll<HTMLParagraphElement, IMarkmapFlexTreeItem>('.description')
       .data(d => (d && !d.data.p.hideDescription ? [d] : []), d => d?.data.p.k)
-      .join(enter => {
-        return enter
-          .append<HTMLParagraphElement>(d => {
-            const paragraph = document.createElement('p');
-            paragraph.className = 'description';
-            paragraph.innerHTML = d.data.description ?? '';
-            return paragraph;
-          })
-          .on('click', this.handleDescriptionToggleClick);
-      },
-      update => update,
-      exit => exit.remove()
-    );
+      .join(
+        enter => {
+          const description = enter
+            .append<HTMLParagraphElement>(d => {
+              const paragraph = document.createElement('p');
+              paragraph.className = 'description';
+              paragraph.innerHTML = d.data.description ?? '';
+              return paragraph;
+            })
+            .style('opacity', 0);
+          this.transition(description)
+            .style('opacity', 1);
+          return description;
+        },
+        update => update,
+        exit => exit.remove(),
+      );
+
+    // Update description toggles
+    nodesOnScreen
+      .selectAll<SVGRectElement, IMarkmapFlexTreeItem>(childSelector<SVGRectElement>('polygon'))
+      .data(d => (d && d.data.description ? [d] : []), d => d?.data.p.k)
+      .join(
+        enter => {
+                    const toggleIcon = enter.append('polygon')
+            .attr('points', d => {
+              const [
+                hidingDescriptionArrow,
+                showingDescriptionArrow,
+              ] = this.generateDescriptionToggles(d.data.p.titleSize[1]);
+
+              return d.data.p.hideDescription
+                ? hidingDescriptionArrow
+                : showingDescriptionArrow;
+            })
+            .attr('stroke', 'grey')
+            .attr('fill', 'transparent')
+            .attr('stroke-width', 1.5)
+            .style('opacity', 0)
+            .on('click', this.handleDescriptionToggleClick);
+          this.transition(toggleIcon)
+            .style('opacity', 1);
+          return enter;
+        },
+        update => {
+          this.transition(update)
+            .attr('points', d => {
+              const [
+                hidingDescriptionArrow,
+                showingDescriptionArrow,
+              ] = this.generateDescriptionToggles(d.data.p.titleSize[1]);
+
+              return d.data.p.hideDescription
+                ? hidingDescriptionArrow
+                : showingDescriptionArrow;
+            })
+          return update;
+        },
+        exit => exit.remove(),
+      );
 
     // Update links between the circles and the lines under a node's text
     const links: IMarkmapLinkItem[] = tree.links();
@@ -496,6 +547,24 @@ ${this.getStyleContent()}
   ): d3.Transition<T, U, P, Q> {
     const { duration } = this.options;
     return sel.transition().duration(duration);
+  }
+
+  // Calculates coordinates for drawing svg polygon arrows.
+  generateDescriptionToggles(titleHeight: number): [string, string]
+  {
+    const halfSideLength = 3;
+    titleHeight = 0.5 * titleHeight;
+
+    const hidingDescriptionArrow = `\
+0 ${titleHeight - halfSideLength} \
+${halfSideLength * 2} ${titleHeight} \
+0 ${titleHeight + halfSideLength}`;
+    const showingDescriptionArrow = `\
+0 ${titleHeight - halfSideLength} \
+${halfSideLength * 2} ${titleHeight - halfSideLength} \
+${halfSideLength} ${titleHeight + halfSideLength}`;
+
+    return [hidingDescriptionArrow, showingDescriptionArrow];
   }
 
   /**
