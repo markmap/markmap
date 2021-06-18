@@ -331,69 +331,70 @@ ${this.getStyleContent()}
     const nodesExiting = this.transition(nodes.exit<IMarkmapFlexTreeItem>());
     nodesExiting.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
     nodesExiting.select('foreignObject').style('opacity', 0);
-    nodesExiting.attr('transform',
-      d => `translate(${
-        origin.y + origin.ySizeInner - d.ySizeInner},${
-        origin.x + origin.xSize / 2 - d.xSize})`).remove();
+    nodesExiting
+      .attr('transform',
+        d => `translate(${
+          origin.y + origin.ySizeInner - d.ySizeInner},${
+          origin.x + origin.xSize / 2 - d.xSize})`)
+      .remove();
 
     const nodesOnScreen = nodes.merge(nodesEntering);
     this.transition(nodesOnScreen).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
 
     // Update lines under nodes
-    const rect = nodesOnScreen
+    nodesOnScreen
       .selectAll<SVGRectElement, IMarkmapFlexTreeItem>(childSelector<SVGRectElement>('rect'))
       .data(d => [d], d => d.data.p.k)
       .join(
         enter => {
-          return enter.append('rect')
+          const rect = enter.append('rect')
             .attr('x', d => d.ySizeInner)
             .attr('y', d => d.xSize - linkWidth(d) / 2)
             .attr('width', 0)
-            .attr('height', linkWidth);
+            .attr('height', linkWidth)
+            .style('opacity', 0);
+          this.transition(rect)
+            .attr('x', -1)
+            .attr('width', d => d.ySizeInner + 2)
+            .attr('fill', d => color(d.data))
+            .style('opacity', 1);
+          return enter;
         },
         update => {
-          // TODO
-          return update
-            .attr('x', d => d.ySizeInner)
+          this.transition(update)
             .attr('y', d => d.xSize - linkWidth(d) / 2)
-            .attr('width', 0)
-            .attr('height', linkWidth);
+            .attr('width', d => d.ySizeInner + 2);
+          return update;
         },
         exit => exit.remove(),
       );
-    // TODO
-    this.transition(rect)
-      .attr('x', -1)
-      .attr('width', d => d.ySizeInner + 2)
-      .attr('fill', d => color(d.data));
 
     // Update branch splits
-    const circle = nodesOnScreen
+    nodesOnScreen
       .selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(childSelector<SVGCircleElement>('circle'))
       .data(d => (d.data.c ? [d] : []), d => d.data.p.k)
       .join(
         enter => {
-          return enter.append('circle')
+          const circle = enter.append('circle')
+            .attr('r', 0)
             .attr('stroke-width', '1.5')
             .attr('cx', d => d.ySizeInner)
             .attr('cy', d => d.xSize)
-            .attr('r', 0)
             .on('click', this.handleCircleClick);
+          this.transition(circle)
+            .attr('r', 6)
+            .attr('stroke', d => color(d.data))
+            .attr('fill', d => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
+          return circle;
         },
         update => {
-          // TODO
-          return update
-            .attr('stroke-width', '1.5')
+          this.transition(update)
             .attr('cx', d => d.ySizeInner)
             .attr('cy', d => d.xSize);
+          return update;
         },
         exit => exit.remove(),
       );
-    // TODO
-    this.transition(circle)
-      .attr('r', 6)
-      .attr('stroke', d => color(d.data))
-      .attr('fill', d => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
 
     // Update node content
     const foreignObjects = nodesOnScreen
@@ -425,7 +426,7 @@ ${this.getStyleContent()}
     this.transition(foreignObjects)
       .style('opacity', 1);
 
-    const descriptions = foreignObjects
+    foreignObjects
       .selectAll<HTMLDivElement, IMarkmapFlexTreeItem>('DIV')
       .selectAll<HTMLParagraphElement, IMarkmapFlexTreeItem>('.description')
       .data(d => (d && !d.data.p.hideDescription ? [d] : []), d => d?.data.p.k)
@@ -437,13 +438,11 @@ ${this.getStyleContent()}
             paragraph.innerHTML = d.data.description ?? '';
             return paragraph;
           })
-          .style('opacity', 0)
           .on('click', this.handleDescriptionToggleClick);
       },
       update => update,
-      exit => exit.remove());
-    this.transition(descriptions)
-      .style('opacity', 1);
+      exit => exit.remove()
+    );
 
     // Update links between the circles and the lines under a node's text
     const links: IMarkmapLinkItem[] = tree.links();
