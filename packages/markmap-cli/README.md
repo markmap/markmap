@@ -29,10 +29,9 @@ Create a markmap from a Markdown input file
 
 Options:
   -V, --version          output the version number
-  -o, --output <output>  specify filename of the output HTML
-  --enable-mathjax       enable MathJax support
-  --enable-prism         enable PrismJS support
   --no-open              do not open the output file after generation
+  --no-toolbar           do not show toolbar
+  -o, --output <output>  specify filename of the output HTML
   -w, --watch            watch the input file and update output on the fly, note that this feature is for development only
   -h, --help             display help for command
 ```
