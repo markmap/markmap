@@ -24,7 +24,7 @@
   },
   "typings": "types/index.d.ts",
   "dependencies": {
-    "@babel/runtime": "^7.12.1",
-    "@gera2ld/jsx-dom": "^1.2.1"
+    "@babel/runtime": "^7.16.3",
+    "@gera2ld/jsx-dom": "^2.1.1"
   }
 }
