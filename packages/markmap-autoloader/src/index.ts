@@ -2,7 +2,7 @@ import { loadJS } from 'markmap-common';
 
 const enabled = {};
 
-const preloading = loadJS([
+export const ready = loadJS([
   {
     type: 'script',
     data: {
@@ -15,7 +15,9 @@ const preloading = loadJS([
       src: `https://cdn.jsdelivr.net/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
     },
   },
-]);
+]).then(() => {
+  window.markmap?.autoLoader?.onReady?.();
+});
 
 function transform(transformer, content) {
   const { root, features } = transformer.transform(content);
@@ -29,7 +31,7 @@ function transform(transformer, content) {
 }
 
 export function render(el) {
-  const { Transformer, Markmap } = window.markmap;
+  const { Transformer, Markmap, autoLoader } = window.markmap;
   const lines = el.textContent.split('\n');
   let indent = Infinity;
   lines.forEach(line => {
@@ -37,7 +39,7 @@ export function render(el) {
     if (spaces < line.length) indent = Math.min(indent, spaces);
   });
   const content = lines.map(line => line.slice(indent)).join('\n');
-  const transformer = new Transformer();
+  const transformer = new Transformer(autoLoader?.transformPlugins);
   el.innerHTML = '<svg></svg>';
   const svg = el.firstChild;
   const mm = Markmap.create(svg);
@@ -51,7 +53,7 @@ export function render(el) {
 }
 
 export async function renderAllUnder(container: ParentNode) {
-  await preloading;
+  await ready;
   container.querySelectorAll('.markmap').forEach(render);
 }
 

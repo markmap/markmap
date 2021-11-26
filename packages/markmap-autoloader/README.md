@@ -26,7 +26,7 @@ HTML:
 </div>
 ```
 
-Autoload all `.markmap`:
+Autoload all elements matching `.markmap`:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
@@ -49,15 +49,44 @@ setTimeout(() => {
 </script>
 ```
 
+Disable built-in plugins:
+
+```html
+<script>
+window.markmap = {
+  autoLoader: {
+    transformPlugins: [],
+  },
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
+```
+
 ## API
+
+### Options
+
+If `window.markmap.autoLoader` is defined before this package is loaded, it will be regarded as autoLoader options.
+
+- `autoLoader.manual` *boolean* default as `false`
+
+    Whether to render markmaps manually. If false, all elements matching `.markmap` will be rendered once this package loads or DOMContentLoaded is emitted, whichever later.
+
+- `autoLoader.transformPlugins` *ITransformPlugin[]*
+
+    Override built-in plugins if provided. Set to `[]` to disable all built-in plugins for auto-loader.
+
+- `autoLoader.onReady` *function*
+
+    Callback when markmap-lib/markmap-view and their dependencies are loaded. We can tweak global options in this callback.
 
 ### markmap.autoLoader.renderAll()
 
-Render all `.markmap`s.
+Render all elements matching `.markmap`.
 
 ### markmap.autoLoader.renderAllUnder(el)
 
-Render all `.markmap`s under container `el`.
+Render all elements matching `.markmap` under container `el`.
 
 ### markmap.autoLoader.render(el)
 
