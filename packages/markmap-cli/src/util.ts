@@ -27,7 +27,7 @@ export interface IDevelopOptions {
 export function addToolbar(assets: IAssets): IAssets {
   return {
     styles: [
-      ...assets.styles || [],
+      ...(assets.styles || []),
       {
         type: 'stylesheet',
         data: {
@@ -36,7 +36,7 @@ export function addToolbar(assets: IAssets): IAssets {
       },
     ],
     scripts: [
-      ...assets.scripts || [],
+      ...(assets.scripts || []),
       {
         type: 'script',
         data: {

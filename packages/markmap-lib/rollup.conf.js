@@ -32,7 +32,7 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         extensions: defaultOptions.extensions,
         babelConfig: {
-          root: '../..',
+          rootMode: 'upward',
         },
         replaceValues,
       }),
@@ -51,7 +51,7 @@ const rollupConfig = [
         esm: true,
         extensions: defaultOptions.extensions,
         babelConfig: {
-          root: '../..',
+          rootMode: 'upward',
         },
         replaceValues,
       }),
@@ -76,7 +76,7 @@ const rollupConfig = [
           ...defaultOptions.extensions,
         ],
         babelConfig: {
-          root: '../..',
+          rootMode: 'upward',
         },
         replaceValues,
       }),

@@ -30,7 +30,7 @@ const rollupConfig = [
         esm: true,
         extensions: defaultOptions.extensions,
         babelConfig: {
-          root: '../..',
+          rootMode: 'upward',
         },
         replaceValues,
       }),

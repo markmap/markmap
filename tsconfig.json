@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@gera2ld/jsx-dom"
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/types/**/*"
+  ]
+}

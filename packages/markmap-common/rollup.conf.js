@@ -28,6 +28,9 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         extensions: defaultOptions.extensions,
         postcss: postcssOptions,
+        babelConfig: {
+          rootMode: 'upward',
+        },
       }),
       external,
     },
@@ -43,6 +46,9 @@ const rollupConfig = [
         esm: true,
         extensions: defaultOptions.extensions,
         postcss: postcssOptions,
+        babelConfig: {
+          rootMode: 'upward',
+        },
       }),
       external,
     },

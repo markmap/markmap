@@ -31,6 +31,9 @@ const rollupConfig = [
         esm: true,
         extensions: defaultOptions.extensions,
         postcss: postcssOptions,
+        babelConfig: {
+          rootMode: 'upward',
+        },
       }),
       external,
     },
@@ -49,6 +52,9 @@ const rollupConfig = [
         postcss: {
           ...postcssOptions,
           extract: 'style.css',
+        },
+        babelConfig: {
+          rootMode: 'upward',
         },
       }),
     },

@@ -1,9 +1,7 @@
 import { promises as fs } from 'fs';
 import { Command } from 'commander';
 import open from 'open';
-import {
-  Transformer, fillTemplate,
-} from 'markmap-lib';
+import { Transformer, fillTemplate } from 'markmap-lib';
 import type { IMarkmapCreateOptions } from 'markmap-lib';
 import { IDevelopOptions, addToolbar } from './util';
 import { develop } from './dev-server';
@@ -12,7 +10,7 @@ export * from 'markmap-lib';
 export { develop };
 
 export async function createMarkmap(
-  options: IMarkmapCreateOptions & IDevelopOptions,
+  options: IMarkmapCreateOptions & IDevelopOptions
 ): Promise<void> {
   const transformer = new Transformer();
   const { root, features } = transformer.transform(options.content || '');
@@ -33,7 +31,10 @@ export function main(version: string) {
     .option('--no-open', 'do not open the output file after generation')
     .option('--no-toolbar', 'do not show toolbar')
     .option('-o, --output <output>', 'specify filename of the output HTML')
-    .option('-w, --watch', 'watch the input file and update output on the fly, note that this feature is for development only')
+    .option(
+      '-w, --watch',
+      'watch the input file and update output on the fly, note that this feature is for development only'
+    )
     .action(async (input, cmd) => {
       const content = await fs.readFile(input, 'utf8');
       const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;

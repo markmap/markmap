@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { promises as fs } from 'fs';
 import { EventEmitter } from 'events';
 import { AddressInfo } from 'net';
@@ -27,9 +28,11 @@ function consecutive(fn: () => Promise<void>) {
   return () => {
     if (!promise) {
       promise = fn();
-      promise.catch(() => {}).then(() => {
-        promise = null;
-      });
+      promise
+        .catch(() => {})
+        .then(() => {
+          promise = null;
+        });
     }
     return promise;
   };
@@ -98,12 +101,18 @@ class BufferContentProvider implements IContentProvider {
   dispose() {}
 }
 
-class FileSystemProvider extends BufferContentProvider implements IContentProvider {
+class FileSystemProvider
+  extends BufferContentProvider
+  implements IContentProvider
+{
   private watcher: chokidar.FSWatcher;
 
   constructor(private fileName: string) {
     super();
-    this.watcher = chokidar.watch(fileName).on('all', consecutive(() => this.update()));
+    this.watcher = chokidar.watch(fileName).on(
+      'all',
+      consecutive(() => this.update())
+    );
   }
 
   private async update() {
@@ -124,20 +133,22 @@ function startServer(paddingBottom: number) {
   const { mm } = window as any;
   refresh();
   function refresh() {
-    fetch(`/data?ts=${ts}`).then(res => res.json()).then(res => {
-      if (res.ts && res.ts > ts && res.result) {
-        mm.setData(root = res.result.root);
-        if (!ts) mm.fit();
-        ts = res.ts;
-        line = null;
-      }
-      if (root && res.line != null && line !== res.line) {
-        line = res.line;
-        const active = findActiveNode();
-        if (active) mm.ensureView(active, { bottom: paddingBottom });
-      }
-      setTimeout(refresh, 300);
-    });
+    fetch(`/data?ts=${ts}`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.ts && res.ts > ts && res.result) {
+          mm.setData((root = res.result.root));
+          if (!ts) mm.fit();
+          ts = res.ts;
+          line = null;
+        }
+        if (root && res.line != null && line !== res.line) {
+          line = res.line;
+          const active = findActiveNode();
+          if (active) mm.ensureView(active, { bottom: paddingBottom });
+        }
+        setTimeout(refresh, 300);
+      });
   }
   function findActiveNode() {
     let best: INode;
@@ -156,11 +167,14 @@ function startServer(paddingBottom: number) {
 function setUpServer(
   transformer: Transformer,
   provider: IContentProvider,
-  options: IDevelopOptions,
+  options: IDevelopOptions
 ) {
   let assets = transformer.getAssets();
   if (options.toolbar) assets = addToolbar(assets);
-  const html = fillTemplate(null, assets) + `<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
+  const html = `${fillTemplate(
+    null,
+    assets
+  )}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
 
   const app = new Koa();
   app.use(async (ctx, next) => {
@@ -168,7 +182,10 @@ function setUpServer(
       ctx.body = html;
     } else if (ctx.path === '/data') {
       const update = await provider.getUpdate(ctx.query.ts);
-      const result = update.content == null ? null : transformer.transform(update.content || '');
+      const result =
+        update.content == null
+          ? null
+          : transformer.transform(update.content || '');
       ctx.body = { ts: update.ts, result, line: update.line };
     } else {
       await next();
@@ -187,18 +204,25 @@ function setUpServer(
     provider,
     close() {
       if (!closing) {
-        closing = new Promise((resolve, reject) => server.close((err?: Error) => {
-          if (err) reject(err);
-          else resolve();
-        }));
+        closing = new Promise((resolve, reject) =>
+          server.close((err?: Error) => {
+            if (err) reject(err);
+            else resolve();
+          })
+        );
       }
       return closing;
     },
   };
 }
 
-export async function develop(fileName: string | undefined, options: IDevelopOptions) {
+export async function develop(
+  fileName: string | undefined,
+  options: IDevelopOptions
+) {
   const transformer = new Transformer();
-  const provider = fileName ? new FileSystemProvider(fileName) : new BufferContentProvider();
+  const provider = fileName
+    ? new FileSystemProvider(fileName)
+    : new BufferContentProvider();
   return setUpServer(transformer, provider, options);
 }

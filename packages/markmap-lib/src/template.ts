@@ -14,12 +14,14 @@ const BASE_JS: JSItem[] = [
 }));
 
 export function fillTemplate(
-  data: INode | undefined,
+  root: INode | undefined,
   assets: IAssets,
-  extra?: {
-    baseJs?: JSItem[],
-    getOptions?: () => any,
-  } | (() => any),
+  extra?:
+    | {
+        baseJs?: JSItem[];
+        getOptions?: () => any;
+      }
+    | (() => any)
 ): string {
   if (typeof extra === 'function') {
     extra = { getOptions: extra };
@@ -29,31 +31,36 @@ export function fillTemplate(
     ...extra,
   };
   const { scripts, styles } = assets;
-  const cssList = [
-    ...styles ? persistCSS(styles) : [],
-  ];
+  const cssList = [...(styles ? persistCSS(styles) : [])];
   const context = {
     getMarkmap: () => (window as any).markmap,
     getOptions: extra.getOptions,
-    data,
+    data: root,
   };
   const jsList = [
     ...persistJS(extra.baseJs),
-    ...persistJS([
-      ...scripts || [],
-      {
-        type: 'iife',
-        data: {
-          fn: (getMarkmap, getOptions, data) => {
-            const { Markmap } = getMarkmap();
-            (window as any).mm = Markmap.create('svg#mindmap', getOptions?.(), data);
-          },
-          getParams: ({ getMarkmap, getOptions, data }) => {
-            return [getMarkmap, getOptions, data];
+    ...persistJS(
+      [
+        ...(scripts || []),
+        {
+          type: 'iife',
+          data: {
+            fn: (getMarkmap, getOptions, data) => {
+              const { Markmap } = getMarkmap();
+              (window as any).mm = Markmap.create(
+                'svg#mindmap',
+                getOptions?.(),
+                data
+              );
+            },
+            getParams: ({ getMarkmap, getOptions, data }) => {
+              return [getMarkmap, getOptions, data];
+            },
           },
         },
-      },
-    ], context),
+      ],
+      context
+    ),
   ];
   const html = template
     .replace('<!--CSS-->', () => cssList.join(''))

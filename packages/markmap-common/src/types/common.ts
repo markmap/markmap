@@ -46,8 +46,8 @@ export type CSSItem = {
 };
 
 export interface IWrapContext<T extends (...args: any[]) => any> {
-  args: Parameters<T>,
-  result?: ReturnType<T>,
+  args: Parameters<T>;
+  result?: ReturnType<T>;
 }
 
 export interface IDeferred<T> {

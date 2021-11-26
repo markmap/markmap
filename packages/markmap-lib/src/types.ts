@@ -21,10 +21,12 @@ export interface IMarkmapCreateOptions {
 }
 
 export interface IAssetsMap {
-  [key: string]: IAssets,
+  [key: string]: IAssets;
 }
 
-export interface IFeatures { [key: string]: boolean; }
+export interface IFeatures {
+  [key: string]: boolean;
+}
 
 export interface ITransformResult {
   root: INode;

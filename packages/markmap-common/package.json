@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist types",
-    "lint": "eslint --ext .ts,.tsx .",
     "build:types": "tsc",
     "build:js": "rollup -c rollup.conf.js"
   },

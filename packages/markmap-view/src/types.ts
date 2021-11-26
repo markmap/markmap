@@ -1,7 +1,4 @@
 import { INode } from 'markmap-common';
-import { Markmap } from '.';
-
-export type IMarkmap = typeof Markmap;
 
 export interface IMarkmapOptions {
   id?: string;

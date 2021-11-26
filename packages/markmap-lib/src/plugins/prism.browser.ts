@@ -3,20 +3,22 @@ import { IAssets, ITransformHooks } from '../types';
 
 let loading: Promise<void>;
 const autoload = () => {
-  loading = loading || loadJS([
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
+  loading =
+    loading ||
+    loadJS([
+      {
+        type: 'script',
+        data: {
+          src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
+        },
       },
-    },
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
+      {
+        type: 'script',
+        data: {
+          src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
+        },
       },
-    },
-  ]);
+    ]);
   return loading;
 };
 

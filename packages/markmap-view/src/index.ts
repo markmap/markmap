@@ -2,9 +2,22 @@ import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import {
   INode,
-  Hook, getId, walkTree, arrayFrom, addClass, childSelector, noop, loadJS, loadCSS,
+  Hook,
+  getId,
+  walkTree,
+  arrayFrom,
+  addClass,
+  childSelector,
+  noop,
+  loadJS,
+  loadCSS,
 } from 'markmap-common';
-import { IMarkmapOptions, IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
+import {
+  IMarkmapOptions,
+  IMarkmapState,
+  IMarkmapFlexTreeItem,
+  IMarkmapLinkItem,
+} from './types';
 
 export { loadJS, loadCSS };
 
@@ -21,11 +34,15 @@ function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
 }
 
 function adjustSpacing(tree: IMarkmapFlexTreeItem, spacing: number): void {
-  walkTree(tree, (d, next) => {
-    d.ySizeInner = d.ySize - spacing;
-    d.y += spacing;
-    next();
-  }, 'children');
+  walkTree(
+    tree,
+    (d, next) => {
+      d.ySizeInner = d.ySize - spacing;
+      d.y += spacing;
+      next();
+    },
+    'children'
+  );
 }
 
 function minBy(numbers: number[], by: (v: number) => number): number {
@@ -64,9 +81,11 @@ export class Markmap {
     spacingHorizontal: 80,
     autoFit: false,
     fitRatio: 0.95,
-    color: (colorFn => (node: INode): string => colorFn(node.p.i))(
-      d3.scaleOrdinal(d3.schemeCategory10),
-    ),
+    color: (
+      (colorFn) =>
+      (node: INode): string =>
+        colorFn(node.p.i)
+    )(d3.scaleOrdinal(d3.schemeCategory10)),
     paddingX: 8,
   };
 
@@ -83,7 +102,12 @@ export class Markmap {
     IMarkmapFlexTreeItem
   >;
 
-  g: d3.Selection<SVGGElement, IMarkmapFlexTreeItem, HTMLElement, IMarkmapFlexTreeItem>;
+  g: d3.Selection<
+    SVGGElement,
+    IMarkmapFlexTreeItem,
+    HTMLElement,
+    IMarkmapFlexTreeItem
+  >;
 
   zoom: d3.ZoomBehavior<Element, unknown>;
 
@@ -91,15 +115,17 @@ export class Markmap {
 
   revokers: (() => void)[] = [];
 
-  constructor(svg: string | SVGElement | ID3SVGElement, opts?: IMarkmapOptions) {
-    [
-      'handleZoom',
-      'handleClick',
-    ].forEach(key => {
+  constructor(
+    svg: string | SVGElement | ID3SVGElement,
+    opts?: IMarkmapOptions
+  ) {
+    ['handleZoom', 'handleClick'].forEach((key) => {
       this[key] = this[key].bind(this);
     });
     this.viewHooks = createViewHooks();
-    this.svg = (svg as ID3SVGElement).datum ? (svg as ID3SVGElement) : d3.select(svg as string);
+    this.svg = (svg as ID3SVGElement).datum
+      ? (svg as ID3SVGElement)
+      : d3.select(svg as string);
     this.styleNode = this.svg.append('style');
     this.zoom = d3.zoom().on('zoom', this.handleZoom);
     this.options = {
@@ -112,9 +138,11 @@ export class Markmap {
     this.g = this.svg.append('g').attr('class', `${this.state.id}-g`);
     this.updateStyle();
     this.svg.call(this.zoom);
-    this.revokers.push(refreshHook.tap(() => {
-      this.setData();
-    }));
+    this.revokers.push(
+      refreshHook.tap(() => {
+        this.setData();
+      })
+    );
   }
 
   getStyleContent(): string {
@@ -167,7 +195,7 @@ ${extraStyle}
     container.className = addClass(
       container.className,
       `${id}-fo`,
-      containerClass,
+      containerClass
     );
     const style = document.createElement('style');
     style.textContent = `
@@ -187,7 +215,7 @@ ${this.getStyleContent()}
 `;
     document.body.append(style, container);
     walkTree(node, (item, next) => {
-      item.c = item.c?.map(child => ({ ...child }));
+      item.c = item.c?.map((child) => ({ ...child }));
       i += 1;
       const el = document.createElement('div');
       el.innerHTML = item.v;
@@ -206,7 +234,10 @@ ${this.getStyleContent()}
     walkTree(node, (item, next, parent) => {
       const rect = item.p.el.getBoundingClientRect();
       item.v = item.p.el.innerHTML;
-      item.p.s = [Math.ceil(rect.width), Math.max(Math.ceil(rect.height), nodeMinHeight)];
+      item.p.s = [
+        Math.ceil(rect.width),
+        Math.max(Math.ceil(rect.height), nodeMinHeight),
+      ];
       // TODO keep keys for unchanged objects
       // unique key, should be based on content
       item.p.k = `${parent?.p?.i || ''}.${item.p.i}:${item.v}`;
@@ -229,7 +260,8 @@ ${this.getStyleContent()}
 
   renderData(originData?: INode): void {
     if (!this.state.data) return;
-    const { spacingHorizontal, paddingX, spacingVertical, autoFit, color } = this.options;
+    const { spacingHorizontal, paddingX, spacingVertical, autoFit, color } =
+      this.options;
     const { id } = this.state;
     const layout = flextree()
       .children((d: INode) => !d.p?.f && d.c)
@@ -246,10 +278,10 @@ ${this.getStyleContent()}
     const descendants: IMarkmapFlexTreeItem[] = tree.descendants().reverse();
     const links: IMarkmapLinkItem[] = tree.links();
     const linkShape = d3.linkHorizontal();
-    const minX = d3.min<any, number>(descendants, d => d.x - d.xSize / 2);
-    const maxX = d3.max<any, number>(descendants, d => d.x + d.xSize / 2);
-    const minY = d3.min<any, number>(descendants, d => d.y);
-    const maxY = d3.max<any, number>(descendants, d => d.y + d.ySizeInner);
+    const minX = d3.min<any, number>(descendants, (d) => d.x - d.xSize / 2);
+    const maxX = d3.max<any, number>(descendants, (d) => d.x + d.xSize / 2);
+    const minY = d3.min<any, number>(descendants, (d) => d.y);
+    const maxY = d3.max<any, number>(descendants, (d) => d.y + d.ySizeInner);
     Object.assign(this.state, {
       minX,
       maxX,
@@ -259,103 +291,154 @@ ${this.getStyleContent()}
 
     if (autoFit) this.fit();
 
-    const origin = originData && descendants.find(item => item.data === originData) || tree;
+    const origin =
+      (originData && descendants.find((item) => item.data === originData)) ||
+      tree;
     const x0 = origin.data.p.x0 ?? origin.x;
     const y0 = origin.data.p.y0 ?? origin.y;
 
     // Update the nodes
-    const node = this.g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
-      .data(descendants, d => d.data.p.k);
-    const nodeEnter = node.enter().append('g')
-      .attr('transform', d => `translate(${y0 + origin.ySizeInner - d.ySizeInner},${x0 + origin.xSize / 2 - d.xSize})`);
+    const node = this.g
+      .selectAll<SVGGElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGGElement>('g')
+      )
+      .data(descendants, (d) => d.data.p.k);
+    const nodeEnter = node
+      .enter()
+      .append('g')
+      .attr(
+        'transform',
+        (d) =>
+          `translate(${y0 + origin.ySizeInner - d.ySizeInner},${
+            x0 + origin.xSize / 2 - d.xSize
+          })`
+      );
 
     const nodeExit = this.transition(node.exit<IMarkmapFlexTreeItem>());
-    nodeExit.select('rect').attr('width', 0).attr('x', d => d.ySizeInner);
+    nodeExit
+      .select('rect')
+      .attr('width', 0)
+      .attr('x', (d) => d.ySizeInner);
     nodeExit.select('foreignObject').style('opacity', 0);
-    nodeExit.attr('transform', d => `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${origin.x + origin.xSize / 2 - d.xSize})`).remove();
+    nodeExit
+      .attr(
+        'transform',
+        (d) =>
+          `translate(${origin.y + origin.ySizeInner - d.ySizeInner},${
+            origin.x + origin.xSize / 2 - d.xSize
+          })`
+      )
+      .remove();
 
     const nodeMerge = node.merge(nodeEnter);
-    this.transition(nodeMerge).attr('transform', d => `translate(${d.y},${d.x - d.xSize / 2})`);
+    this.transition(nodeMerge).attr(
+      'transform',
+      (d) => `translate(${d.y},${d.x - d.xSize / 2})`
+    );
 
-    const rect = nodeMerge.selectAll<SVGRectElement, IMarkmapFlexTreeItem>(childSelector<SVGRectElement>('rect'))
-      .data(d => [d], d => d.data.p.k)
+    const rect = nodeMerge
+      .selectAll<SVGRectElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGRectElement>('rect')
+      )
+      .data(
+        (d) => [d],
+        (d) => d.data.p.k
+      )
       .join(
-        enter => {
-          return enter.append('rect')
-            .attr('x', d => d.ySizeInner)
-            .attr('y', d => d.xSize - linkWidth(d) / 2)
+        (enter) => {
+          return enter
+            .append('rect')
+            .attr('x', (d) => d.ySizeInner)
+            .attr('y', (d) => d.xSize - linkWidth(d) / 2)
             .attr('width', 0)
             .attr('height', linkWidth);
         },
-        update => update,
-        exit => exit.remove(),
+        (update) => update,
+        (exit) => exit.remove()
       );
     this.transition(rect)
       .attr('x', -1)
-      .attr('width', d => d.ySizeInner + 2)
-      .attr('fill', d => color(d.data));
+      .attr('width', (d) => d.ySizeInner + 2)
+      .attr('fill', (d) => color(d.data));
 
-    const circle = nodeMerge.selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(childSelector<SVGCircleElement>('circle'))
-      .data(d => (d.data.c ? [d] : []), d => d.data.p.k)
+    const circle = nodeMerge
+      .selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGCircleElement>('circle')
+      )
+      .data(
+        (d) => (d.data.c ? [d] : []),
+        (d) => d.data.p.k
+      )
       .join(
-        enter => {
-          return enter.append('circle')
+        (enter) => {
+          return enter
+            .append('circle')
             .attr('stroke-width', '1.5')
-            .attr('cx', d => d.ySizeInner)
-            .attr('cy', d => d.xSize)
+            .attr('cx', (d) => d.ySizeInner)
+            .attr('cy', (d) => d.xSize)
             .attr('r', 0)
             .on('click', this.handleClick);
         },
-        update => update,
-        exit => exit.remove(),
+        (update) => update,
+        (exit) => exit.remove()
       );
     this.transition(circle)
       .attr('r', 6)
-      .attr('stroke', d => color(d.data))
-      .attr('fill', d => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
+      .attr('stroke', (d) => color(d.data))
+      .attr('fill', (d) => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
 
-    const foreignObject = nodeMerge.selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(childSelector<SVGForeignObjectElement>('foreignObject'))
-      .data(d => [d], d => d.data.p.k)
+    const foreignObject = nodeMerge
+      .selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGForeignObjectElement>('foreignObject')
+      )
+      .data(
+        (d) => [d],
+        (d) => d.data.p.k
+      )
       .join(
-        enter => {
-          const fo = enter.append('foreignObject')
+        (enter) => {
+          const fo = enter
+            .append('foreignObject')
             .attr('class', `${id}-fo`)
             .attr('x', paddingX)
             .attr('y', 0)
             .style('opacity', 0)
-            .attr('height', d => d.xSize)
+            .attr('height', (d) => d.xSize)
             .on('mousedown', stopPropagation)
             .on('dblclick', stopPropagation);
           fo.append<HTMLDivElement>('xhtml:div')
             .select(function select(d) {
-              const node = d.data.p.el.cloneNode(true);
-              this.replaceWith(node);
-              return node;
+              const clone = d.data.p.el.cloneNode(true);
+              this.replaceWith(clone);
+              return clone;
             })
             .attr('xmlns', 'http://www.w3.org/1999/xhtml');
           return fo;
         },
-        update => update,
-        exit => exit.remove(),
+        (update) => update,
+        (exit) => exit.remove()
       )
-      .attr('width', d => Math.max(0, d.ySizeInner - paddingX * 2));
-    this.transition(foreignObject)
-      .style('opacity', 1);
+      .attr('width', (d) => Math.max(0, d.ySizeInner - paddingX * 2));
+    this.transition(foreignObject).style('opacity', 1);
 
     // Update the links
-    const path = this.g.selectAll<SVGPathElement, IMarkmapLinkItem>(childSelector<SVGPathElement>('path'))
-      .data(links, d => d.target.data.p.k)
+    const path = this.g
+      .selectAll<SVGPathElement, IMarkmapLinkItem>(
+        childSelector<SVGPathElement>('path')
+      )
+      .data(links, (d) => d.target.data.p.k)
       .join(
-        enter => {
+        (enter) => {
           const source: [number, number] = [
             y0 + origin.ySizeInner,
             x0 + origin.xSize / 2,
           ];
-          return enter.insert('path', 'g')
+          return enter
+            .insert('path', 'g')
             .attr('d', linkShape({ source, target: source }));
         },
-        update => update,
-        exit => {
+        (update) => update,
+        (exit) => {
           const source: [number, number] = [
             origin.y + origin.ySizeInner,
             origin.x + origin.xSize / 2,
@@ -363,12 +446,12 @@ ${this.getStyleContent()}
           return this.transition(exit)
             .attr('d', linkShape({ source, target: source }))
             .remove();
-        },
+        }
       );
     this.transition(path)
-      .attr('stroke', d => color(d.target.data))
-      .attr('stroke-width', d => linkWidth(d.target))
-      .attr('d', d => {
+      .attr('stroke', (d) => color(d.target.data))
+      .attr('stroke-width', (d) => linkWidth(d.target))
+      .attr('d', (d) => {
         const source: [number, number] = [
           d.source.y + d.source.ySizeInner,
           d.source.x + d.source.xSize / 2,
@@ -380,14 +463,14 @@ ${this.getStyleContent()}
         return linkShape({ source, target });
       });
 
-    descendants.forEach(d => {
+    descendants.forEach((d) => {
       d.data.p.x0 = d.x;
       d.data.p.y0 = d.y;
     });
   }
 
   transition<T extends d3.BaseType, U, P extends d3.BaseType, Q>(
-    sel: d3.Selection<T, U, P, Q>,
+    sel: d3.Selection<T, U, P, Q>
   ): d3.Transition<T, U, P, Q> {
     const { duration } = this.options;
     return sel.transition().duration(duration);
@@ -398,32 +481,42 @@ ${this.getStyleContent()}
    */
   async fit(): Promise<void> {
     const svgNode = this.svg.node();
-    const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
+    const { width: offsetWidth, height: offsetHeight } =
+      svgNode.getBoundingClientRect();
     const { fitRatio } = this.options;
     const { minX, maxX, minY, maxY } = this.state;
     const naturalWidth = maxY - minY;
     const naturalHeight = maxX - minX;
     const scale = Math.min(
-      offsetWidth / naturalWidth * fitRatio,
-      offsetHeight / naturalHeight * fitRatio,
-      2,
+      (offsetWidth / naturalWidth) * fitRatio,
+      (offsetHeight / naturalHeight) * fitRatio,
+      2
     );
     const initialZoom = d3.zoomIdentity
       .translate(
         (offsetWidth - naturalWidth * scale) / 2 - minY * scale,
-        (offsetHeight - naturalHeight * scale) / 2 - minX * scale,
+        (offsetHeight - naturalHeight * scale) / 2 - minX * scale
       )
       .scale(scale);
-    return this.transition(this.svg).call(this.zoom.transform, initialZoom).end().catch(noop);
+    return this.transition(this.svg)
+      .call(this.zoom.transform, initialZoom)
+      .end()
+      .catch(noop);
   }
 
   /**
    * Pan the content to make the provided node visible in the viewport.
    */
-  async ensureView(node: INode, padding: Partial<IPadding> | undefined): Promise<void> {
+  async ensureView(
+    node: INode,
+    padding: Partial<IPadding> | undefined
+  ): Promise<void> {
     let g: SVGGElement | undefined;
     let itemData: IMarkmapFlexTreeItem | undefined;
-    this.g.selectAll<SVGGElement, IMarkmapFlexTreeItem>(childSelector<SVGGElement>('g'))
+    this.g
+      .selectAll<SVGGElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGGElement>('g')
+      )
       .each(function walk(d) {
         if (d.data === node) {
           g = this;
@@ -437,11 +530,11 @@ ${this.getStyleContent()}
     const [left, right] = [
       itemData.y,
       itemData.y + itemData.ySizeInner + 2,
-    ].map(x => x * transform.k + transform.x);
+    ].map((x) => x * transform.k + transform.x);
     const [top, bottom] = [
       itemData.x - itemData.xSize / 2,
       itemData.x + itemData.xSize / 2,
-    ].map(y => y * transform.k + transform.y);
+    ].map((y) => y * transform.k + transform.y);
     // Skip if the node includes or is included in the container.
     const pd: IPadding = {
       left: 0,
@@ -450,19 +543,16 @@ ${this.getStyleContent()}
       bottom: 0,
       ...padding,
     };
-    const dxs = [
-      pd.left - left,
-      relRect.width - pd.right - right,
-    ];
-    const dys = [
-      pd.top - top,
-      relRect.height - pd.bottom - bottom,
-    ];
+    const dxs = [pd.left - left, relRect.width - pd.right - right];
+    const dys = [pd.top - top, relRect.height - pd.bottom - bottom];
     const dx = dxs[0] * dxs[1] > 0 ? minBy(dxs, Math.abs) / transform.k : 0;
     const dy = dys[0] * dys[1] > 0 ? minBy(dys, Math.abs) / transform.k : 0;
     if (dx || dy) {
       const newTransform = transform.translate(dx, dy);
-      return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
+      return this.transition(this.svg)
+        .call(this.zoom.transform, newTransform)
+        .end()
+        .catch(noop);
     }
   }
 
@@ -471,28 +561,34 @@ ${this.getStyleContent()}
    */
   async rescale(scale: number): Promise<void> {
     const svgNode = this.svg.node();
-    const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
+    const { width: offsetWidth, height: offsetHeight } =
+      svgNode.getBoundingClientRect();
     const halfWidth = offsetWidth / 2;
     const halfHeight = offsetHeight / 2;
     const transform = d3.zoomTransform(svgNode);
     const newTransform = transform
       .translate(
-        (halfWidth - transform.x) * (1 - scale) / transform.k,
-        (halfHeight - transform.y) * (1 - scale) / transform.k,
+        ((halfWidth - transform.x) * (1 - scale)) / transform.k,
+        ((halfHeight - transform.y) * (1 - scale)) / transform.k
       )
       .scale(scale);
-    return this.transition(this.svg).call(this.zoom.transform, newTransform).end().catch(noop);
+    return this.transition(this.svg)
+      .call(this.zoom.transform, newTransform)
+      .end()
+      .catch(noop);
   }
 
   destroy() {
     this.svg.remove();
-    this.revokers.forEach(fn => { fn(); });
+    this.revokers.forEach((fn) => {
+      fn();
+    });
   }
 
   static create(
     svg: string | SVGElement | ID3SVGElement,
     opts?: IMarkmapOptions,
-    data?: INode,
+    data?: INode
   ): Markmap {
     const mm = new Markmap(svg, opts);
     if (data) {

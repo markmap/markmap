@@ -80,9 +80,7 @@ export class Transformer {
       breaks: true,
       maxNesting: Infinity,
     });
-    md.block.ruler.enable([
-      'deflist',
-    ]);
+    md.block.ruler.enable(['deflist']);
     md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
       after: (ctx: IWrapContext<any>) => {
         this.hooks.htmltag.call(ctx);
@@ -193,7 +191,7 @@ export class Transformer {
     const styles: CSSItem[] = [];
     const scripts: JSItem[] = [];
     keys ??= Object.keys(this.assetsMap);
-    for (const assets of keys.map(key => this.assetsMap[key])) {
+    for (const assets of keys.map((key) => this.assetsMap[key])) {
       if (assets) {
         if (assets.styles) styles.push(...assets.styles);
         if (assets.scripts) scripts.push(...assets.scripts);
@@ -206,6 +204,6 @@ export class Transformer {
    * Get used assets by features object returned by `transform`.
    */
   getUsedAssets(features: IFeatures): IAssets {
-    return this.getAssets(Object.keys(features).filter(key => features[key]));
+    return this.getAssets(Object.keys(features).filter((key) => features[key]));
   }
 }
