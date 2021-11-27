@@ -56,10 +56,16 @@ export class Toolbar {
     return toolbar.render();
   }
 
-  static icon(path: string) {
+  static icon(path: string, attrs = {}) {
+    attrs = {
+      stroke: 'none',
+      fill: 'currentColor',
+      'fill-rule': 'evenodd',
+      ...attrs,
+    };
     return (
       <svg width="20" height="20" viewBox="0 0 20 20">
-        <path fill="none" stroke-width="2" stroke="currentColor" d={path} />
+        <path {...attrs} d={path} />
       </svg>
     );
   }
@@ -68,20 +74,20 @@ export class Toolbar {
     this.register({
       id: 'zoomIn',
       title: 'Zoom in',
-      content: Toolbar.icon('M10 6 v8 M6 10 h8'),
+      content: Toolbar.icon('M9 5v4h-4v2h4v4h2v-4h4v-2h-4v-4z'),
       onClick: this.getHandler((mm) => mm.rescale(1.25)),
     });
     this.register({
       id: 'zoomOut',
       title: 'Zoom out',
-      content: Toolbar.icon('M6 10 h8'),
+      content: Toolbar.icon('M5 9h10v2h-10z'),
       onClick: this.getHandler((mm) => mm.rescale(0.8)),
     });
     this.register({
       id: 'fit',
       title: 'Fit window size',
       content: Toolbar.icon(
-        'M4 8 h3 v-3 M4 12 h3 v3 M16 8 h-3 v-3 M16 12 h-3 v3'
+        'M4 7h2v-2h2v4h-4zM4 13h2v2h2v-4h-4zM16 7h-2v-2h-2v4h4zM16 13h-2v2h-2v-4h4z'
       ),
       onClick: this.getHandler((mm) => mm.fit()),
     });

@@ -10,7 +10,7 @@
   > * {
     @apply m-1 cursor-pointer;
     > * {
-      @apply text-gray-500;
+      @apply text-gray-400;
     }
     &:hover {
       @apply bg-gray-200 rounded;
