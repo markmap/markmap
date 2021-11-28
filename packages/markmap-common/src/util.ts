@@ -87,13 +87,16 @@ export function wrapFunction<T extends (...args: any[]) => any>(
   }
 ): T {
   return function wrapped(...args: Parameters<T>) {
-    const ctx: IWrapContext<T> = { args };
+    const ctx: IWrapContext<T> = {
+      args,
+      thisObj: this,
+    };
     try {
       if (before) before(ctx);
     } catch {
       // ignore
     }
-    ctx.result = fn.apply(this, ctx.args);
+    ctx.result = fn.apply(ctx.thisObj, ctx.args);
     try {
       if (after) after(ctx);
     } catch {

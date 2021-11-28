@@ -46,6 +46,7 @@ export type CSSItem = {
 };
 
 export interface IWrapContext<T extends (...args: any[]) => any> {
+  thisObj: any;
   args: Parameters<T>;
   result?: ReturnType<T>;
 }
