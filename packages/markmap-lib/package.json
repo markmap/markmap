@@ -1,6 +1,6 @@
 {
   "name": "markmap-lib",
-  "version": "0.11.6",
+  "version": "0.12.0",
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -35,13 +35,13 @@
   "repository": "git@github.com:gera2ld/markmap.git",
   "devDependencies": {
     "@types/remarkable": "^2.0.3",
-    "markmap-view": "^0.2.6"
+    "markmap-view": "^0.2.7"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
     "js-yaml": "^4.1.0",
     "katex": "^0.15.1",
-    "markmap-common": "^0.1.5",
+    "markmap-common": "^0.1.6",
     "prismjs": "^1.25.0",
     "remarkable": "^2.0.1",
     "remarkable-katex": "^1.1.8"
