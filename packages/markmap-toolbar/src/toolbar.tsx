@@ -1,10 +1,10 @@
-import { mountDom } from '@gera2ld/jsx-dom';
+import { mountDom, VChildren } from '@gera2ld/jsx-dom';
 import './style.css';
 
 interface IToolbarItem {
   id?: string;
   title?: string;
-  content: string;
+  content: VChildren;
   onClick?: (e: Event) => void;
 }
 
