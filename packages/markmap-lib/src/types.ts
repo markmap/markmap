@@ -1,7 +1,25 @@
-import { CSSItem, JSItem, INode } from 'markmap-common';
-import { createTransformHooks } from './plugins/base';
+import type { Remarkable } from 'remarkable';
+import { CSSItem, JSItem, INode, IWrapContext, Hook } from 'markmap-common';
 
-export type ITransformHooks = ReturnType<typeof createTransformHooks>;
+export interface ITransformHooks {
+  /**
+   * Tapped once when the parser is created.
+   */
+  parser: Hook<[md: Remarkable]>;
+  /**
+   * Tapped every time when Markdown content is transformed.
+   */
+  transform: Hook<[md: Remarkable, context: ITransformContext]>;
+  /**
+   * Tapped when Remarkable renders an HTML tag in Markdown.
+   */
+  htmltag: Hook<[ctx: IWrapContext<any>]>;
+  /**
+   * Indicate that the last transformation is not complete for reasons like
+   * lack of resources and is called when it is ready for a new transformation.
+   */
+  retransform: Hook<[]>;
+}
 
 export interface IAssets {
   styles?: CSSItem[];
@@ -28,9 +46,13 @@ export interface IFeatures {
   [key: string]: boolean;
 }
 
-export interface ITransformResult {
-  root: INode;
+export interface ITransformContext {
   features: IFeatures;
+  frontmatter?: any;
+}
+
+export interface ITransformResult extends ITransformContext {
+  root: INode;
 }
 
 export interface ITransformPlugin {

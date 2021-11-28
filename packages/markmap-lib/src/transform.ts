@@ -13,6 +13,7 @@ import {
   IAssetsMap,
   ITransformHooks,
   IFeatures,
+  ITransformContext,
 } from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 
@@ -64,22 +65,26 @@ function cleanNode(node: INode, depth = 0): void {
 }
 
 export class Transformer {
-  plugins: ITransformPlugin[];
-
   hooks: ITransformHooks;
 
   md: Remarkable;
 
   assetsMap: IAssetsMap;
 
-  constructor(plugins: ITransformPlugin[] = builtInPlugins) {
-    this.plugins = plugins;
+  constructor(public plugins: ITransformPlugin[] = builtInPlugins) {
     this.hooks = createTransformHooks();
+
+    const assetsMap = {};
+    for (const { name, transform } of plugins) {
+      assetsMap[name] = transform(this.hooks);
+    }
+    this.assetsMap = assetsMap;
+
     const md = new Remarkable({
       html: true,
       breaks: true,
       maxNesting: Infinity,
-    });
+    } as Remarkable.Options);
     md.block.ruler.enable(['deflist']);
     md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
       after: (ctx: IWrapContext<any>) => {
@@ -87,14 +92,10 @@ export class Transformer {
       },
     });
     this.md = md;
-    const assetsMap = {};
-    for (const { name, transform } of plugins) {
-      assetsMap[name] = transform(this.hooks);
-    }
-    this.assetsMap = assetsMap;
+    this.hooks.parser.call(md);
   }
 
-  buildTree(tokens): INode {
+  buildTree(tokens: Remarkable.Token[]): INode {
     const { md } = this;
     // TODO deal with <dl><dt>
     const root: INode = {
@@ -115,7 +116,7 @@ export class Transformer {
           payload.lines = token.lines;
         }
         if (type === 'heading') {
-          depth = token.hLevel;
+          depth = (token as Remarkable.HeadingOpenToken).hLevel;
           while (current?.d >= depth) {
             stack.pop();
             current = stack[stack.length - 1];
@@ -123,7 +124,7 @@ export class Transformer {
         } else {
           depth = Math.max(depth, current?.d || 0) + 1;
           if (type === 'ordered_list') {
-            payload.start = token.order;
+            payload.start = (token as Remarkable.OrderedListOpenToken).order;
           }
         }
         const item: INode = {
@@ -153,11 +154,11 @@ export class Transformer {
             ctx.result = '';
           }
         });
-        const text = md.renderer.render([token], md.options, {});
+        const text = md.renderer.render([token], (md as any).options, {});
         revoke();
         current.v = `${current.v || ''}${text}`;
       } else if (token.type === 'fence') {
-        let result = md.renderer.render([token], md.options, {});
+        let result = md.renderer.render([token], (md as any).options, {});
         // Remarkable only adds className to `<code>` but not `<pre>`, copy it to make PrismJS style work.
         const matches = result.match(/<code( class="[^"]*")>/);
         if (matches) result = result.replace('<pre>', `<pre${matches[1]}>`);
@@ -175,13 +176,15 @@ export class Transformer {
   }
 
   transform(content: string): ITransformResult {
-    const features: IFeatures = {};
-    this.hooks.parser.call(this.md, features);
-    const tokens = this.md.parse(content || '', {});
+    const context: ITransformContext = {
+      features: {},
+    };
+    this.hooks.transform.call(this.md, context);
+    const tokens = this.md.parse(content, {});
     let root = this.buildTree(tokens);
     cleanNode(root);
     if (root.c?.length === 1) root = root.c[0];
-    return { root, features };
+    return { ...context, root };
   }
 
   /**

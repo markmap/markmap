@@ -85,8 +85,7 @@ export function wrapFunction<T extends (...args: any[]) => any>(
     before?: (ctx: IWrapContext<T>) => void;
     after?: (ctx: IWrapContext<T>) => void;
   }
-): // eslint-disable-next-line function-paren-newline
-T {
+): T {
   return function wrapped(...args: Parameters<T>) {
     const ctx: IWrapContext<T> = { args };
     try {
@@ -94,7 +93,7 @@ T {
     } catch {
       // ignore
     }
-    ctx.result = fn(...args);
+    ctx.result = fn.apply(this, ctx.args);
     try {
       if (after) after(ctx);
     } catch {

@@ -1,42 +1,51 @@
+import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
 import { loadJS } from 'markmap-common';
 import { IAssets, ITransformHooks } from '../types';
 
 let loading: Promise<void>;
 const autoload = () => {
-  loading =
-    loading ||
-    loadJS([
-      {
-        type: 'script',
-        data: {
-          src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js',
-        },
+  loading ||= loadJS([
+    {
+      type: 'script',
+      data: {
+        src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js',
       },
-    ]);
+    },
+  ]);
   return loading;
 };
 
 export const name = 'katex';
 export function transform(transformHooks: ITransformHooks): IAssets {
-  transformHooks.parser.tap((md, features) => {
-    md.use(remarkableKatex);
-    const renderKatex = (source, displayMode) => {
-      const { katex } = window as any;
-      if (katex)
-        return katex.renderToString(source, {
-          displayMode,
-          throwOnError: false,
-        });
-      autoload().then(() => {
-        transformHooks.retransform.call();
+  const renderKatex = (source, displayMode) => {
+    const { katex } = window as any;
+    if (katex) {
+      return katex.renderToString(source, {
+        displayMode,
+        throwOnError: false,
       });
-      return source;
-    };
-    md.renderer.rules.katex = (tokens, idx) => {
+    }
+    autoload().then(() => {
+      transformHooks.retransform.call();
+    });
+    return source;
+  };
+  let enableFeature = () => {};
+  transformHooks.parser.tap((md) => {
+    md.use(remarkableKatex);
+    md.renderer.rules.katex = (
+      tokens: Remarkable.ContentToken[],
+      idx: number
+    ) => {
+      enableFeature();
       const result = renderKatex(tokens[idx].content, tokens[idx].block);
-      features[name] = true;
       return result;
+    };
+  });
+  transformHooks.transform.tap((_, context) => {
+    enableFeature = () => {
+      context.features[name] = true;
     };
   });
   return {

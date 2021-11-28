@@ -3,22 +3,20 @@ import { IAssets, ITransformHooks } from '../types';
 
 let loading: Promise<void>;
 const autoload = () => {
-  loading =
-    loading ||
-    loadJS([
-      {
-        type: 'script',
-        data: {
-          src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
-        },
+  loading ||= loadJS([
+    {
+      type: 'script',
+      data: {
+        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
       },
-      {
-        type: 'script',
-        data: {
-          src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
-        },
+    },
+    {
+      type: 'script',
+      data: {
+        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
       },
-    ]);
+    },
+  ]);
   return loading;
 };
 
@@ -32,10 +30,11 @@ function loadLanguageAndRefresh(lang: string, transformHooks: ITransformHooks) {
 
 export const name = 'prism';
 export function transform(transformHooks: ITransformHooks): IAssets {
-  transformHooks.parser.tap((md, features) => {
+  let enableFeature = () => {};
+  transformHooks.parser.tap((md) => {
     md.set({
       highlight: (str, lang) => {
-        features[name] = true;
+        enableFeature();
         const { Prism } = window as any;
         const grammar = Prism?.languages?.[lang];
         if (!grammar) {
@@ -45,6 +44,11 @@ export function transform(transformHooks: ITransformHooks): IAssets {
         return Prism.highlight(str, grammar, lang);
       },
     });
+  });
+  transformHooks.transform.tap((_, context) => {
+    enableFeature = () => {
+      context.features[name] = true;
+    };
   });
   return {
     styles: [

@@ -63,14 +63,14 @@ type ID3SVGElement = d3.Selection<
 
 function createViewHooks() {
   return {
-    transformHtml: new Hook<(mm: Markmap, nodes: HTMLElement[]) => void>(),
+    transformHtml: new Hook<[mm: Markmap, nodes: HTMLElement[]]>(),
   };
 }
 
 /**
  * A global hook to refresh all markmaps when called.
  */
-export const refreshHook = new Hook<() => void>();
+export const refreshHook = new Hook<[]>();
 
 export class Markmap {
   static defaultOptions: IMarkmapOptions = {

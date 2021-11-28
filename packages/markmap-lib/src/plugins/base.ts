@@ -1,13 +1,11 @@
-import { IWrapContext, Hook } from 'markmap-common';
+import { Hook } from 'markmap-common';
+import { ITransformHooks } from '../types';
 
-export function createTransformHooks() {
+export function createTransformHooks(): ITransformHooks {
   return {
-    parser: new Hook<(md: any, features: any) => void>(),
-    htmltag: new Hook<(ctx: IWrapContext<any>) => void>(),
-    /**
-     * Indicate that the last transformation is not complete for reasons like
-     * lack of resources and is called when it is ready for a new transformation.
-     */
-    retransform: new Hook<() => void>(),
+    parser: new Hook(),
+    transform: new Hook(),
+    htmltag: new Hook(),
+    retransform: new Hook(),
   };
 }

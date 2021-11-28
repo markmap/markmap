@@ -4,10 +4,11 @@ import { IAssets, ITransformHooks } from '../types';
 
 export const name = 'prism';
 export function transform(transformHooks: ITransformHooks): IAssets {
-  transformHooks.parser.tap((md, features) => {
+  let enableFeature = () => {};
+  transformHooks.parser.tap((md) => {
     md.set({
-      highlight: (str, lang) => {
-        features[name] = true;
+      highlight: (str: string, lang: string) => {
+        enableFeature();
         let grammar = Prism.languages[lang];
         if (!grammar) {
           loadLanguages([lang]);
@@ -19,6 +20,11 @@ export function transform(transformHooks: ITransformHooks): IAssets {
         return '';
       },
     });
+  });
+  transformHooks.transform.tap((_, context) => {
+    enableFeature = () => {
+      context.features[name] = true;
+    };
   });
   return {
     styles: [
