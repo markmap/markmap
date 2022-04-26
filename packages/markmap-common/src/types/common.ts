@@ -57,10 +57,17 @@ export type JSIIFEItem = {
   };
 };
 export type JSItem = JSScriptItem | JSIIFEItem;
-export type CSSItem = {
-  type: 'style' | 'stylesheet';
-  data: any;
+export type CSSStyleItem = {
+  type: 'style';
+  data: string;
 };
+export type CSSStylesheetItem = {
+  type: 'stylesheet';
+  data: {
+    href: string;
+  };
+};
+export type CSSItem = CSSStyleItem | CSSStylesheetItem;
 
 export interface IWrapContext<T extends (...args: any[]) => any> {
   thisObj: any;

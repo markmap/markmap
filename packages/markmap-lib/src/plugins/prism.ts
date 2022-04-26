@@ -10,7 +10,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       highlight: (str: string, lang: string) => {
         enableFeature();
         let grammar = Prism.languages[lang];
-        if (!grammar) {
+        if (!grammar && lang) {
           loadLanguages([lang]);
           grammar = Prism.languages[lang];
         }

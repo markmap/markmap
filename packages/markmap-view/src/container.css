@@ -1,0 +1,13 @@
+/* used for pre-rendering to get the size of each node */
+.markmap-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: -100px;
+  left: -100px;
+  overflow: hidden;
+
+  > div {
+    display: inline-block;
+  }
+}

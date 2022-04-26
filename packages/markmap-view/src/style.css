@@ -1,0 +1,53 @@
+.markmap {
+  font: 300 16px/20px sans-serif;
+
+  a {
+    color: #0097e6;
+    &:hover {
+      color: #00a8ff;
+    }
+  }
+
+  path {
+    fill: none;
+  }
+
+  circle {
+    cursor: pointer;
+  }
+
+  &-foreign {
+    display: inline-block;
+    white-space: nowrap;
+
+    code {
+      font-size: calc(1em - 2px);
+      color: #555;
+      background-color: #f0f0f0;
+      border-radius: 2px;
+    }
+
+    :not(pre) > code {
+      padding: .2em .4em;
+    }
+
+    del {
+      text-decoration: line-through;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    strong {
+      font-weight: bolder;
+    }
+
+    pre,
+    /* override Prism style */
+    pre[class*="language-"] {
+      margin: 0;
+      padding: .2em .4em;
+    }
+  }
+}

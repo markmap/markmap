@@ -12,6 +12,11 @@ const bundleOptions = {
   extend: true,
   esModule: false,
 };
+const postcssOptions = {
+  ...require('@gera2ld/plaid/config/postcssrc'),
+  inject: false,
+  minimize: true,
+};
 const rollupConfig = [
   ...[false, true].map(minimize => ({
     input: {
@@ -20,6 +25,7 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         minimize,
         esm: true,
+        postcss: postcssOptions,
         extensions: defaultOptions.extensions,
         babelConfig: {
           rootMode: 'upward',
@@ -41,6 +47,7 @@ const rollupConfig = [
       input: 'src/index.ts',
       external: globalList,
       plugins: getRollupPlugins({
+        postcss: postcssOptions,
         extensions: defaultOptions.extensions,
         babelConfig: {
           rootMode: 'upward',
@@ -60,6 +67,7 @@ const rollupConfig = [
       external,
       plugins: getRollupPlugins({
         esm: true,
+        postcss: postcssOptions,
         extensions: defaultOptions.extensions,
         babelConfig: {
           rootMode: 'upward',

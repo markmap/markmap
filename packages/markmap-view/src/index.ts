@@ -18,8 +18,10 @@ import {
   IMarkmapFlexTreeItem,
   IMarkmapLinkItem,
 } from './types';
+import globalStyle from './style.css';
+import containerStyle from './container.css';
 
-export { loadJS, loadCSS };
+export { loadJS, loadCSS, globalStyle };
 
 interface IPadding {
   left: number;
@@ -72,20 +74,18 @@ function createViewHooks() {
  */
 export const refreshHook = new Hook<[]>();
 
+export const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
+
 export class Markmap {
   static defaultOptions: IMarkmapOptions = {
     duration: 500,
-    nodeFont: '300 16px/20px sans-serif',
+    embedGlobalStyle: true,
     nodeMinHeight: 16,
     spacingVertical: 5,
     spacingHorizontal: 80,
     autoFit: false,
     fitRatio: 0.95,
-    color: (
-      (colorFn) =>
-      (node: INode): string =>
-        colorFn(`${node.payload.id}`)
-    )(d3.scaleOrdinal(d3.schemeCategory10)),
+    color: (node: INode): string => defaultColorFn(`${node.payload.id}`),
     paddingX: 8,
   };
 
@@ -117,7 +117,7 @@ export class Markmap {
 
   constructor(
     svg: string | SVGElement | ID3SVGElement,
-    opts?: IMarkmapOptions
+    opts?: Partial<IMarkmapOptions>
   ) {
     ['handleZoom', 'handleClick'].forEach((key) => {
       this[key] = this[key].bind(this);
@@ -133,9 +133,9 @@ export class Markmap {
       ...opts,
     };
     this.state = {
-      id: this.options.id || getId(),
+      id: this.options.id || this.svg.attr('id') || getId(),
     };
-    this.g = this.svg.append('g').attr('class', `${this.state.id}-g`);
+    this.g = this.svg.append('g');
     this.updateStyle();
     this.svg.call(this.zoom);
     this.revokers.push(
@@ -146,30 +146,21 @@ export class Markmap {
   }
 
   getStyleContent(): string {
-    const { style, nodeFont } = this.options;
+    const { style } = this.options;
     const { id } = this.state;
-    const extraStyle = typeof style === 'function' ? style(id) : '';
-    const styleText = `\
-.${id} { line-height: 1; }
-.${id} a { color: #0097e6; }
-.${id} a:hover { color: #00a8ff; }
-.${id}-g > path { fill: none; }
-.${id}-g > g > circle { cursor: pointer; }
-.${id}-fo > div { display: inline-block; font: ${nodeFont}; white-space: nowrap; }
-.${id}-fo code { font-size: calc(1em - 2px); color: #555; background-color: #f0f0f0; border-radius: 2px; }
-.${id}-fo :not(pre) > code { padding: .2em .4em; }
-.${id}-fo del { text-decoration: line-through; }
-.${id}-fo em { font-style: italic; }
-.${id}-fo strong { font-weight: bolder; }
-.${id}-fo pre { margin: 0; padding: .2em .4em; }
-${extraStyle}
-`;
-    return styleText;
+    const styleText = typeof style === 'function' ? style(id) : '';
+    return [this.options.embedGlobalStyle && globalStyle, styleText]
+      .filter(Boolean)
+      .join('\n');
   }
 
   updateStyle(): void {
-    this.svg.attr('class', addClass(this.svg.attr('class'), this.state.id));
-    this.styleNode.text(this.getStyleContent());
+    this.svg.attr(
+      'class',
+      addClass(this.svg.attr('class'), 'markmap', this.state.id)
+    );
+    const style = this.getStyleContent();
+    this.styleNode.text(style);
   }
 
   handleZoom(e): void {
@@ -188,31 +179,18 @@ ${extraStyle}
 
   initializeData(node: INode): void {
     let nodeId = 0;
-    const { nodeFont, color, nodeMinHeight } = this.options;
+    const { color, nodeMinHeight } = this.options;
     const { id } = this.state;
     const container = document.createElement('div');
-    const containerClass = `${id}-container`;
     container.className = addClass(
       container.className,
-      `${id}-fo`,
-      containerClass
+      'markmap',
+      'markmap-container',
+      'markmap-foreign',
+      `${id}-g`
     );
     const style = document.createElement('style');
-    style.textContent = `
-${this.getStyleContent()}
-.${containerClass} {
-  position: absolute;
-  width: 0;
-  height: 0;
-  top: -100px;
-  left: -100px;
-  overflow: hidden;
-  font: ${nodeFont};
-}
-.${containerClass} > div {
-  display: inline-block;
-}
-`;
+    style.textContent = [this.getStyleContent(), containerStyle].join('\n');
     document.body.append(style, container);
     walkTree(node, (item, next) => {
       item.children = item.children?.map((child) => ({ ...child }));
@@ -261,7 +239,6 @@ ${this.getStyleContent()}
     if (!this.state.data) return;
     const { spacingHorizontal, paddingX, spacingVertical, autoFit, color } =
       this.options;
-    const { id } = this.state;
     const layout = flextree()
       .children((d: INode) => !d.payload?.fold && d.children)
       .nodeSize((d: IMarkmapFlexTreeItem) => {
@@ -305,6 +282,7 @@ ${this.getStyleContent()}
     const nodeEnter = node
       .enter()
       .append('g')
+      .attr('class', (d) => `markmap-d${d.data.depth}`)
       .attr(
         'transform',
         (d) =>
@@ -400,7 +378,7 @@ ${this.getStyleContent()}
         (enter) => {
           const fo = enter
             .append('foreignObject')
-            .attr('class', `${id}-fo`)
+            .attr('class', 'markmap-foreign')
             .attr('x', paddingX)
             .attr('y', 0)
             .style('opacity', 0)
