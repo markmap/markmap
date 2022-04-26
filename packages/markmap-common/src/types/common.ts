@@ -6,6 +6,10 @@ export interface IHierarchy<T> {
      */
     id?: number;
     /**
+     * A dot separated sequence of the node and its ancestors.
+     */
+    path?: string;
+    /**
      * The unique identifier of a node, supposed to be based on content.
      */
     key?: string;

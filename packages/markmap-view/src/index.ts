@@ -215,9 +215,13 @@ export class Markmap {
         Math.ceil(rect.width),
         Math.max(Math.ceil(rect.height), nodeMinHeight),
       ];
-      item.payload.key = `${parent?.payload?.id || ''}.${item.payload.id}:${
-        item.content
-      }`;
+      item.payload.path = [parent?.payload?.path, item.payload.id]
+        .filter(Boolean)
+        .join('.');
+      item.payload.key =
+        [parent?.payload?.id, item.payload.id].filter(Boolean).join('.') +
+        // FIXME: find a way to check content hash
+        item.content;
       next();
     });
     container.remove();
@@ -282,7 +286,8 @@ export class Markmap {
     const nodeEnter = node
       .enter()
       .append('g')
-      .attr('class', (d) => `markmap-d${d.data.depth}`)
+      .attr('data-depth', (d) => d.data.depth)
+      .attr('data-path', (d) => d.data.payload.path)
       .attr(
         'transform',
         (d) =>
