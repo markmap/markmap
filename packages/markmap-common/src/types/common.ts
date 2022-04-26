@@ -1,26 +1,13 @@
 export interface IHierarchy<T> {
   type: string;
+  /**
+   * Additional data created on transformation.
+   */
   payload?: {
-    /**
-     * An auto-increment unique ID for each node.
-     */
-    id?: number;
-    /**
-     * A dot separated sequence of the node and its ancestors.
-     */
-    path?: string;
-    /**
-     * The unique identifier of a node, supposed to be based on content.
-     */
-    key?: string;
     /**
      * Whether the node's children are fold.
      */
     fold?: boolean;
-    size?: [width: number, height: number];
-    el?: HTMLElement;
-    x0?: number;
-    y0?: number;
     /**
      * Index of list items.
      */
@@ -33,6 +20,27 @@ export interface IHierarchy<T> {
      * First and last lines of the source generating the node.
      */
     lines?: [startLine: number, endLine: number];
+  };
+  /**
+   * Store temporary data that helps rendering.
+   */
+  state?: {
+    /**
+     * An auto-increment unique ID for each node.
+     */
+    id?: number;
+    /**
+     * A dot separated sequence of the node and its ancestors.
+     */
+    path?: string;
+    /**
+     * The unique identifier of a node, supposed to be based on content.
+     */
+    key?: string;
+    el?: HTMLElement;
+    x0?: number;
+    y0?: number;
+    size?: [width: number, height: number];
   };
   children?: T[];
 }

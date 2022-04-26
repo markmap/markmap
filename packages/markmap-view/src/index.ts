@@ -85,7 +85,7 @@ export class Markmap {
     spacingHorizontal: 80,
     autoFit: false,
     fitRatio: 0.95,
-    color: (node: INode): string => defaultColorFn(`${node.payload.id}`),
+    color: (node: INode): string => defaultColorFn(`${node.state.id}`),
     paddingX: 8,
   };
 
@@ -198,8 +198,8 @@ export class Markmap {
       const el = document.createElement('div');
       el.innerHTML = item.content;
       container.append(el);
-      item.payload = {
-        ...item.payload,
+      item.state = {
+        ...item.state,
         id: nodeId,
         el,
       };
@@ -209,17 +209,17 @@ export class Markmap {
     const nodes = arrayFrom(container.childNodes) as HTMLElement[];
     this.viewHooks.transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
-      const rect = item.payload.el.getBoundingClientRect();
-      item.content = item.payload.el.innerHTML;
-      item.payload.size = [
+      const rect = item.state.el.getBoundingClientRect();
+      item.content = item.state.el.innerHTML;
+      item.state.size = [
         Math.ceil(rect.width),
         Math.max(Math.ceil(rect.height), nodeMinHeight),
       ];
-      item.payload.path = [parent?.payload?.path, item.payload.id]
+      item.state.path = [parent?.state?.path, item.state.id]
         .filter(Boolean)
         .join('.');
-      item.payload.key =
-        [parent?.payload?.id, item.payload.id].filter(Boolean).join('.') +
+      item.state.key =
+        [parent?.state?.id, item.state.id].filter(Boolean).join('.') +
         // FIXME: find a way to check content hash
         item.content;
       next();
@@ -246,7 +246,7 @@ export class Markmap {
     const layout = flextree()
       .children((d: INode) => !d.payload?.fold && d.children)
       .nodeSize((d: IMarkmapFlexTreeItem) => {
-        const [width, height] = d.data.payload.size;
+        const [width, height] = d.data.state.size;
         return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
       })
       .spacing((a: IMarkmapFlexTreeItem, b: IMarkmapFlexTreeItem) => {
@@ -274,20 +274,20 @@ export class Markmap {
     const origin =
       (originData && descendants.find((item) => item.data === originData)) ||
       (tree as IMarkmapFlexTreeItem);
-    const x0 = origin.data.payload.x0 ?? origin.x;
-    const y0 = origin.data.payload.y0 ?? origin.y;
+    const x0 = origin.data.state.x0 ?? origin.x;
+    const y0 = origin.data.state.y0 ?? origin.y;
 
     // Update the nodes
     const node = this.g
       .selectAll<SVGGElement, IMarkmapFlexTreeItem>(
         childSelector<SVGGElement>('g')
       )
-      .data(descendants, (d) => d.data.payload.key);
+      .data(descendants, (d) => d.data.state.key);
     const nodeEnter = node
       .enter()
       .append('g')
       .attr('data-depth', (d) => d.data.depth)
-      .attr('data-path', (d) => d.data.payload.path)
+      .attr('data-path', (d) => d.data.state.path)
       .attr(
         'transform',
         (d) =>
@@ -324,7 +324,7 @@ export class Markmap {
       )
       .data(
         (d) => [d],
-        (d) => d.data.payload.key
+        (d) => d.data.state.key
       )
       .join(
         (enter) => {
@@ -349,7 +349,7 @@ export class Markmap {
       )
       .data(
         (d) => (d.data.children ? [d] : []),
-        (d) => d.data.payload.key
+        (d) => d.data.state.key
       )
       .join(
         (enter) => {
@@ -377,7 +377,7 @@ export class Markmap {
       )
       .data(
         (d) => [d],
-        (d) => d.data.payload.key
+        (d) => d.data.state.key
       )
       .join(
         (enter) => {
@@ -392,7 +392,7 @@ export class Markmap {
             .on('dblclick', stopPropagation);
           fo.append<HTMLDivElement>('xhtml:div')
             .select(function select(d) {
-              const clone = d.data.payload.el.cloneNode(true) as HTMLElement;
+              const clone = d.data.state.el.cloneNode(true) as HTMLElement;
               this.replaceWith(clone);
               return clone;
             })
@@ -410,7 +410,7 @@ export class Markmap {
       .selectAll<SVGPathElement, IMarkmapLinkItem>(
         childSelector<SVGPathElement>('path')
       )
-      .data(links, (d) => d.target.data.payload.key)
+      .data(links, (d) => d.target.data.state.key)
       .join(
         (enter) => {
           const source: [number, number] = [
@@ -448,8 +448,8 @@ export class Markmap {
       });
 
     descendants.forEach((d) => {
-      d.data.payload.x0 = d.x;
-      d.data.payload.y0 = d.y;
+      d.data.state.x0 = d.x;
+      d.data.state.y0 = d.y;
     });
   }
 
