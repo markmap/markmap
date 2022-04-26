@@ -1,27 +1,44 @@
 export interface IHierarchy<T> {
-  /**
-   * type
-   */
-  t: string;
-  /**
-   * payload
-   */
-  p?: any;
-  /**
-   * children
-   */
-  c?: T[];
+  type: string;
+  payload?: {
+    /**
+     * An auto-increment unique ID for each node.
+     */
+    id?: number;
+    /**
+     * The unique identifier of a node, supposed to be based on content.
+     */
+    key?: string;
+    /**
+     * Whether the node's children are fold.
+     */
+    fold?: boolean;
+    size?: [width: number, height: number];
+    el?: HTMLElement;
+    x0?: number;
+    y0?: number;
+    /**
+     * Index of list items.
+     */
+    index?: number;
+    /**
+     * Start index of an ordered list.
+     */
+    startIndex?: number;
+    /**
+     * First and last lines of the source generating the node.
+     */
+    lines?: [startLine: number, endLine: number];
+  };
+  children?: T[];
 }
 
 export interface INode extends IHierarchy<INode> {
+  depth?: number;
   /**
-   * depth
+   * HTML of the node content.
    */
-  d?: number;
-  /**
-   * value
-   */
-  v: string;
+  content: string;
 }
 
 export type JSScriptItem = {

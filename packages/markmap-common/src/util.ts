@@ -14,7 +14,7 @@ export function noop(): void {
 export function walkTree<T>(
   tree: T,
   callback: (item: T, next: () => void, parent?: T) => void,
-  key = 'c'
+  key = 'children'
 ): void {
   const walk = (item: T, parent?: T): void =>
     callback(

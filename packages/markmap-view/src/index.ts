@@ -30,7 +30,7 @@ interface IPadding {
 
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
-  return Math.max(6 - 2 * data.d, 1.5);
+  return Math.max(6 - 2 * data.depth, 1.5);
 }
 
 function adjustSpacing(tree: IMarkmapFlexTreeItem, spacing: number): void {
@@ -50,7 +50,7 @@ function minBy(numbers: number[], by: (v: number) => number): number {
   return numbers[index];
 }
 
-function stopPropagation(e) {
+function stopPropagation(e: Event) {
   e.stopPropagation();
 }
 
@@ -84,7 +84,7 @@ export class Markmap {
     color: (
       (colorFn) =>
       (node: INode): string =>
-        colorFn(node.p.i)
+        colorFn(`${node.payload.id}`)
     )(d3.scaleOrdinal(d3.schemeCategory10)),
     paddingX: 8,
   };
@@ -177,17 +177,17 @@ ${extraStyle}
     this.g.attr('transform', transform);
   }
 
-  handleClick(e, d: IMarkmapFlexTreeItem): void {
+  handleClick(_: MouseEvent, d: IMarkmapFlexTreeItem): void {
     const { data } = d;
-    data.p = {
-      ...data.p,
-      f: !data.p?.f,
+    data.payload = {
+      ...data.payload,
+      fold: !data.payload?.fold,
     };
     this.renderData(d.data);
   }
 
   initializeData(node: INode): void {
-    let i = 0;
+    let nodeId = 0;
     const { nodeFont, color, nodeMinHeight } = this.options;
     const { id } = this.state;
     const container = document.createElement('div');
@@ -215,15 +215,14 @@ ${this.getStyleContent()}
 `;
     document.body.append(style, container);
     walkTree(node, (item, next) => {
-      item.c = item.c?.map((child) => ({ ...child }));
-      i += 1;
+      item.children = item.children?.map((child) => ({ ...child }));
+      nodeId += 1;
       const el = document.createElement('div');
-      el.innerHTML = item.v;
+      el.innerHTML = item.content;
       container.append(el);
-      item.p = {
-        ...item.p,
-        // unique ID
-        i,
+      item.payload = {
+        ...item.payload,
+        id: nodeId,
         el,
       };
       color(item); // preload colors
@@ -232,15 +231,15 @@ ${this.getStyleContent()}
     const nodes = arrayFrom(container.childNodes) as HTMLElement[];
     this.viewHooks.transformHtml.call(this, nodes);
     walkTree(node, (item, next, parent) => {
-      const rect = item.p.el.getBoundingClientRect();
-      item.v = item.p.el.innerHTML;
-      item.p.s = [
+      const rect = item.payload.el.getBoundingClientRect();
+      item.content = item.payload.el.innerHTML;
+      item.payload.size = [
         Math.ceil(rect.width),
         Math.max(Math.ceil(rect.height), nodeMinHeight),
       ];
-      // TODO keep keys for unchanged objects
-      // unique key, should be based on content
-      item.p.k = `${parent?.p?.i || ''}.${item.p.i}:${item.v}`;
+      item.payload.key = `${parent?.payload?.id || ''}.${item.payload.id}:${
+        item.content
+      }`;
       next();
     });
     container.remove();
@@ -264,9 +263,9 @@ ${this.getStyleContent()}
       this.options;
     const { id } = this.state;
     const layout = flextree()
-      .children((d: INode) => !d.p?.f && d.c)
+      .children((d: INode) => !d.payload?.fold && d.children)
       .nodeSize((d: IMarkmapFlexTreeItem) => {
-        const [width, height] = d.data.p.s;
+        const [width, height] = d.data.payload.size;
         return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
       })
       .spacing((a: IMarkmapFlexTreeItem, b: IMarkmapFlexTreeItem) => {
@@ -293,16 +292,16 @@ ${this.getStyleContent()}
 
     const origin =
       (originData && descendants.find((item) => item.data === originData)) ||
-      tree;
-    const x0 = origin.data.p.x0 ?? origin.x;
-    const y0 = origin.data.p.y0 ?? origin.y;
+      (tree as IMarkmapFlexTreeItem);
+    const x0 = origin.data.payload.x0 ?? origin.x;
+    const y0 = origin.data.payload.y0 ?? origin.y;
 
     // Update the nodes
     const node = this.g
       .selectAll<SVGGElement, IMarkmapFlexTreeItem>(
         childSelector<SVGGElement>('g')
       )
-      .data(descendants, (d) => d.data.p.k);
+      .data(descendants, (d) => d.data.payload.key);
     const nodeEnter = node
       .enter()
       .append('g')
@@ -342,7 +341,7 @@ ${this.getStyleContent()}
       )
       .data(
         (d) => [d],
-        (d) => d.data.p.k
+        (d) => d.data.payload.key
       )
       .join(
         (enter) => {
@@ -366,8 +365,8 @@ ${this.getStyleContent()}
         childSelector<SVGCircleElement>('circle')
       )
       .data(
-        (d) => (d.data.c ? [d] : []),
-        (d) => d.data.p.k
+        (d) => (d.data.children ? [d] : []),
+        (d) => d.data.payload.key
       )
       .join(
         (enter) => {
@@ -385,7 +384,9 @@ ${this.getStyleContent()}
     this.transition(circle)
       .attr('r', 6)
       .attr('stroke', (d) => color(d.data))
-      .attr('fill', (d) => (d.data.p?.f && d.data.c ? color(d.data) : '#fff'));
+      .attr('fill', (d) =>
+        d.data.payload?.fold && d.data.children ? color(d.data) : '#fff'
+      );
 
     const foreignObject = nodeMerge
       .selectAll<SVGForeignObjectElement, IMarkmapFlexTreeItem>(
@@ -393,7 +394,7 @@ ${this.getStyleContent()}
       )
       .data(
         (d) => [d],
-        (d) => d.data.p.k
+        (d) => d.data.payload.key
       )
       .join(
         (enter) => {
@@ -408,7 +409,7 @@ ${this.getStyleContent()}
             .on('dblclick', stopPropagation);
           fo.append<HTMLDivElement>('xhtml:div')
             .select(function select(d) {
-              const clone = d.data.p.el.cloneNode(true);
+              const clone = d.data.payload.el.cloneNode(true) as HTMLElement;
               this.replaceWith(clone);
               return clone;
             })
@@ -426,7 +427,7 @@ ${this.getStyleContent()}
       .selectAll<SVGPathElement, IMarkmapLinkItem>(
         childSelector<SVGPathElement>('path')
       )
-      .data(links, (d) => d.target.data.p.k)
+      .data(links, (d) => d.target.data.payload.key)
       .join(
         (enter) => {
           const source: [number, number] = [
@@ -464,8 +465,8 @@ ${this.getStyleContent()}
       });
 
     descendants.forEach((d) => {
-      d.data.p.x0 = d.x;
-      d.data.p.y0 = d.y;
+      d.data.payload.x0 = d.x;
+      d.data.payload.y0 = d.y;
     });
   }
 
