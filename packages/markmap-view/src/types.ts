@@ -11,7 +11,7 @@ export interface IMarkmapOptions {
   color: (node: INode) => string;
   paddingX: number;
   style?: (id: string) => string;
-  embedGlobalStyle: boolean;
+  embedGlobalCSS: boolean;
 }
 
 export interface IMarkmapState {

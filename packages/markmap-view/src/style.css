@@ -1,24 +1,26 @@
 .markmap {
   font: 300 16px/20px sans-serif;
 
-  a {
-    color: #0097e6;
-    &:hover {
-      color: #00a8ff;
-    }
-  }
-
-  path {
+  &-link {
     fill: none;
   }
 
-  circle {
-    cursor: pointer;
+  &-node {
+    > circle {
+      cursor: pointer;
+    }
   }
 
   &-foreign {
     display: inline-block;
     white-space: nowrap;
+
+    a {
+      color: #0097e6;
+      &:hover {
+        color: #00a8ff;
+      }
+    }
 
     code {
       font-size: calc(1em - 2px);

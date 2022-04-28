@@ -18,10 +18,13 @@ import {
   IMarkmapFlexTreeItem,
   IMarkmapLinkItem,
 } from './types';
-import globalStyle from './style.css';
-import containerStyle from './container.css';
+import css from './style.css';
+import containerCSS from './container.css';
 
-export { loadJS, loadCSS, globalStyle };
+export const globalCSS = css;
+
+export { loadJS, loadCSS };
+export * from './types';
 
 interface IPadding {
   left: number;
@@ -79,7 +82,7 @@ export const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
 export class Markmap {
   static defaultOptions: IMarkmapOptions = {
     duration: 500,
-    embedGlobalStyle: true,
+    embedGlobalCSS: true,
     nodeMinHeight: 16,
     spacingVertical: 5,
     spacingHorizontal: 80,
@@ -149,7 +152,7 @@ export class Markmap {
     const { style } = this.options;
     const { id } = this.state;
     const styleText = typeof style === 'function' ? style(id) : '';
-    return [this.options.embedGlobalStyle && globalStyle, styleText]
+    return [this.options.embedGlobalCSS && css, styleText]
       .filter(Boolean)
       .join('\n');
   }
@@ -190,7 +193,7 @@ export class Markmap {
       `${id}-g`
     );
     const style = document.createElement('style');
-    style.textContent = [this.getStyleContent(), containerStyle].join('\n');
+    style.textContent = [this.getStyleContent(), containerCSS].join('\n');
     document.body.append(style, container);
     walkTree(node, (item, next) => {
       item.children = item.children?.map((child) => ({ ...child }));
@@ -258,10 +261,10 @@ export class Markmap {
     const descendants: IMarkmapFlexTreeItem[] = tree.descendants().reverse();
     const links: IMarkmapLinkItem[] = tree.links();
     const linkShape = d3.linkHorizontal();
-    const minX = d3.min<any, number>(descendants, (d) => d.x - d.xSize / 2);
-    const maxX = d3.max<any, number>(descendants, (d) => d.x + d.xSize / 2);
-    const minY = d3.min<any, number>(descendants, (d) => d.y);
-    const maxY = d3.max<any, number>(descendants, (d) => d.y + d.ySizeInner);
+    const minX = d3.min(descendants, (d) => d.x - d.xSize / 2);
+    const maxX = d3.max(descendants, (d) => d.x + d.xSize / 2);
+    const minY = d3.min(descendants, (d) => d.y);
+    const maxY = d3.max(descendants, (d) => d.y + d.ySizeInner);
     Object.assign(this.state, {
       minX,
       maxX,
@@ -286,6 +289,7 @@ export class Markmap {
     const nodeEnter = node
       .enter()
       .append('g')
+      .attr('class', 'markmap-node')
       .attr('data-depth', (d) => d.data.depth)
       .attr('data-path', (d) => d.data.state.path)
       .attr(
@@ -298,9 +302,9 @@ export class Markmap {
 
     const nodeExit = this.transition(node.exit<IMarkmapFlexTreeItem>());
     nodeExit
-      .select('rect')
-      .attr('width', 0)
-      .attr('x', (d) => d.ySizeInner);
+      .select('line')
+      .attr('x1', (d) => d.ySizeInner)
+      .attr('x2', (d) => d.ySizeInner);
     nodeExit.select('foreignObject').style('opacity', 0);
     nodeExit
       .attr(
@@ -318,9 +322,10 @@ export class Markmap {
       (d) => `translate(${d.y},${d.x - d.xSize / 2})`
     );
 
-    const rect = nodeMerge
-      .selectAll<SVGRectElement, IMarkmapFlexTreeItem>(
-        childSelector<SVGRectElement>('rect')
+    // Update lines under the content
+    const line = nodeMerge
+      .selectAll<SVGLineElement, IMarkmapFlexTreeItem>(
+        childSelector<SVGLineElement>('line')
       )
       .data(
         (d) => [d],
@@ -329,20 +334,22 @@ export class Markmap {
       .join(
         (enter) => {
           return enter
-            .append('rect')
-            .attr('x', (d) => d.ySizeInner)
-            .attr('y', (d) => d.xSize - linkWidth(d) / 2)
-            .attr('width', 0)
-            .attr('height', linkWidth);
+            .append('line')
+            .attr('x1', (d) => d.ySizeInner)
+            .attr('y1', (d) => d.xSize)
+            .attr('x2', (d) => d.ySizeInner)
+            .attr('y2', (d) => d.xSize);
         },
         (update) => update,
         (exit) => exit.remove()
       );
-    this.transition(rect)
-      .attr('x', -1)
-      .attr('width', (d) => d.ySizeInner + 2)
-      .attr('fill', (d) => color(d.data));
+    this.transition(line)
+      .attr('x1', -1)
+      .attr('x2', (d) => d.ySizeInner + 2)
+      .attr('stroke', (d) => color(d.data))
+      .attr('stroke-width', linkWidth);
 
+    // Circle to link to children of the node
     const circle = nodeMerge
       .selectAll<SVGCircleElement, IMarkmapFlexTreeItem>(
         childSelector<SVGCircleElement>('circle')
@@ -419,6 +426,9 @@ export class Markmap {
           ];
           return enter
             .insert('path', 'g')
+            .attr('class', 'markmap-link')
+            .attr('data-depth', (d) => d.target.data.depth)
+            .attr('data-path', (d) => d.target.data.state.path)
             .attr('d', linkShape({ source, target: source }));
         },
         (update) => update,
@@ -571,7 +581,7 @@ export class Markmap {
 
   static create(
     svg: string | SVGElement | ID3SVGElement,
-    opts?: IMarkmapOptions,
+    opts?: Partial<IMarkmapOptions>,
     data?: INode
   ): Markmap {
     const mm = new Markmap(svg, opts);
