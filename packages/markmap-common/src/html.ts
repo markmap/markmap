@@ -16,9 +16,12 @@ export function escapeScript(content: string): string {
   return content.replace(/<(\/script>)/g, '\\x3c$2');
 }
 
-export function htmlOpen(tagName: string, attrs?: any): string {
+export function htmlOpen(
+  tagName: string,
+  attrs?: Record<string, string | boolean>
+): string {
   const attrStr = attrs
-    ? Object.entries<string | boolean>(attrs)
+    ? Object.entries(attrs)
         .map(([key, value]) => {
           if (value == null || value === false) return;
           key = ` ${escapeHtml(key)}`;
@@ -38,21 +41,16 @@ export function htmlClose(tagName: string): string {
 export function wrapHtml(
   tagName: string,
   content?: string,
-  attrs?: any
+  attrs?: Record<string, string | boolean>
 ): string {
   if (content == null) return htmlOpen(tagName, attrs);
   return htmlOpen(tagName, attrs) + (content || '') + htmlClose(tagName);
 }
 
-export function wrapStyle(text: string, style: any): string {
-  if (style.code) text = wrapHtml('code', text);
-  if (style.del) text = wrapHtml('del', text);
-  if (style.em) text = wrapHtml('em', text);
-  if (style.strong) text = wrapHtml('strong', text);
-  return text;
-}
-
-export function buildCode(fn: Function, args: any[]): string {
+export function buildCode<T extends unknown[]>(
+  fn: (...args: T) => void,
+  args: T
+): string {
   const params = args
     .map((arg) => {
       if (typeof arg === 'function') return arg.toString();
@@ -62,7 +60,7 @@ export function buildCode(fn: Function, args: any[]): string {
   return `(${fn.toString()})(${params})`;
 }
 
-export function persistJS(items: JSItem[], context?: any): string[] {
+export function persistJS(items: JSItem[], context?: unknown): string[] {
   return items.map((item) => {
     if (item.type === 'script') return wrapHtml('script', '', item.data);
     if (item.type === 'iife') {

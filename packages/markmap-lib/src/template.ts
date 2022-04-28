@@ -1,4 +1,5 @@
 import { JSItem, INode, persistJS, persistCSS } from 'markmap-common';
+import type { IMarkmapOptions } from 'markmap-view';
 import { IAssets } from './types';
 
 const template: string = process.env.TEMPLATE;
@@ -19,9 +20,9 @@ export function fillTemplate(
   extra?:
     | {
         baseJs?: JSItem[];
-        getOptions?: () => any;
+        getOptions?: () => Partial<IMarkmapOptions>;
       }
-    | (() => any)
+    | (() => unknown)
 ): string {
   if (typeof extra === 'function') {
     extra = { getOptions: extra };
@@ -33,7 +34,7 @@ export function fillTemplate(
   const { scripts, styles } = assets;
   const cssList = [...(styles ? persistCSS(styles) : [])];
   const context = {
-    getMarkmap: () => (window as any).markmap,
+    getMarkmap: () => window.markmap,
     getOptions: extra.getOptions,
     data: root,
   };
@@ -45,13 +46,13 @@ export function fillTemplate(
         {
           type: 'iife',
           data: {
-            fn: (getMarkmap, getOptions, data) => {
+            fn: (
+              getMarkmap: typeof context['getMarkmap'],
+              getOptions: typeof context['getOptions'],
+              data: typeof context['data']
+            ) => {
               const { Markmap } = getMarkmap();
-              (window as any).mm = Markmap.create(
-                'svg#mindmap',
-                getOptions?.(),
-                data
-              );
+              window.mm = Markmap.create('svg#mindmap', getOptions?.(), data);
             },
             getParams: ({ getMarkmap, getOptions, data }) => {
               return [getMarkmap, getOptions, data];

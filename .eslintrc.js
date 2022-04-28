@@ -9,5 +9,7 @@ module.exports = {
   },
   rules: {
     'no-continue': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-this-alias': 'off',
   },
 };

@@ -1,6 +1,8 @@
 import type { Remarkable } from 'remarkable';
 import { CSSItem, JSItem, INode, IWrapContext, Hook } from 'markmap-common';
 
+type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
+
 export interface ITransformHooks {
   /**
    * Tapped once when the parser is created.
@@ -13,7 +15,7 @@ export interface ITransformHooks {
   /**
    * Tapped when Remarkable renders an HTML tag in Markdown.
    */
-  htmltag: Hook<[ctx: IWrapContext<any>]>;
+  htmltag: Hook<[ctx: IWrapContext<Parameters<Htmltag>, ReturnType<Htmltag>>]>;
   /**
    * Indicate that the last transformation is not complete for reasons like
    * lack of resources and is called when it is ready for a new transformation.
@@ -48,7 +50,7 @@ export interface IFeatures {
 
 export interface ITransformContext {
   features: IFeatures;
-  frontmatter?: any;
+  frontmatter?: unknown;
 }
 
 export interface ITransformResult extends ITransformContext {

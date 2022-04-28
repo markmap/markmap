@@ -5,10 +5,10 @@ const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
 
 const renderToolbar = () => {
-  const { markmap, mm } = window as any;
+  const { markmap, mm } = window;
   const toolbar = new markmap.Toolbar();
   toolbar.attach(mm);
-  const el = toolbar.render();
+  const el = toolbar.render() as HTMLElement;
   el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
   document.body.append(el);
 };

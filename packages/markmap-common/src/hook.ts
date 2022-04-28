@@ -1,6 +1,6 @@
-export type HookCallback<T extends any[]> = (...args: T) => void;
+export type HookCallback<T extends unknown[]> = (...args: T) => void;
 
-export class Hook<T extends any[]> {
+export class Hook<T extends unknown[]> {
   protected listeners: Array<HookCallback<T>> = [];
 
   tap(fn: HookCallback<T>): () => void {

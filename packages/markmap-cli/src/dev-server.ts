@@ -130,7 +130,7 @@ function startServer(paddingBottom: number) {
   let ts = 0;
   let root: INode;
   let line: number;
-  const { mm } = window as any;
+  const { mm } = window;
   refresh();
   function refresh() {
     fetch(`/data?ts=${ts}`)

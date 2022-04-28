@@ -18,8 +18,8 @@ const autoload = () => {
 
 export const name = 'katex';
 export function transform(transformHooks: ITransformHooks): IAssets {
-  const renderKatex = (source, displayMode) => {
-    const { katex } = window as any;
+  const renderKatex = (source: string, displayMode: boolean) => {
+    const { katex } = window;
     if (katex) {
       return katex.renderToString(source, {
         displayMode,
@@ -61,8 +61,8 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       {
         type: 'iife',
         data: {
-          fn: (getMarkmap) => {
-            (window as any).WebFontConfig = {
+          fn: (getMarkmap: () => typeof window.markmap) => {
+            window.WebFontConfig = {
               custom: {
                 families: [
                   'KaTeX_AMS',

@@ -64,8 +64,8 @@ export type JSScriptItem = {
 export type JSIIFEItem = {
   type: 'iife';
   data: {
-    fn: (...args: any[]) => void;
-    getParams?: (context: any) => void | any[];
+    fn: (...args: unknown[]) => void;
+    getParams?: (context: unknown) => void | unknown[];
   };
 };
 export type JSItem = JSScriptItem | JSIIFEItem;
@@ -81,14 +81,14 @@ export type CSSStylesheetItem = {
 };
 export type CSSItem = CSSStyleItem | CSSStylesheetItem;
 
-export interface IWrapContext<T extends (...args: any[]) => any> {
-  thisObj: any;
-  args: Parameters<T>;
-  result?: ReturnType<T>;
+export interface IWrapContext<T extends unknown[], U> {
+  thisObj: unknown;
+  args: T;
+  result?: U;
 }
 
 export interface IDeferred<T> {
   promise: Promise<T>;
   resolve: (value: T) => void;
-  reject: (error?: any) => void;
+  reject: (error?: unknown) => void;
 }

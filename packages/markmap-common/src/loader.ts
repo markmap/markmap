@@ -3,8 +3,8 @@ import { memoize } from './util';
 
 function createElement(
   tagName: string,
-  props?: any,
-  attrs?: { [key: string]: string }
+  props?: Record<string, string | boolean | ((...args: unknown[]) => void)>,
+  attrs?: Record<string, string>
 ): HTMLElement {
   const el = document.createElement(tagName);
   if (props) {
@@ -30,7 +30,7 @@ const memoizedPreloadJS = memoize((url: string) => {
   );
 });
 
-function loadJSItem(item: JSItem, context: any): Promise<void> {
+function loadJSItem(item: JSItem, context: unknown): Promise<void> {
   if (item.type === 'script') {
     return new Promise((resolve, reject) => {
       document.head.append(
@@ -67,14 +67,14 @@ function loadCSSItem(item: CSSItem): void {
   }
 }
 
-export async function loadJS(items: JSItem[], context?: any): Promise<void> {
+export async function loadJS(items: JSItem[], context?: object): Promise<void> {
   const needPreload = items.filter(
     (item) => item.type === 'script' && item.data?.src
   ) as JSScriptItem[];
   if (needPreload.length > 1)
     needPreload.forEach((item) => memoizedPreloadJS(item.data.src));
   context = {
-    getMarkmap: () => (window as any).markmap,
+    getMarkmap: () => window.markmap,
     ...context,
   };
   for (const item of items) {

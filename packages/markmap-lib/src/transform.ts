@@ -1,11 +1,5 @@
 import { Remarkable } from 'remarkable';
-import {
-  INode,
-  CSSItem,
-  JSItem,
-  IWrapContext,
-  wrapFunction,
-} from 'markmap-common';
+import { INode, CSSItem, JSItem, wrapFunction } from 'markmap-common';
 import {
   ITransformResult,
   ITransformPlugin,
@@ -87,7 +81,7 @@ export class Transformer {
     } as Remarkable.Options);
     md.block.ruler.enable(['deflist']);
     md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
-      after: (ctx: IWrapContext<any>) => {
+      after: (ctx) => {
         this.hooks.htmltag.call(ctx);
       },
     });

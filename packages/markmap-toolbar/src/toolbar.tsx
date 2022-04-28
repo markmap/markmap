@@ -1,4 +1,5 @@
 import { mountDom, VChildren } from '@gera2ld/jsx-dom';
+import type { Markmap } from 'markmap-view';
 import './style.css';
 
 interface IToolbarItem {
@@ -28,9 +29,9 @@ function renderItem({ title, content, onClick }: IToolbarItem) {
   );
 }
 
-let promise: any;
-function safeCaller(fn) {
-  return async (...args: any[]) => {
+let promise: Promise<void>;
+function safeCaller<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
+  return async (...args: T) => {
     if (promise) return;
     promise = fn(...args);
     try {
@@ -50,7 +51,7 @@ export class Toolbar {
 
   private items: (string | IToolbarItem)[] = ['zoomIn', 'zoomOut', 'fit'];
 
-  static create(mm: any) {
+  static create(mm: Markmap) {
     const toolbar = new Toolbar();
     toolbar.attach(mm);
     return toolbar.render();
@@ -101,9 +102,9 @@ export class Toolbar {
     this.registry[data.id] = data;
   }
 
-  getHandler(handle: (mm: any) => void) {
+  getHandler(handle: (mm: Markmap) => Promise<void>) {
     handle = safeCaller(handle);
-    return (e) => {
+    return () => {
       if (this.markmap) handle(this.markmap);
     };
   }
@@ -112,7 +113,7 @@ export class Toolbar {
     this.items = [...items];
   }
 
-  attach(mm: any) {
+  attach(mm: Markmap) {
     this.markmap = mm;
   }
 

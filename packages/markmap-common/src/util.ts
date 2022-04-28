@@ -76,18 +76,18 @@ export function childSelector<T extends Element>(
   };
 }
 
-export function wrapFunction<T extends (...args: any[]) => any>(
-  fn: T,
+export function wrapFunction<T extends unknown[], U>(
+  fn: (...args: T) => U,
   {
     before,
     after,
   }: {
-    before?: (ctx: IWrapContext<T>) => void;
-    after?: (ctx: IWrapContext<T>) => void;
+    before?: (ctx: IWrapContext<T, U>) => void;
+    after?: (ctx: IWrapContext<T, U>) => void;
   }
-): T {
-  return function wrapped(...args: Parameters<T>) {
-    const ctx: IWrapContext<T> = {
+) {
+  return function wrapped(...args: T) {
+    const ctx: IWrapContext<T, U> = {
       args,
       thisObj: this,
     };
@@ -103,11 +103,11 @@ export function wrapFunction<T extends (...args: any[]) => any>(
       // ignore
     }
     return ctx.result;
-  } as T;
+  };
 }
 
-export function defer<T>(): IDeferred<T> {
-  const obj: any = {};
+export function defer<T>() {
+  const obj: Partial<IDeferred<T>> = {};
   obj.promise = new Promise<T>((resolve, reject) => {
     obj.resolve = resolve;
     obj.reject = reject;
@@ -115,9 +115,9 @@ export function defer<T>(): IDeferred<T> {
   return obj as IDeferred<T>;
 }
 
-export function memoize<T extends (...args: any[]) => any>(fn: T): T {
-  const cache = {};
-  return function memoized(...args: any[]): T {
+export function memoize<T extends unknown[], U>(fn: (...args: T) => U) {
+  const cache: Record<string, Record<'value', U>> = {};
+  return function memoized(...args: T) {
     const key = `${args[0]}`;
     let data = cache[key];
     if (!data) {
@@ -127,5 +127,5 @@ export function memoize<T extends (...args: any[]) => any>(fn: T): T {
       cache[key] = data;
     }
     return data.value;
-  } as T;
+  };
 }

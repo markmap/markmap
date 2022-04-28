@@ -22,7 +22,7 @@ const autoload = () => {
 
 function loadLanguageAndRefresh(lang: string, transformHooks: ITransformHooks) {
   autoload().then(() => {
-    (window as any).Prism.plugins.autoloader.loadLanguages([lang], () => {
+    window.Prism.plugins.autoloader.loadLanguages([lang], () => {
       transformHooks.retransform.call();
     });
   });
@@ -35,7 +35,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     md.set({
       highlight: (str, lang) => {
         enableFeature();
-        const { Prism } = window as any;
+        const { Prism } = window;
         const grammar = Prism?.languages?.[lang];
         if (!grammar) {
           loadLanguageAndRefresh(lang, transformHooks);

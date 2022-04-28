@@ -2,18 +2,18 @@
   "name": "markmap",
   "private": true,
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx": "^7.16.7",
-    "@gera2ld/plaid": "~2.5.0",
-    "@gera2ld/plaid-common-ts": "~2.5.0",
+    "@babel/plugin-transform-react-jsx": "^7.17.3",
+    "@gera2ld/plaid": "~2.5.2",
+    "@gera2ld/plaid-common-ts": "~2.5.1",
     "@gera2ld/plaid-rollup": "~2.5.0",
     "@gera2ld/plaid-test": "~2.5.0",
-    "@typescript-eslint/parser": "^5.9.0",
+    "@typescript-eslint/parser": "^5.21.0",
     "del-cli": "^4.0.1",
-    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
-    "prettier": "^2.5.1"
+    "prettier": "^2.6.2"
   },
   "scripts": {
     "prepare": "husky install",
