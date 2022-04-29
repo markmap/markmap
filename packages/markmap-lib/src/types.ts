@@ -1,5 +1,6 @@
 import type { Remarkable } from 'remarkable';
 import { CSSItem, JSItem, INode, IWrapContext, Hook } from 'markmap-common';
+import { IMarkmapOptions } from 'markmap-view';
 
 type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
 
@@ -51,6 +52,7 @@ export interface IFeatures {
 export interface ITransformContext {
   features: IFeatures;
   frontmatter?: unknown;
+  options?: Partial<IMarkmapOptions>;
 }
 
 export interface ITransformResult extends ITransformContext {
@@ -60,4 +62,9 @@ export interface ITransformResult extends ITransformContext {
 export interface ITransformPlugin {
   name: string;
   transform: (transformHooks: ITransformHooks) => IAssets;
+}
+
+export interface IFrontMatterOptions {
+  color?: string | string[];
+  duration?: number;
 }

@@ -131,10 +131,7 @@ export class Markmap {
       : d3.select(svg as string);
     this.styleNode = this.svg.append('style');
     this.zoom = d3.zoom().on('zoom', this.handleZoom);
-    this.options = {
-      ...Markmap.defaultOptions,
-      ...opts,
-    };
+    this.setOptions(opts);
     this.state = {
       id: this.options.id || this.svg.attr('id') || getId(),
     };
@@ -231,11 +228,14 @@ export class Markmap {
     style.remove();
   }
 
-  setOptions(opts: IMarkmapOptions): void {
-    Object.assign(this.options, opts);
+  setOptions(opts: Partial<IMarkmapOptions>): void {
+    this.options = {
+      ...Markmap.defaultOptions,
+      ...opts,
+    };
   }
 
-  setData(data?: INode, opts?: IMarkmapOptions): void {
+  setData(data?: INode, opts?: Partial<IMarkmapOptions>): void {
     if (data) this.state.data = data;
     this.initializeData(this.state.data);
     if (opts) this.setOptions(opts);
