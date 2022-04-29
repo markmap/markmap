@@ -45,6 +45,10 @@
       font-weight: bolder;
     }
 
+    mark {
+      background: #ffeaa7;
+    }
+
     pre,
     /* override Prism style */
     pre[class*="language-"] {

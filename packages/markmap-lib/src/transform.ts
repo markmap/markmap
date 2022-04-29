@@ -74,12 +74,11 @@ export class Transformer {
     }
     this.assetsMap = assetsMap;
 
-    const md = new Remarkable({
+    const md = new Remarkable('full', {
       html: true,
       breaks: true,
       maxNesting: Infinity,
     } as Remarkable.Options);
-    md.block.ruler.enable(['deflist']);
     md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
       after: (ctx) => {
         this.hooks.htmltag.call(ctx);
