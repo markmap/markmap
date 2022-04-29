@@ -8,6 +8,6 @@
     "packages/*"
   ],
   "npmClient": "yarn",
-  "version": "independent",
-  "useWorkspaces": true
+  "useWorkspaces": true,
+  "version": "0.12.0"
 }
