@@ -12,6 +12,7 @@ export interface IMarkmapOptions {
   paddingX: number;
   style?: (id: string) => string;
   embedGlobalCSS: boolean;
+  scrollForPan: boolean;
 }
 
 export interface IMarkmapState {

@@ -79,6 +79,9 @@ export const refreshHook = new Hook<[]>();
 
 export const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
 
+const isMacintosh =
+  typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
+
 export class Markmap {
   static defaultOptions: IMarkmapOptions = {
     duration: 500,
@@ -90,6 +93,7 @@ export class Markmap {
     fitRatio: 0.95,
     color: (node: INode): string => defaultColorFn(`${node.state.id}`),
     paddingX: 8,
+    scrollForPan: isMacintosh,
   };
 
   options: IMarkmapOptions;
@@ -122,7 +126,7 @@ export class Markmap {
     svg: string | SVGElement | ID3SVGElement,
     opts?: Partial<IMarkmapOptions>
   ) {
-    ['handleZoom', 'handleClick'].forEach((key) => {
+    ['handleZoom', 'handleClick', 'handlePan'].forEach((key) => {
       this[key] = this[key].bind(this);
     });
     this.viewHooks = createViewHooks();
@@ -130,14 +134,23 @@ export class Markmap {
       ? (svg as ID3SVGElement)
       : d3.select(svg as string);
     this.styleNode = this.svg.append('style');
-    this.zoom = d3.zoom().on('zoom', this.handleZoom);
+    this.zoom = d3
+      .zoom()
+      .filter((event) => {
+        if (this.options.scrollForPan) {
+          // Pan with wheels, zoom with ctrl+wheels
+          if (event.type === 'wheel') return event.ctrlKey && !event.button;
+        }
+        return (!event.ctrlKey || event.type === 'wheel') && !event.button;
+      })
+      .on('zoom', this.handleZoom);
     this.setOptions(opts);
     this.state = {
       id: this.options.id || this.svg.attr('id') || getId(),
     };
     this.g = this.svg.append('g');
     this.updateStyle();
-    this.svg.call(this.zoom);
+    this.svg.call(this.zoom).on('wheel', this.handlePan);
     this.revokers.push(
       refreshHook.tap(() => {
         this.setData();
@@ -163,9 +176,16 @@ export class Markmap {
     this.styleNode.text(style);
   }
 
-  handleZoom(e): void {
+  handleZoom(e) {
     const { transform } = e;
     this.g.attr('transform', transform);
+  }
+
+  handlePan(e: WheelEvent) {
+    e.preventDefault();
+    const transform = d3.zoomTransform(this.svg.node());
+    const newTransform = transform.translate(-e.deltaX, -e.deltaY);
+    this.svg.call(this.zoom.transform, newTransform);
   }
 
   handleClick(_: MouseEvent, d: IMarkmapFlexTreeItem): void {
@@ -573,7 +593,8 @@ export class Markmap {
   }
 
   destroy() {
-    this.svg.remove();
+    this.svg.on('.zoom', null);
+    this.svg.html(null);
     this.revokers.forEach((fn) => {
       fn();
     });
