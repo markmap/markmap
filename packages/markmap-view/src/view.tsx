@@ -403,6 +403,8 @@ export class Markmap {
       );
     this.transition(circle)
       .attr('r', 6)
+      .attr('cx', (d) => d.ySizeInner)
+      .attr('cy', (d) => d.xSize)
       .attr('stroke', (d) => color(d.data))
       .attr('fill', (d) =>
         d.data.payload?.fold && d.data.children ? color(d.data) : '#fff'
