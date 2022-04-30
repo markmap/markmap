@@ -206,16 +206,13 @@ export class Markmap {
       <style>{[this.getStyleContent(), containerCSS].join('\n')}</style>
     ) as HTMLElement;
     document.body.append(container, style);
-    const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : null;
+    const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
     walkTree(node, (item, next) => {
       item.children = item.children?.map((child) => ({ ...child }));
       nodeId += 1;
       const group = mountDom(
-        <div style={groupStyle}>
-          <div
-            className="markmap-foreign"
-            dangerouslySetInnerHTML={{ __html: item.content }}
-          ></div>
+        <div className="markmap-foreign" style={groupStyle}>
+          <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
         </div>
       );
       container.append(group);
@@ -267,8 +264,8 @@ export class Markmap {
 
   setData(data?: INode, opts?: Partial<IMarkmapOptions>): void {
     if (data) this.state.data = data;
-    this.initializeData(this.state.data);
     if (opts) this.setOptions(opts);
+    this.initializeData(this.state.data);
     this.renderData();
   }
 
@@ -366,9 +363,7 @@ export class Markmap {
           return enter
             .append('line')
             .attr('x1', (d) => d.ySizeInner)
-            .attr('y1', (d) => d.xSize)
-            .attr('x2', (d) => d.ySizeInner)
-            .attr('y2', (d) => d.xSize);
+            .attr('x2', (d) => d.ySizeInner);
         },
         (update) => update,
         (exit) => exit.remove()
@@ -376,6 +371,8 @@ export class Markmap {
     this.transition(line)
       .attr('x1', -1)
       .attr('x2', (d) => d.ySizeInner + 2)
+      .attr('y1', (d) => d.xSize)
+      .attr('y2', (d) => d.xSize)
       .attr('stroke', (d) => color(d.data))
       .attr('stroke-width', linkWidth);
 
@@ -424,7 +421,6 @@ export class Markmap {
             .attr('x', paddingX)
             .attr('y', 0)
             .style('opacity', 0)
-            .attr('height', (d) => d.xSize)
             .on('mousedown', stopPropagation)
             .on('dblclick', stopPropagation);
           fo.append<HTMLDivElement>('xhtml:div')
@@ -439,7 +435,8 @@ export class Markmap {
         (update) => update,
         (exit) => exit.remove()
       )
-      .attr('width', (d) => Math.max(0, d.ySizeInner - paddingX * 2));
+      .attr('width', (d) => Math.max(0, d.ySizeInner - paddingX * 2))
+      .attr('height', (d) => d.xSize);
     this.transition(foreignObject).style('opacity', 1);
 
     // Update the links
