@@ -1,7 +1,6 @@
 import yaml from 'js-yaml';
 import { wrapFunction } from 'markmap-common';
-import { IMarkmapOptions } from 'markmap-view';
-import { IAssets, ITransformHooks, IFrontMatterOptions } from '../types';
+import { IAssets, ITransformHooks } from '../types';
 
 export const name = 'frontmatter';
 export function transform(transformHooks: ITransformHooks): IAssets {
@@ -16,7 +15,6 @@ export function transform(transformHooks: ITransformHooks): IAssets {
         const raw = content.slice(4, endOffset);
         try {
           context.frontmatter = yaml.load(raw);
-          context.options = getOptions(context.frontmatter);
         } catch {
           return;
         }
@@ -29,33 +27,4 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     });
   });
   return {};
-}
-
-function getOptions(frontmatter: { markmap?: IFrontMatterOptions }) {
-  const { color, duration, maxWidth } = frontmatter?.markmap || {};
-  let opts: Partial<IMarkmapOptions>;
-  if (typeof color === 'string') {
-    opts = {
-      ...opts,
-      color: () => color,
-    };
-  } else if (color?.length) {
-    opts = {
-      ...opts,
-      color: (node) => color[node.state.id % color.length],
-    };
-  }
-  if (typeof duration === 'number') {
-    opts = {
-      ...opts,
-      duration,
-    };
-  }
-  if (typeof maxWidth === 'number') {
-    opts = {
-      ...opts,
-      maxWidth,
-    };
-  }
-  return opts;
 }

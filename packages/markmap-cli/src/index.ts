@@ -13,10 +13,14 @@ export async function createMarkmap(
   options: IMarkmapCreateOptions & IDevelopOptions
 ): Promise<void> {
   const transformer = new Transformer();
-  const { root, features } = transformer.transform(options.content || '');
+  const { root, features, frontmatter } = transformer.transform(
+    options.content || ''
+  );
   let assets = transformer.getUsedAssets(features);
   if (options.toolbar) assets = addToolbar(assets);
-  const html = fillTemplate(root, assets);
+  const html = fillTemplate(root, assets, {
+    jsonOptions: (frontmatter as any)?.markmap,
+  });
   const output = options.output || 'markmap.html';
   await fs.writeFile(output, html, 'utf8');
   if (options.open) open(output);

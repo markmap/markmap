@@ -16,6 +16,7 @@ import {
   IMarkmapState,
   IMarkmapFlexTreeItem,
   IMarkmapLinkItem,
+  IMarkmapJSONOptions,
 } from './types';
 import css from './style.css';
 import containerCSS from './container.css';
@@ -621,4 +622,33 @@ export class Markmap {
     }
     return mm;
   }
+}
+
+export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
+  const { color, duration, maxWidth } = jsonOptions || {};
+  let opts: Partial<IMarkmapOptions>;
+  if (typeof color === 'string') {
+    opts = {
+      ...opts,
+      color: () => color,
+    };
+  } else if (color?.length) {
+    opts = {
+      ...opts,
+      color: (node) => color[node.state.id % color.length],
+    };
+  }
+  if (typeof duration === 'number') {
+    opts = {
+      ...opts,
+      duration,
+    };
+  }
+  if (typeof maxWidth === 'number') {
+    opts = {
+      ...opts,
+      maxWidth,
+    };
+  }
+  return opts;
 }

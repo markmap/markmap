@@ -1,5 +1,11 @@
 import { INode } from 'markmap-common';
 
+export interface IMarkmapJSONOptions {
+  color?: string | string[];
+  duration?: number;
+  maxWidth?: number;
+}
+
 export interface IMarkmapOptions {
   id?: string;
   autoFit: boolean;

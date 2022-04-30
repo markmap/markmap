@@ -130,14 +130,16 @@ function startServer(paddingBottom: number) {
   let ts = 0;
   let root: INode;
   let line: number;
-  const { mm } = window;
+  const { mm, markmap } = window;
   refresh();
   function refresh() {
     fetch(`/data?ts=${ts}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.ts && res.ts > ts && res.result) {
-          mm.setData((root = res.result.root));
+          const { root, frontmatter } = res.result;
+          mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
+          mm.setData(root);
           if (!ts) mm.fit();
           ts = res.ts;
           line = null;
