@@ -67,4 +67,5 @@ export interface ITransformPlugin {
 export interface IFrontMatterOptions {
   color?: string | string[];
   duration?: number;
+  maxWidth?: number;
 }

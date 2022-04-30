@@ -13,7 +13,6 @@
 
   &-foreign {
     display: inline-block;
-    white-space: nowrap;
 
     a {
       color: #0097e6;

@@ -2,17 +2,18 @@ import { INode } from 'markmap-common';
 
 export interface IMarkmapOptions {
   id?: string;
-  duration: number;
-  nodeMinHeight: number;
-  spacingVertical: number;
-  spacingHorizontal: number;
   autoFit: boolean;
-  fitRatio: number;
   color: (node: INode) => string;
-  paddingX: number;
-  style?: (id: string) => string;
+  duration: number;
   embedGlobalCSS: boolean;
+  fitRatio: number;
+  maxWidth: number;
+  nodeMinHeight: number;
+  paddingX: number;
   scrollForPan: boolean;
+  spacingHorizontal: number;
+  spacingVertical: number;
+  style?: (id: string) => string;
 }
 
 export interface IMarkmapState {

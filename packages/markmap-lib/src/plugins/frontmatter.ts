@@ -32,7 +32,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
 }
 
 function getOptions(frontmatter: { markmap?: IFrontMatterOptions }) {
-  const { color, duration } = frontmatter?.markmap || {};
+  const { color, duration, maxWidth } = frontmatter?.markmap || {};
   let opts: Partial<IMarkmapOptions>;
   if (typeof color === 'string') {
     opts = {
@@ -49,6 +49,12 @@ function getOptions(frontmatter: { markmap?: IFrontMatterOptions }) {
     opts = {
       ...opts,
       duration,
+    };
+  }
+  if (typeof maxWidth === 'number') {
+    opts = {
+      ...opts,
+      maxWidth,
     };
   }
   return opts;

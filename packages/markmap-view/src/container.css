@@ -7,7 +7,13 @@
   left: -100px;
   overflow: hidden;
 
-  > div {
+  > * {
     display: inline-block;
+
+    > .markmap-foreign {
+      &:last-child {
+        white-space: nowrap;
+      }
+    }
   }
 }
