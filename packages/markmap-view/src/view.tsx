@@ -182,7 +182,10 @@ export class Markmap {
   handlePan(e: WheelEvent) {
     e.preventDefault();
     const transform = d3.zoomTransform(this.svg.node());
-    const newTransform = transform.translate(-e.deltaX, -e.deltaY);
+    const newTransform = transform.translate(
+      -e.deltaX / transform.k,
+      -e.deltaY / transform.k
+    );
     this.svg.call(this.zoom.transform, newTransform);
   }
 
