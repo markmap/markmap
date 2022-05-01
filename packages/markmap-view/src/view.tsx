@@ -634,10 +634,11 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
       ...opts,
       color: () => color,
     };
-  } else if (color?.length) {
+  } else if (color?.length && typeof color[0] === 'string') {
+    const colorFn = d3.scaleOrdinal(color);
     opts = {
       ...opts,
-      color: (node) => color[node.state.id % color.length],
+      color: (node: INode) => colorFn(`${node.state.id}`),
     };
   }
   if (typeof duration === 'number') {
