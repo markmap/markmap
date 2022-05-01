@@ -319,7 +319,6 @@ export class Markmap {
     const nodeEnter = node
       .enter()
       .append('g')
-      .attr('class', 'markmap-node')
       .attr('data-depth', (d) => d.data.depth)
       .attr('data-path', (d) => d.data.state.path)
       .attr(
@@ -346,7 +345,13 @@ export class Markmap {
       )
       .remove();
 
-    const nodeMerge = node.merge(nodeEnter);
+    const nodeMerge = node
+      .merge(nodeEnter)
+      .attr('class', (d) =>
+        ['markmap-node', d.data.payload?.fold && 'markmap-fold']
+          .filter(Boolean)
+          .join(' ')
+      );
     this.transition(nodeMerge).attr(
       'transform',
       (d) => `translate(${d.y},${d.x - d.xSize / 2})`
