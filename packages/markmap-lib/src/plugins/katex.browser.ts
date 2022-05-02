@@ -61,7 +61,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       {
         type: 'iife',
         data: {
-          fn: (getMarkmap: () => typeof window.markmap) => {
+          fn: (getMarkmap: () => typeof import('markmap-view')) => {
             window.WebFontConfig = {
               custom: {
                 families: [

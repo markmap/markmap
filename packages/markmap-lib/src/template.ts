@@ -1,5 +1,11 @@
-import { JSItem, INode, persistJS, persistCSS } from 'markmap-common';
-import type { IMarkmapOptions, IMarkmapJSONOptions } from 'markmap-view';
+import {
+  JSItem,
+  INode,
+  IMarkmapOptions,
+  IMarkmapJSONOptions,
+  persistJS,
+  persistCSS,
+} from 'markmap-common';
 import { IAssets } from './types';
 
 const template: string = process.env.TEMPLATE;
@@ -14,21 +20,13 @@ const BASE_JS: JSItem[] = [
   },
 }));
 
-const defaultGetOptions = (
-  markmap: typeof window.markmap,
-  jsonOptions: IMarkmapJSONOptions
-) => markmap.deriveOptions(jsonOptions);
-
 export function fillTemplate(
   root: INode | undefined,
   assets: IAssets,
   extra?: {
     baseJs?: JSItem[];
     jsonOptions?: IMarkmapJSONOptions;
-    getOptions?: (
-      markmap: typeof window.markmap,
-      jsonOptions: IMarkmapJSONOptions
-    ) => Partial<IMarkmapOptions>;
+    getOptions?: (jsonOptions: IMarkmapJSONOptions) => Partial<IMarkmapOptions>;
   }
 ): string {
   extra = {
@@ -39,7 +37,7 @@ export function fillTemplate(
   const cssList = [...(styles ? persistCSS(styles) : [])];
   const context = {
     getMarkmap: () => window.markmap,
-    getOptions: extra.getOptions || defaultGetOptions,
+    getOptions: extra.getOptions,
     jsonOptions: extra.jsonOptions,
     root,
   };
@@ -60,7 +58,7 @@ export function fillTemplate(
               const markmap = getMarkmap();
               window.mm = markmap.Markmap.create(
                 'svg#mindmap',
-                getOptions?.(markmap, jsonOptions),
+                (getOptions || markmap.deriveOptions)(jsonOptions),
                 root
               );
             },

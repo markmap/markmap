@@ -46,6 +46,9 @@
     "open": "^8.0.3",
     "update-notifier": "^5.1.0"
   },
+  "devDependencies": {
+    "markmap-view": "^0.13.2"
+  },
   "engines": {
     "node": ">=10"
   }

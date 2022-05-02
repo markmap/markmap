@@ -2,8 +2,10 @@ import * as d3 from 'd3';
 import { flextree } from 'd3-flextree';
 import { mountDom } from '@gera2ld/jsx-dom';
 import {
-  INode,
   Hook,
+  INode,
+  IMarkmapOptions,
+  IMarkmapJSONOptions,
   getId,
   walkTree,
   arrayFrom,
@@ -11,13 +13,7 @@ import {
   childSelector,
   noop,
 } from 'markmap-common';
-import {
-  IMarkmapOptions,
-  IMarkmapState,
-  IMarkmapFlexTreeItem,
-  IMarkmapLinkItem,
-  IMarkmapJSONOptions,
-} from './types';
+import { IMarkmapState, IMarkmapFlexTreeItem, IMarkmapLinkItem } from './types';
 import css from './style.css';
 import containerCSS from './container.css';
 

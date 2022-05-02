@@ -92,3 +92,25 @@ export interface IDeferred<T> {
   resolve: (value: T) => void;
   reject: (error?: unknown) => void;
 }
+
+export interface IMarkmapJSONOptions {
+  color?: string | string[];
+  duration?: number;
+  maxWidth?: number;
+}
+
+export interface IMarkmapOptions {
+  id?: string;
+  autoFit: boolean;
+  color: (node: INode) => string;
+  duration: number;
+  embedGlobalCSS: boolean;
+  fitRatio: number;
+  maxWidth: number;
+  nodeMinHeight: number;
+  paddingX: number;
+  scrollForPan: boolean;
+  spacingHorizontal: number;
+  spacingVertical: number;
+  style?: (id: string) => string;
+}
