@@ -62,7 +62,14 @@ export function buildCode<T extends unknown[]>(
 
 export function persistJS(items: JSItem[], context?: unknown): string[] {
   return items.map((item) => {
-    if (item.type === 'script') return wrapHtml('script', '', item.data);
+    if (item.type === 'script') {
+      const { textContent, ...rest } = item.data;
+      return wrapHtml(
+        'script',
+        textContent || '',
+        rest as Record<string, string | boolean>
+      );
+    }
     if (item.type === 'iife') {
       const { fn, getParams } = item.data;
       return wrapHtml(

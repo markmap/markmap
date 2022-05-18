@@ -56,7 +56,8 @@ export interface INode extends IHierarchy<INode> {
 export type JSScriptItem = {
   type: 'script';
   data: {
-    src: string;
+    src?: string;
+    textContent?: string;
     async?: boolean;
     defer?: boolean;
   };

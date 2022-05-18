@@ -35,7 +35,8 @@
   "repository": "git@github.com:gera2ld/markmap.git",
   "devDependencies": {
     "@types/remarkable": "^2.0.3",
-    "markmap-view": "^0.13.2"
+    "markmap-view": "^0.13.2",
+    "webfontloader": "^1.6.28"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",

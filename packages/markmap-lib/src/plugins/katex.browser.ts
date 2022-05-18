@@ -2,20 +2,15 @@ import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
 import { loadJS } from 'markmap-common';
 import { IAssets, ITransformHooks } from '../types';
+import config from './katex.config';
 
 let loading: Promise<void>;
 const autoload = () => {
-  loading ||= loadJS([
-    {
-      type: 'script',
-      data: {
-        src: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js',
-      },
-    },
-  ]);
+  loading ||= loadJS(config.preloadScripts);
   return loading;
 };
 
+export { config };
 export const name = 'katex';
 export function transform(transformHooks: ITransformHooks): IAssets {
   const renderKatex = (source: string, displayMode: boolean) => {
@@ -49,53 +44,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     };
   });
   return {
-    styles: [
-      {
-        type: 'stylesheet',
-        data: {
-          href: 'https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css',
-        },
-      },
-    ],
-    scripts: [
-      {
-        type: 'iife',
-        data: {
-          fn: (getMarkmap: () => typeof import('markmap-view')) => {
-            window.WebFontConfig = {
-              custom: {
-                families: [
-                  'KaTeX_AMS',
-                  'KaTeX_Caligraphic:n4,n7',
-                  'KaTeX_Fraktur:n4,n7',
-                  'KaTeX_Main:n4,n7,i4,i7',
-                  'KaTeX_Math:i4,i7',
-                  'KaTeX_Script',
-                  'KaTeX_SansSerif:n4,n7,i4',
-                  'KaTeX_Size1',
-                  'KaTeX_Size2',
-                  'KaTeX_Size3',
-                  'KaTeX_Size4',
-                  'KaTeX_Typewriter',
-                ],
-              },
-              active: () => {
-                getMarkmap().refreshHook.call();
-              },
-            };
-          },
-          getParams({ getMarkmap }) {
-            return [getMarkmap];
-          },
-        },
-      },
-      {
-        type: 'script',
-        data: {
-          src: 'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js',
-          defer: true,
-        },
-      },
-    ],
+    styles: config.styles,
+    scripts: config.scripts,
   };
 }

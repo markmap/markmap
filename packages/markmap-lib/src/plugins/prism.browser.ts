@@ -1,22 +1,10 @@
 import { loadJS } from 'markmap-common';
 import { IAssets, ITransformHooks } from '../types';
+import config from './prism.config';
 
 let loading: Promise<void>;
 const autoload = () => {
-  loading ||= loadJS([
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
-      },
-    },
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
-      },
-    },
-  ]);
+  loading ||= loadJS(config.preloadScripts);
   return loading;
 };
 
@@ -28,6 +16,7 @@ function loadLanguageAndRefresh(lang: string, transformHooks: ITransformHooks) {
   });
 }
 
+export { config };
 export const name = 'prism';
 export function transform(transformHooks: ITransformHooks): IAssets {
   let enableFeature = () => {};
@@ -51,13 +40,6 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     };
   });
   return {
-    styles: [
-      {
-        type: 'stylesheet',
-        data: {
-          href: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/themes/prism.css`,
-        },
-      },
-    ],
+    styles: config.styles,
   };
 }

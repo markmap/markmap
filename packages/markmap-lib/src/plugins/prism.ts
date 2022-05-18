@@ -1,7 +1,9 @@
 import Prism from 'prismjs';
 import loadLanguages from 'prismjs/components/';
 import { IAssets, ITransformHooks } from '../types';
+import config from './prism.config';
 
+export { config };
 export const name = 'prism';
 export function transform(transformHooks: ITransformHooks): IAssets {
   let enableFeature = () => {};
@@ -27,13 +29,6 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     };
   });
   return {
-    styles: [
-      {
-        type: 'stylesheet',
-        data: {
-          href: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/themes/prism.css`,
-        },
-      },
-    ],
+    styles: config.styles,
   };
 }
