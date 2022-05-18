@@ -2,20 +2,22 @@ import { loadCSS, loadJS } from 'markmap-common';
 
 const enabled: Record<string, boolean> = {};
 
-export const ready = loadJS([
-  {
-    type: 'script',
-    data: {
-      src: `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
+export const ready = loadJS(
+  window.markmap?.autoLoader?.baseJs || [
+    {
+      type: 'script',
+      data: {
+        src: `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
+      },
     },
-  },
-  {
-    type: 'script',
-    data: {
-      src: `https://cdn.jsdelivr.net/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
+    {
+      type: 'script',
+      data: {
+        src: `https://cdn.jsdelivr.net/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
+      },
     },
-  },
-]).then(() => {
+  ]
+).then(() => {
   const { markmap } = window;
   loadCSS([
     {
