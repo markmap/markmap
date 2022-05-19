@@ -1,6 +1,6 @@
 {
   "name": "markmap-toolbar",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "Extensible toolbar for markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
@@ -24,7 +24,7 @@
   },
   "typings": "types/index.d.ts",
   "devDependencies": {
-    "markmap-view": "^0.13.2"
+    "markmap-view": "^0.13.3"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
