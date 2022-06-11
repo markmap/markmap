@@ -148,9 +148,11 @@ export class Transformer {
       } else if (token.type === 'inline') {
         const revoke = this.hooks.htmltag.tap((ctx) => {
           const comment = ctx.result.match(/^<!--([\s\S]*?)-->$/);
-          const data = comment?.[1].trim();
-          if (data === 'fold') {
-            current.payload.fold = true;
+          const data = comment?.[1].trim().split(' ');
+          if (data[0] === 'fold') {
+            current.payload.fold = ['all', 'recursively'].includes(data[1])
+              ? 2
+              : 1;
             ctx.result = '';
           }
         });

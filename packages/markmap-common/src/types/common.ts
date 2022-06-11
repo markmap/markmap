@@ -5,9 +5,13 @@ export interface IHierarchy<T> {
    */
   payload?: {
     /**
-     * Whether the node's children are fold.
+     * The folding status of this node.
+     *
+     * 0 - not folded
+     * 1 - folded
+     * 2 - folded along with all its child nodes
      */
-    fold?: boolean;
+    fold?: number;
     /**
      * Index of list items.
      */
@@ -113,5 +117,6 @@ export interface IMarkmapOptions {
   scrollForPan: boolean;
   spacingHorizontal: number;
   spacingVertical: number;
+  initialExpandLevel: number;
   style?: (id: string) => string;
 }

@@ -88,6 +88,7 @@ export class Markmap {
     scrollForPan: isMacintosh,
     spacingHorizontal: 80,
     spacingVertical: 5,
+    initialExpandLevel: -1,
   };
 
   options: IMarkmapOptions;
@@ -189,14 +190,14 @@ export class Markmap {
     const { data } = d;
     data.payload = {
       ...data.payload,
-      fold: !data.payload?.fold,
+      fold: data.payload?.fold ? 0 : 1,
     };
     this.renderData(d.data);
   }
 
   initializeData(node: INode): void {
     let nodeId = 0;
-    const { color, nodeMinHeight, maxWidth } = this.options;
+    const { color, nodeMinHeight, maxWidth, initialExpandLevel } = this.options;
     const { id } = this.state;
     const container = mountDom(
       <div className={`markmap-container markmap ${id}-g`}></div>
@@ -206,6 +207,8 @@ export class Markmap {
     ) as HTMLElement;
     document.body.append(container, style);
     const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
+
+    let foldRecursively = 0;
     walkTree(node, (item, next) => {
       item.children = item.children?.map((child) => ({ ...child }));
       nodeId += 1;
@@ -221,8 +224,20 @@ export class Markmap {
         el: group.firstChild as HTMLElement,
       };
       color(item); // preload colors
+
+      const isFoldRecursively = item.payload?.fold === 2;
+      if (isFoldRecursively) {
+        foldRecursively += 1;
+      } else if (
+        foldRecursively ||
+        (initialExpandLevel >= 0 && item.depth >= initialExpandLevel)
+      ) {
+        item.payload = { ...item.payload, fold: 1 };
+      }
       next();
+      if (isFoldRecursively) foldRecursively -= 1;
     });
+
     const nodes = arrayFrom(container.childNodes).map(
       (group) => group.firstChild as HTMLElement
     );
@@ -627,9 +642,9 @@ export class Markmap {
   }
 }
 
-export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
-  const { color, duration, maxWidth } = jsonOptions || {};
+export function deriveOptions(jsonOptions: IMarkmapJSONOptions = {}) {
   let opts: Partial<IMarkmapOptions>;
+  const { color } = jsonOptions;
   if (typeof color === 'string') {
     opts = {
       ...opts,
@@ -642,17 +657,10 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
       color: (node: INode) => colorFn(`${node.state.id}`),
     };
   }
-  if (typeof duration === 'number') {
-    opts = {
-      ...opts,
-      duration,
-    };
-  }
-  if (typeof maxWidth === 'number') {
-    opts = {
-      ...opts,
-      maxWidth,
-    };
-  }
+  const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;
+  numberKeys.forEach((key) => {
+    const value = jsonOptions[key];
+    if (typeof value === 'number') opts = { ...opts, [key]: value };
+  });
   return opts;
 }
