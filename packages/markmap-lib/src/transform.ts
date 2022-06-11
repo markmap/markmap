@@ -13,7 +13,7 @@ import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 
 export { builtInPlugins };
 
-function cleanNode(node: INode, depth = 0): void {
+function cleanNode(node: INode): void {
   if (node.type === 'heading') {
     // drop all paragraphs
     node.children = node.children.filter((item) => item.type !== 'paragraph');
@@ -50,12 +50,18 @@ function cleanNode(node: INode, depth = 0): void {
   if (node.children.length === 0) {
     delete node.children;
   } else {
-    node.children.forEach((child) => cleanNode(child, depth + 1));
+    node.children.forEach((child) => cleanNode(child));
     if (node.children.length === 1 && !node.children[0].content) {
       node.children = node.children[0].children;
     }
   }
+}
+
+function resetDepth(node: INode, depth = 0) {
   node.depth = depth;
+  node.children?.forEach((child) => {
+    resetDepth(child, depth + 1);
+  });
 }
 
 export class Transformer {
@@ -178,6 +184,7 @@ export class Transformer {
     let root = this.buildTree(tokens);
     cleanNode(root);
     if (root.children?.length === 1) root = root.children[0];
+    resetDepth(root);
     return { ...context, root };
   }
 

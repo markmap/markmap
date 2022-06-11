@@ -28,7 +28,7 @@ interface IPadding {
 
 function linkWidth(nodeData: IMarkmapFlexTreeItem): number {
   const data: INode = nodeData.data;
-  return Math.max(6 - 2 * data.depth, 1.5);
+  return Math.max(4 - 2 * data.depth, 1.5);
 }
 
 function adjustSpacing(tree: IMarkmapFlexTreeItem, spacing: number): void {
