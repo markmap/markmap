@@ -642,25 +642,20 @@ export class Markmap {
   }
 }
 
-export function deriveOptions(jsonOptions: IMarkmapJSONOptions = {}) {
-  let opts: Partial<IMarkmapOptions>;
+export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
+  const opts: Partial<IMarkmapOptions> = {};
+  jsonOptions = { ...jsonOptions };
   const { color } = jsonOptions;
   if (typeof color === 'string') {
-    opts = {
-      ...opts,
-      color: () => color,
-    };
+    opts.color = () => color;
   } else if (color?.length && typeof color[0] === 'string') {
     const colorFn = d3.scaleOrdinal(color);
-    opts = {
-      ...opts,
-      color: (node: INode) => colorFn(`${node.state.id}`),
-    };
+    opts.color = (node: INode) => colorFn(`${node.state.id}`);
   }
   const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;
   numberKeys.forEach((key) => {
     const value = jsonOptions[key];
-    if (typeof value === 'number') opts = { ...opts, [key]: value };
+    if (typeof value === 'number') opts[key] = value;
   });
   return opts;
 }
