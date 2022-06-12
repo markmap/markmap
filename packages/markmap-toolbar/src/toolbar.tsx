@@ -1,4 +1,5 @@
 import { mountDom, VChildren } from '@gera2ld/jsx-dom';
+import { walkTree } from 'markmap-common';
 import type { Markmap } from 'markmap-view';
 import './style.css';
 
@@ -9,21 +10,28 @@ interface IToolbarItem {
   onClick?: (e: Event) => void;
 }
 
+type PatchedMarkmapClick = Markmap['handleClick'] & {
+  __reset?: () => void;
+};
+
+const clsToolbarItem = 'mm-toolbar-item';
+const clsActive = 'active';
+
 function renderBrand() {
   return (
-    <div className="mm-toolbar-brand">
+    <a className="mm-toolbar-brand" href="https://markmap.js.org/">
       <img
         alt="markmap"
         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACoFBMVEUAAAAAAAD//wAAAACAgAD//wAAAABVVQCqqgBAQACAQACAgABmZgBtbQAAAABgQABgYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaFQAAAAAAAAAAAAAAAAAHAAARBQIdGAIYEwI/OgJYUQUfHQI+OgJDPgJJRARBPQRJQgRRSwRRTQRIQQRUTgRUUARZUgRSTQRPSQRjWgZORQRfWQZsZAhTTQRNRwRWUAZkXAZOSARUTgZPRwRRSQRoYwZWUQZWTgRbUwZmXQZoXghmXwdqYwdsYwdfVwVmXQdqYgdiWgVpYAl3bgl6cgl4cAqLggw8OAOWjA2Uig1OSAR2bQihlg55cAh5cAh6cQmMgwyOhAyUjA2QhQ2Uiw2Viw2soBCflA+voxGwpRGhlg+hlg+snxGroBGjmBCpnBC0pxKyphKxpRG2qhK0qBK5rBK5rBP/7h3/8B7/8R3/8h3/8R7/8h786x397B3+7R3EtxT66Rz66hz76hz86xz96xz97Bz+7Rz45xz56Bz76hz97Bz97B3MvRX15Rv25Rv45xz66Rz76hz97B3+7R3IuxX05Bv15Bv25Rz56Bz66Ry/sxPAsxPCtRTCthTNvxbZyxfczxfi0xjl1Rnn2Bnr2xrr3Brs3Rru3Rru3xrv3hrw3xrx4Bvx4Rvy4hvz4hvz4xv04xv05Bv14xv15Bv15Rv25Bv25Rv25Rz25hv35hv35xv45xv45xz55xz56Bv56Bz66Rv66Rz76Rv76Rz76hz86hv86xz+7h3/7R3/7h3/7x3/8B3/8B7/8R3/8R4Yqhj5AAAAq3RSTlMAAQECAgIDAwMEBAQFBwgICAwQERITFRYXGBkbHB0eHyQlJyguNTg8RUZISU5PV2FiY2RlZmdqa2xubnJzc3R2d3d3eXl5eXp7fH1+gIGCgoKDg4SEhIWGh4eHiYmJjIyMjZSUlJ+sra+zt7i4uru8ztHV1tbW2d7g4OHi4uPk5ufp7Ozv9fX29/f3+Pj6+vr7+/v7+/v7+/z8/Pz8/f39/f39/f3+/v7+/v7K6J1dAAACHklEQVQ4y2NgwAoYWdi5uLm5GXHIcrLCmMzYpDmAhKCKjoGtp40MFhVsDAwSxmmVEzZu2XvqSLkchjw3g0h445Ybd24vmTN1Usd5X3R5DgaNqgN35sycP2/GxMkTMRVwMOivvtO3YsWUm3duX790EcMKdgbNNXdnnJh1+9T6ipzU+FB0RzIyiFYB5WdfaElUF8TmTQ6GwH39J2bvypMHcpg4MAKKkUGo5s6KWRfyGRh4WJClGEGBCgS8DLobliy/3abMwM8NBYwQjXDgf3ryxOspyKYyg+RFTFwdnYDAzbrw+oLFm9Ot3J3AwNHFTBykQrhg++GDh48cOXzk4P6VZy8s230MyAGCwwcP7iyRBJpiur1n8hQIWHX27NkLi6bAwOSuow5ABeY7OydOhoCFIAULe6E8YFCf8QAqEC86evniZTA4tfLsuRXHr0E4ly9ePF0uC3KnpH1MZBQQxPoVgxyZ5RMdBQaRMc6yIEcihWbQGaA3k9G8CfQoN0pAtSoxCMACihk9qGtBQZ2LHtRIkRUMiqwd2TJADiswsrjQlAGju/o+MLrPNkWo8mFN1ewMWmvBCebQ0rKMJG87QzF0FRwMRuvugpLcrXu3rp7Zs61UCtMZ2nVHbk+fMX/+jMmTp3Sf9MLiULG45q237txaPG3yxPYrYQzYMo60RWbD3E27Ll68Uq+AK+uJqOlZBiSEKGLNnMA0iDfzwrI/NKgBOivk9piPdtUAAAAASUVORK5CYII="
       />
-      <a href="https://markmap.js.org/">markmap</a>
-    </div>
+      <span>markmap</span>
+    </a>
   );
 }
 
 function renderItem({ title, content, onClick }: IToolbarItem) {
   return (
-    <div className="mm-toolbar-item" title={title} onClick={onClick}>
+    <div className={clsToolbarItem} title={title} onClick={onClick}>
       {content}
     </div>
   );
@@ -47,9 +55,16 @@ export class Toolbar {
 
   private registry: { [id: string]: IToolbarItem } = {};
 
-  private markmap = null;
+  private markmap: Markmap = null;
 
-  private items: (string | IToolbarItem)[] = ['zoomIn', 'zoomOut', 'fit'];
+  static defaultItems: (string | IToolbarItem)[] = [
+    'zoomIn',
+    'zoomOut',
+    'fit',
+    'recurse',
+  ];
+
+  items: (string | IToolbarItem)[];
 
   static create(mm: Markmap) {
     const toolbar = new Toolbar();
@@ -92,6 +107,20 @@ export class Toolbar {
       ),
       onClick: this.getHandler((mm) => mm.fit()),
     });
+    this.register({
+      id: 'recurse',
+      title: 'Recursively toggle the next node',
+      content: Toolbar.icon('M16 4h-12v12h12v-8h-8v4h2v-2h4v4h-8v-8h10z'),
+      onClick: (e) => {
+        const button = (e.target as HTMLDivElement).closest<HTMLDivElement>(
+          `.${clsToolbarItem}`
+        );
+        const toggle = () => button.classList.toggle(clsActive);
+        const active = toggle();
+        this.handleRecurse(active, toggle);
+      },
+    });
+    this.setItems(Toolbar.defaultItems);
   }
 
   setBrand(show: boolean) {
@@ -115,6 +144,33 @@ export class Toolbar {
 
   attach(mm: Markmap) {
     this.markmap = mm;
+  }
+
+  handleRecurse(active: boolean, reset: () => void) {
+    const mm = this.markmap;
+    if (!active) {
+      mm.handleClick?.['__reset']?.();
+      return;
+    }
+    const originalClick = mm.handleClick;
+    if (!originalClick) return;
+    const handleClick: PatchedMarkmapClick = (_, d) => {
+      const fold = d.data.payload?.fold ? 0 : 1;
+      walkTree(d.data, (item, next) => {
+        item.payload = {
+          ...item.payload,
+          fold,
+        };
+        next();
+      });
+      mm.renderData(d.data);
+      reset();
+      handleClick.__reset();
+    };
+    handleClick.__reset = () => {
+      mm.handleClick = originalClick;
+    };
+    mm.handleClick = handleClick;
   }
 
   render() {

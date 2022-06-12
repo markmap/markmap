@@ -1,39 +1,43 @@
 .mm-toolbar {
-  @apply flex items-center rounded bg-white border border-solid border-gray-300 leading-none;
-  user-select: none;
+  @apply flex items-center rounded bg-white border border-solid border-gray-300 leading-none p-1 select-none;
   &:hover {
     @apply border-gray-400;
   }
   svg {
-    display: block;
+    @apply block;
   }
-  > * {
-    @apply m-1 cursor-pointer;
-    > * {
-      @apply text-gray-400;
-    }
-    &:hover {
-      @apply bg-gray-200 rounded;
-      > * {
-        @apply text-gray-800;
-      }
-    }
+  a {
+    @apply inline-block no-underline;
   }
 
   &-brand {
     > img {
       @apply w-4 h-4 align-middle;
     }
-    > a {
-      @apply inline-block text-xs no-underline pr-1;
+    > span {
+      @apply px-1;
     }
   }
+  &-brand,
   &-item {
+    &:not(:first-child) {
+      @apply ml-1;
+    }
     > * {
+      @apply cursor-pointer text-gray-400 text-center text-xs;
       min-width: 20px;
       height: 20px;
       line-height: 20px;
-      text-align: center;
+    }
+    &.active,
+    &:hover {
+      @apply bg-gray-200 rounded;
+      > * {
+        @apply text-gray-800;
+      }
+    }
+    &.active {
+      @apply bg-gray-300;
     }
   }
 }

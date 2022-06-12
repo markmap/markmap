@@ -412,7 +412,7 @@ export class Markmap {
             .attr('cx', (d) => d.ySizeInner)
             .attr('cy', (d) => d.xSize)
             .attr('r', 0)
-            .on('click', this.handleClick);
+            .on('click', (e, d) => this.handleClick(e, d));
         },
         (update) => update,
         (exit) => exit.remove()
