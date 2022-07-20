@@ -196,7 +196,7 @@ export class Transformer {
   getAssets(keys?: string[]): IAssets {
     const styles: CSSItem[] = [];
     const scripts: JSItem[] = [];
-    keys ??= Object.keys(this.assetsMap);
+    keys ??= this.plugins.map((plugin) => plugin.name);
     for (const assets of keys.map((key) => this.assetsMap[key])) {
       if (assets) {
         if (assets.styles) styles.push(...assets.styles);
@@ -210,6 +210,9 @@ export class Transformer {
    * Get used assets by features object returned by `transform`.
    */
   getUsedAssets(features: IFeatures): IAssets {
-    return this.getAssets(Object.keys(features).filter((key) => features[key]));
+    const keys = this.plugins
+      .map((plugin) => plugin.name)
+      .filter((name) => features[name]);
+    return this.getAssets(keys);
   }
 }

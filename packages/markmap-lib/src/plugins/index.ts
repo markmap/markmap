@@ -3,4 +3,4 @@ import * as prism from './prism';
 import * as frontmatter from './frontmatter';
 
 export * from './base';
-export const plugins = [katex, prism, frontmatter];
+export const plugins = [frontmatter, katex, prism];
