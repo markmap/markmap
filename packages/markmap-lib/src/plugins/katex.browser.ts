@@ -3,6 +3,7 @@ import remarkableKatex from 'remarkable-katex';
 import { loadJS } from 'markmap-common';
 import { IAssets, ITransformHooks } from '../types';
 import config from './katex.config';
+import { resolveNpmPaths } from './util';
 
 let loading: Promise<void>;
 const autoload = () => {
@@ -42,6 +43,18 @@ export function transform(transformHooks: ITransformHooks): IAssets {
     enableFeature = () => {
       context.features[name] = true;
     };
+    const { frontmatter } = context;
+    if (frontmatter?.markmap) {
+      ['extraJs', 'extraCss'].forEach((key) => {
+        if (frontmatter.markmap[key]) {
+          frontmatter.markmap[key] = resolveNpmPaths(
+            frontmatter.markmap[key],
+            name,
+            config.versions.katex
+          );
+        }
+      });
+    }
   });
   return {
     styles: config.styles,

@@ -1,6 +1,10 @@
 import { CSSItem, JSItem } from 'markmap-common';
 
 export default {
+  versions: {
+    katex: process.env.KATEX_VERSION,
+    webfontloader: process.env.WEBFONTLOADER_VERSION,
+  },
   preloadScripts: [
     {
       type: 'script',

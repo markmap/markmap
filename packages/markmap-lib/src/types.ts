@@ -1,5 +1,12 @@
 import type { Remarkable } from 'remarkable';
-import { CSSItem, JSItem, INode, IWrapContext, Hook } from 'markmap-common';
+import {
+  CSSItem,
+  JSItem,
+  INode,
+  IWrapContext,
+  Hook,
+  IMarkmapJSONOptions,
+} from 'markmap-common';
 
 type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
 
@@ -50,7 +57,9 @@ export interface IFeatures {
 
 export interface ITransformContext {
   features: IFeatures;
-  frontmatter?: unknown;
+  frontmatter?: {
+    markmap?: IMarkmapJSONOptions;
+  };
 }
 
 export interface ITransformResult extends ITransformContext {

@@ -1,6 +1,9 @@
 import { CSSItem, JSItem } from 'markmap-common';
 
 export default {
+  versions: {
+    prismjs: process.env.PRISM_VERSION,
+  },
   preloadScripts: [
     {
       type: 'script',

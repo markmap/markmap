@@ -99,9 +99,12 @@ export interface IDeferred<T> {
 }
 
 export interface IMarkmapJSONOptions {
-  color?: string | string[];
+  color?: string[];
   duration?: number;
   maxWidth?: number;
+  initialExpandLevel?: number;
+  extraJs?: string[];
+  extraCss?: string[];
 }
 
 export interface IMarkmapOptions {

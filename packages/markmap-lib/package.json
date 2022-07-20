@@ -19,9 +19,16 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
-  "browser": "dist/browser/index.js",
   "unpkg": "dist/browser/index.min.js",
   "jsdelivr": "dist/browser/index.min.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/browser/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.esm.js"
+    },
+    "./package.json": "./package.json"
+  },
   "typings": "types/index.d.ts",
   "files": [
     "dist",

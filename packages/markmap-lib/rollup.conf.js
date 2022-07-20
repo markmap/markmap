@@ -13,6 +13,7 @@ const TEMPLATE = fs.readFileSync('templates/markmap.html', 'utf8');
 
 const replaceValues = {
   'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
+  'process.env.LIB_VERSION': JSON.stringify(pkg.version),
   'process.env.D3_VERSION': JSON.stringify(d3Version),
   'process.env.VIEW_VERSION': JSON.stringify(viewVersion),
   'process.env.PRISM_VERSION': JSON.stringify(prismVersion),

@@ -644,18 +644,22 @@ export class Markmap {
 
 export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
   const opts: Partial<IMarkmapOptions> = {};
-  jsonOptions = { ...jsonOptions };
+  jsonOptions ||= {};
+
   const { color } = jsonOptions;
-  if (typeof color === 'string') {
-    opts.color = () => color;
-  } else if (color?.length && typeof color[0] === 'string') {
+  if (color?.length === 1) {
+    const solidColor = color[0];
+    opts.color = () => solidColor;
+  } else if (color?.length) {
     const colorFn = d3.scaleOrdinal(color);
     opts.color = (node: INode) => colorFn(`${node.state.id}`);
   }
+
   const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;
   numberKeys.forEach((key) => {
     const value = jsonOptions[key];
     if (typeof value === 'number') opts[key] = value;
   });
+
   return opts;
 }
