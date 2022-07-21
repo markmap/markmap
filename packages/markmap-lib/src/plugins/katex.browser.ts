@@ -39,10 +39,12 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       return result;
     };
   });
-  transformHooks.transform.tap((_, context) => {
+  transformHooks.beforeParse.tap((_, context) => {
     enableFeature = () => {
       context.features[name] = true;
     };
+  });
+  transformHooks.afterParse.tap((_, context) => {
     const { frontmatter } = context;
     if (frontmatter?.markmap) {
       ['extraJs', 'extraCss'].forEach((key) => {

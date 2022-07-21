@@ -16,16 +16,19 @@ export interface ITransformHooks {
    */
   parser: Hook<[md: Remarkable]>;
   /**
-   * Tapped every time when Markdown content is transformed.
+   * Tapped every time before Markdown content is parsed.
    */
-  transform: Hook<[md: Remarkable, context: ITransformContext]>;
+  beforeParse: Hook<[md: Remarkable, context: ITransformContext]>;
+  /**
+   * Tapped every time after Markdown content is parsed.
+   */
+  afterParse: Hook<[md: Remarkable, context: ITransformContext]>;
   /**
    * Tapped when Remarkable renders an HTML tag in Markdown.
    */
   htmltag: Hook<[ctx: IWrapContext<Parameters<Htmltag>, ReturnType<Htmltag>>]>;
   /**
-   * Indicate that the last transformation is not complete for reasons like
-   * lack of resources and is called when it is ready for a new transformation.
+   * Used in autoloader to force rerender when resource is loaded.
    */
   retransform: Hook<[]>;
 }

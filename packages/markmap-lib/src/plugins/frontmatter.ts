@@ -4,7 +4,7 @@ import { IAssets, ITransformHooks } from '../types';
 
 export const name = 'frontmatter';
 export function transform(transformHooks: ITransformHooks): IAssets {
-  transformHooks.transform.tap((md, context) => {
+  transformHooks.beforeParse.tap((md, context) => {
     const origParse = md.parse;
     md.parse = wrapFunction(origParse, {
       before(ctx) {

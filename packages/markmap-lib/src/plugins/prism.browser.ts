@@ -34,7 +34,7 @@ export function transform(transformHooks: ITransformHooks): IAssets {
       },
     });
   });
-  transformHooks.transform.tap((_, context) => {
+  transformHooks.beforeParse.tap((_, context) => {
     enableFeature = () => {
       context.features[name] = true;
     };

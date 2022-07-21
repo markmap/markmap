@@ -4,7 +4,8 @@ import { ITransformHooks } from '../types';
 export function createTransformHooks(): ITransformHooks {
   return {
     parser: new Hook(),
-    transform: new Hook(),
+    beforeParse: new Hook(),
+    afterParse: new Hook(),
     htmltag: new Hook(),
     retransform: new Hook(),
   };

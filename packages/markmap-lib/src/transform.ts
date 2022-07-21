@@ -181,8 +181,9 @@ export class Transformer {
     const context: ITransformContext = {
       features: {},
     };
-    this.hooks.transform.call(this.md, context);
+    this.hooks.beforeParse.call(this.md, context);
     const tokens = this.md.parse(content, {});
+    this.hooks.afterParse.call(this.md, context);
     let root = this.buildTree(tokens);
     cleanNode(root);
     if (root.children?.length === 1) root = root.children[0];
