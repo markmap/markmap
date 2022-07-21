@@ -24,6 +24,7 @@
   "exports": {
     ".": {
       "browser": "./dist/browser/index.js",
+      "node": "./dist/index.js",
       "require": "./dist/index.js",
       "default": "./dist/index.esm.js"
     },
