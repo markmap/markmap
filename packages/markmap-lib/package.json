@@ -42,6 +42,7 @@
   "repository": "git@github.com:gera2ld/markmap.git",
   "devDependencies": {
     "@types/remarkable": "^2.0.3",
+    "markmap-common": "^0.13.4",
     "markmap-view": "^0.13.5",
     "webfontloader": "^1.6.28"
   },
@@ -49,9 +50,11 @@
     "@babel/runtime": "^7.16.3",
     "js-yaml": "^4.1.0",
     "katex": "^0.15.1",
-    "markmap-common": "^0.13.4",
     "prismjs": "^1.25.0",
     "remarkable": "^2.0.1",
     "remarkable-katex": "^1.1.8"
+  },
+  "peerDependencies": {
+    "markmap-common": "*"
   }
 }

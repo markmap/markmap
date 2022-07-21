@@ -40,8 +40,13 @@
     "@babel/runtime": "^7.12.5",
     "@types/d3": "^6.0.0",
     "d3": "^6.2.0",
-    "d3-flextree": "^2.1.1",
+    "d3-flextree": "^2.1.1"
+  },
+  "devDependencies": {
     "markmap-common": "^0.13.4"
+  },
+  "peerDependencies": {
+    "markmap-common": "*"
   },
   "engines": {
     "node": ">=10"
