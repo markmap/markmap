@@ -47,12 +47,12 @@
     "webfontloader": "^1.6.28"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
+    "@babel/runtime": "^7.18.9",
     "js-yaml": "^4.1.0",
-    "katex": "^0.15.1",
-    "prismjs": "^1.25.0",
+    "katex": "^0.16.0",
+    "prismjs": "^1.28.0",
     "remarkable": "^2.0.1",
-    "remarkable-katex": "^1.1.8"
+    "remarkable-katex": "^1.2.1"
   },
   "peerDependencies": {
     "markmap-common": "*"
