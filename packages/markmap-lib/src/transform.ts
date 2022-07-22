@@ -4,7 +4,6 @@ import {
   ITransformResult,
   ITransformPlugin,
   IAssets,
-  IAssetsMap,
   ITransformHooks,
   IFeatures,
   ITransformContext,
@@ -69,12 +68,12 @@ export class Transformer {
 
   md: Remarkable;
 
-  assetsMap: IAssetsMap;
+  assetsMap: Record<string, IAssets> = {};
 
   constructor(public plugins: ITransformPlugin[] = builtInPlugins) {
     this.hooks = createTransformHooks();
 
-    const assetsMap = {};
+    const assetsMap: typeof this.assetsMap = {};
     for (const { name, transform } of plugins) {
       assetsMap[name] = transform(this.hooks);
     }

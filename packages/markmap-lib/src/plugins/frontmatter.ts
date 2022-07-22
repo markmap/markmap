@@ -1,40 +1,45 @@
 import yaml from 'js-yaml';
 import { wrapFunction, IMarkmapJSONOptions } from 'markmap-common';
-import { IAssets, ITransformHooks } from '../types';
+import { ITransformHooks } from '../types';
+import { definePlugin } from './base';
 
-export const name = 'frontmatter';
-export function transform(transformHooks: ITransformHooks): IAssets {
-  transformHooks.beforeParse.tap((md, context) => {
-    const origParse = md.parse;
-    md.parse = wrapFunction(origParse, {
-      before(ctx) {
-        const [content] = ctx.args;
-        if (!content.startsWith('---\n')) return;
-        const endOffset = content.indexOf('\n---\n');
-        if (endOffset < 0) return;
-        const raw = content.slice(4, endOffset);
-        let frontmatter: typeof context.frontmatter;
-        try {
-          frontmatter = yaml.load(raw);
-          if (frontmatter?.markmap) {
-            frontmatter.markmap = normalizeMarkmapJsonOptions(
-              frontmatter.markmap
-            );
+const name = 'frontmatter';
+
+export default definePlugin({
+  name,
+  transform(transformHooks: ITransformHooks) {
+    transformHooks.beforeParse.tap((md, context) => {
+      const origParse = md.parse;
+      md.parse = wrapFunction(origParse, {
+        before(ctx) {
+          const [content] = ctx.args;
+          if (!content.startsWith('---\n')) return;
+          const endOffset = content.indexOf('\n---\n');
+          if (endOffset < 0) return;
+          const raw = content.slice(4, endOffset);
+          let frontmatter: typeof context.frontmatter;
+          try {
+            frontmatter = yaml.load(raw);
+            if (frontmatter?.markmap) {
+              frontmatter.markmap = normalizeMarkmapJsonOptions(
+                frontmatter.markmap
+              );
+            }
+          } catch {
+            return;
           }
-        } catch {
-          return;
-        }
-        context.frontmatter = frontmatter;
-        const offset = endOffset + 5;
-        ctx.args[0] = content.slice(offset);
-      },
-      after() {
-        md.parse = origParse;
-      },
+          context.frontmatter = frontmatter;
+          const offset = endOffset + 5;
+          ctx.args[0] = content.slice(offset);
+        },
+        after() {
+          md.parse = origParse;
+        },
+      });
     });
-  });
-  return {};
-}
+    return {};
+  },
+});
 
 function normalizeMarkmapJsonOptions(options?: IMarkmapJSONOptions) {
   if (!options) return;

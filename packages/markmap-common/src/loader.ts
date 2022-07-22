@@ -30,27 +30,35 @@ const memoizedPreloadJS = memoize((url: string) => {
   );
 });
 
-function loadJSItem(item: JSItem, context: unknown): Promise<void> {
-  if (item.type === 'script') {
-    return new Promise((resolve, reject) => {
-      document.head.append(
-        createElement('script', {
-          ...item.data,
-          onload: resolve,
-          onerror: reject,
-        })
-      );
-      // Run inline script synchronously
-      if (!item.data?.src) resolve();
-    });
+async function loadJSItem(item: JSItem, context: unknown): Promise<void> {
+  if (!item.loaded) {
+    if (item.type === 'script') {
+      item.loaded = new Promise((resolve, reject) => {
+        document.head.append(
+          createElement('script', {
+            ...item.data,
+            onload: resolve,
+            onerror: reject,
+          })
+        );
+        // Run inline script synchronously
+        if (!item.data?.src) resolve(undefined);
+      }).then(() => {
+        item.loaded = true;
+      });
+    }
+    if (item.type === 'iife') {
+      const { fn, getParams } = item.data;
+      fn(...(getParams?.(context) || []));
+      item.loaded = true;
+    }
   }
-  if (item.type === 'iife') {
-    const { fn, getParams } = item.data;
-    fn(...(getParams?.(context) || []));
-  }
+  await item.loaded;
 }
 
 function loadCSSItem(item: CSSItem): void {
+  if (item.loaded) return;
+  item.loaded = true;
   if (item.type === 'style') {
     document.head.append(
       createElement('style', {

@@ -1,5 +1,5 @@
 import { Hook } from 'markmap-common';
-import { ITransformHooks } from '../types';
+import { ITransformHooks, ITransformPlugin } from '../types';
 
 export function createTransformHooks(): ITransformHooks {
   return {
@@ -9,4 +9,11 @@ export function createTransformHooks(): ITransformHooks {
     htmltag: new Hook(),
     retransform: new Hook(),
   };
+}
+
+/**
+ * This function is only used to help type checking.
+ */
+export function definePlugin(plugin: ITransformPlugin) {
+  return plugin;
 }

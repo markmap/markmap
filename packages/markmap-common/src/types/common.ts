@@ -59,6 +59,7 @@ export interface INode extends IHierarchy<INode> {
 
 export type JSScriptItem = {
   type: 'script';
+  loaded?: Promise<void> | boolean;
   data: {
     src?: string;
     textContent?: string;
@@ -68,6 +69,7 @@ export type JSScriptItem = {
 };
 export type JSIIFEItem = {
   type: 'iife';
+  loaded?: Promise<void> | boolean;
   data: {
     fn: (...args: unknown[]) => void;
     getParams?: (context: unknown) => void | unknown[];
@@ -76,10 +78,12 @@ export type JSIIFEItem = {
 export type JSItem = JSScriptItem | JSIIFEItem;
 export type CSSStyleItem = {
   type: 'style';
+  loaded?: boolean;
   data: string;
 };
 export type CSSStylesheetItem = {
   type: 'stylesheet';
+  loaded?: boolean;
   data: {
     href: string;
   };

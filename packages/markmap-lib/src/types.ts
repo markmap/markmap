@@ -50,10 +50,6 @@ export interface IMarkmapCreateOptions {
   output?: string;
 }
 
-export interface IAssetsMap {
-  [key: string]: IAssets;
-}
-
 export interface IFeatures {
   [key: string]: boolean;
 }
@@ -71,5 +67,12 @@ export interface ITransformResult extends ITransformContext {
 
 export interface ITransformPlugin {
   name: string;
+  config?: IAssets & {
+    version?: Record<string, string>;
+    preloadScripts?: JSItem[];
+  };
+  /**
+   * @returns The assets that should be loaded for rendering the output.
+   */
   transform: (transformHooks: ITransformHooks) => IAssets;
 }
