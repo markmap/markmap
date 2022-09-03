@@ -4,10 +4,10 @@ const pkg = require('./package.json');
 const DIST = defaultOptions.distDir;
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
-const globalList = [
+const external = getRollupExternal([
   'd3',
-];
-const external = getRollupExternal(globalList);
+  'markmap-common',
+]);
 const bundleOptions = {
   extend: true,
   esModule: false,
@@ -21,7 +21,7 @@ const rollupConfig = [
   ...[false, true].map(minimize => ({
     input: {
       input: 'src/index.ts',
-      external: globalList,
+      external,
       plugins: getRollupPlugins({
         minimize,
         esm: true,
@@ -45,7 +45,7 @@ const rollupConfig = [
   {
     input: {
       input: 'src/index.ts',
-      external: globalList,
+      external,
       plugins: getRollupPlugins({
         postcss: postcssOptions,
         extensions: defaultOptions.extensions,

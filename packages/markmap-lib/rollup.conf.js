@@ -24,6 +24,7 @@ const replaceValues = {
 const external = getRollupExternal([
   ...require('module').builtinModules,
   ...Object.keys(pkg.dependencies),
+  ...Object.keys(pkg.peerDependencies),
 ]);
 const bundleOptions = {
   extend: true,
