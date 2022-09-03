@@ -89,6 +89,8 @@ export class Markmap {
     spacingHorizontal: 80,
     spacingVertical: 5,
     initialExpandLevel: -1,
+    zoom: true,
+    pan: true,
   };
 
   options: IMarkmapOptions;
@@ -145,7 +147,6 @@ export class Markmap {
     };
     this.g = this.svg.append('g');
     this.updateStyle();
-    this.svg.call(this.zoom).on('wheel', this.handlePan);
     this.revokers.push(
       refreshHook.tap(() => {
         this.setData();
@@ -274,6 +275,12 @@ export class Markmap {
       ...Markmap.defaultOptions,
       ...opts,
     };
+    if (this.options.zoom) {
+      this.svg.call(this.zoom);
+    } else {
+      this.svg.on('.zoom', null);
+    }
+    this.svg.on('wheel', this.options.pan ? this.handlePan : null);
   }
 
   setData(data?: INode, opts?: Partial<IMarkmapOptions>): void {
@@ -659,6 +666,12 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
   numberKeys.forEach((key) => {
     const value = jsonOptions[key];
     if (typeof value === 'number') opts[key] = value;
+  });
+
+  const booleanKeys = ['zoom', 'pan'] as const;
+  booleanKeys.forEach((key) => {
+    const value = jsonOptions[key];
+    if (value != null) opts[key] = !!value;
   });
 
   return opts;

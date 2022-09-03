@@ -109,6 +109,8 @@ export interface IMarkmapJSONOptions {
   initialExpandLevel?: number;
   extraJs?: string[];
   extraCss?: string[];
+  zoom?: boolean;
+  pan?: boolean;
 }
 
 export interface IMarkmapOptions {
@@ -125,5 +127,7 @@ export interface IMarkmapOptions {
   spacingHorizontal: number;
   spacingVertical: number;
   initialExpandLevel: number;
+  zoom: boolean;
+  pan: boolean;
   style?: (id: string) => string;
 }
