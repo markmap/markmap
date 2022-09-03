@@ -210,7 +210,7 @@ export class Markmap {
     const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
 
     let foldRecursively = 0;
-    walkTree(node, (item, next) => {
+    walkTree(node, (item, next, parent) => {
       item.children = item.children?.map((child) => ({ ...child }));
       nodeId += 1;
       const group = mountDom(
@@ -224,6 +224,9 @@ export class Markmap {
         id: nodeId,
         el: group.firstChild as HTMLElement,
       };
+      item.state.path = [parent?.state?.path, item.state.id]
+        .filter(Boolean)
+        .join('.');
       color(item); // preload colors
 
       const isFoldRecursively = item.payload?.fold === 2;
@@ -257,9 +260,6 @@ export class Markmap {
         Math.ceil(rect.width) + 1,
         Math.max(Math.ceil(rect.height), nodeMinHeight),
       ];
-      item.state.path = [parent?.state?.path, item.state.id]
-        .filter(Boolean)
-        .join('.');
       item.state.key =
         [parent?.state?.id, item.state.id].filter(Boolean).join('.') +
         // FIXME: find a way to check content hash
