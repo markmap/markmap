@@ -78,7 +78,7 @@ const isMacintosh =
 export class Markmap {
   static defaultOptions: IMarkmapOptions = {
     autoFit: false,
-    color: (node: INode): string => defaultColorFn(`${node.state.id}`),
+    color: (node: INode): string => defaultColorFn(`${node.state.path}`),
     duration: 500,
     embedGlobalCSS: true,
     fitRatio: 0.95,
@@ -653,13 +653,26 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
   const opts: Partial<IMarkmapOptions> = {};
   jsonOptions ||= {};
 
-  const { color } = jsonOptions;
+  const { color, colorFreezeLevel } = jsonOptions;
   if (color?.length === 1) {
     const solidColor = color[0];
     opts.color = () => solidColor;
   } else if (color?.length) {
     const colorFn = d3.scaleOrdinal(color);
-    opts.color = (node: INode) => colorFn(`${node.state.id}`);
+    opts.color = (node: INode) => colorFn(`${node.state.path}`);
+  }
+  if (colorFreezeLevel) {
+    const color = opts.color || Markmap.defaultOptions.color;
+    opts.color = (node: INode) => {
+      node = {
+        ...node,
+        state: {
+          ...node.state,
+          path: node.state.path.split('.').slice(0, colorFreezeLevel).join('.'),
+        },
+      };
+      return color(node);
+    };
   }
 
   const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;

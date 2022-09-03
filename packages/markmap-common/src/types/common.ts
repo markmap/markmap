@@ -104,6 +104,7 @@ export interface IDeferred<T> {
 
 export interface IMarkmapJSONOptions {
   color?: string[];
+  colorFreezeLevel?: number;
   duration?: number;
   maxWidth?: number;
   initialExpandLevel?: number;
