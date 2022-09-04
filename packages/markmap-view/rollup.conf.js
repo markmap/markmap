@@ -21,7 +21,7 @@ const rollupConfig = [
   ...[false, true].map(minimize => ({
     input: {
       input: 'src/index.ts',
-      external,
+      external: ['d3'],
       plugins: getRollupPlugins({
         minimize,
         esm: true,
