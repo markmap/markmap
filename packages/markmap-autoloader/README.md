@@ -18,13 +18,15 @@ HTML:
 }
 </style>
 
-<div class="markmap">
+<div class="markmap"><script type="text/template">
 - markmap
   - autoloader
   - transformer
   - view
-</div>
+</script></div>
 ```
+
+Note that `<script type="text/template">` is optional, for the content inside to be invisible before the markmap is rendered.
 
 Autoload all elements matching `.markmap`:
 

@@ -32,8 +32,8 @@ function transform(
   transformer: import('markmap-lib').Transformer,
   content: string
 ) {
-  const { root, features } = transformer.transform(content);
-  const keys = Object.keys(features).filter((key) => !enabled[key]);
+  const result = transformer.transform(content);
+  const keys = Object.keys(result.features).filter((key) => !enabled[key]);
   keys.forEach((key) => {
     enabled[key] = true;
   });
@@ -41,25 +41,30 @@ function transform(
   const { markmap } = window;
   if (styles) markmap.loadCSS(styles);
   if (scripts) markmap.loadJS(scripts);
-  return root;
+  return result;
 }
 
 export function render(el: HTMLElement) {
-  const { Transformer, Markmap, autoLoader } = window.markmap;
+  const { Transformer, Markmap, autoLoader, deriveOptions } = window.markmap;
   const lines = el.textContent.split('\n');
   let indent = Infinity;
   lines.forEach((line) => {
     const spaces = line.match(/^\s*/)[0].length;
     if (spaces < line.length) indent = Math.min(indent, spaces);
   });
-  const content = lines.map((line) => line.slice(indent)).join('\n');
+  const content = lines
+    .map((line) => line.slice(indent))
+    .join('\n')
+    .trim();
   const transformer = new Transformer(autoLoader?.transformPlugins);
   el.innerHTML = '<svg></svg>';
   const svg = el.firstChild as SVGElement;
   const mm = Markmap.create(svg, { embedGlobalCSS: false });
   const doRender = () => {
-    const root = transform(transformer, content);
-    mm.setData(root);
+    const { root, frontmatter } = transform(transformer, content);
+    const markmapOptions = frontmatter?.markmap;
+    const frontmatterOptions = deriveOptions(markmapOptions);
+    mm.setData(root, frontmatterOptions);
     mm.fit();
   };
   transformer.hooks.retransform.tap(doRender);
