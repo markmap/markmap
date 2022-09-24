@@ -146,7 +146,6 @@ export class Markmap {
       id: this.options.id || this.svg.attr('id') || getId(),
     };
     this.g = this.svg.append('g');
-    this.updateStyle();
     this.revokers.push(
       refreshHook.tap(() => {
         this.setData();
@@ -287,6 +286,7 @@ export class Markmap {
     if (data) this.state.data = data;
     if (opts) this.setOptions(opts);
     this.initializeData(this.state.data);
+    this.updateStyle();
     this.renderData();
   }
 

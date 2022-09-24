@@ -1,4 +1,4 @@
-import { loadCSS, loadJS } from 'markmap-common';
+import { loadJS } from 'markmap-common';
 
 const enabled: Record<string, boolean> = {};
 
@@ -19,12 +19,10 @@ export const ready = loadJS(
   ]
 ).then(() => {
   const { markmap } = window;
-  loadCSS([
-    {
-      type: 'style',
-      data: markmap.globalCSS,
-    },
-  ]);
+  const style = document.createElement('style');
+  style.textContent = markmap.globalCSS;
+  // Insert global CSS to body so it has higher priority than prism.css, etc.
+  document.body.prepend(style);
   markmap.autoLoader?.onReady?.();
 });
 
