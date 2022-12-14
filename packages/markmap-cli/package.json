@@ -42,6 +42,7 @@
     "chokidar": "^3.5.1",
     "commander": "^7.1.0",
     "koa": "^2.13.1",
+    "markmap-common": "^0.14.2",
     "markmap-lib": "^0.14.3",
     "open": "^8.0.3",
     "update-notifier": "^5.1.0"
