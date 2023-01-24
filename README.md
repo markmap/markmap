@@ -12,6 +12,11 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 
 ## Packages
 
+- [markmap-common](https://github.com/markmap/markmap/tree/master/packages/markmap-common)
+  ![NPM](https://img.shields.io/npm/v/markmap-common.svg)
+
+Common types and utility functions used by markmap packages.
+
 - [markmap-lib](https://github.com/gera2ld/markmap/tree/master/packages/markmap-lib)
   ![NPM](https://img.shields.io/npm/v/markmap-lib.svg)
 
@@ -21,6 +26,16 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
   ![NPM](https://img.shields.io/npm/v/markmap-view.svg)
 
   Render markmap in browser.
+
+- [markmap-autoloader](https://github.com/markmap/markmap/tree/master/packages/markmap-autoloader)
+  ![NPM](https://img.shields.io/npm/v/markmap-autoloader.svg)
+
+  Load markmaps automatically in HTML.
+
+- [markmap-toolbar](https://github.com/markmap/markmap/tree/master/packages/markmap-toolbar)
+  ![NPM](https://img.shields.io/npm/v/markmap-toolbar.svg)
+
+  Extensible toolbar for markmap.
 
 - [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli)
   ![NPM](https://img.shields.io/npm/v/markmap-cli.svg)

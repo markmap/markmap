@@ -28,10 +28,16 @@ HTML:
 
 Note that `<script type="text/template">` is optional, for the content inside to be invisible before the markmap is rendered.
 
-Autoload all elements matching `.markmap`:
+Autoload all elements matching `.markmap`, using latest autoloader version:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
+```
+
+To use specific version (here: `0.14.3`) of `mark-autoloader`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.14.3"></script>
 ```
 
 Load manually:
