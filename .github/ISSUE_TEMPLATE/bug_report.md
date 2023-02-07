@@ -1,5 +1,6 @@
 ---
 name: Bug report
+about: For bugs that exist in markmap library or the REPL
 title: "[BUG] "
 labels: bug
 assignees: ''
