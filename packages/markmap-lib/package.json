@@ -40,7 +40,14 @@
     "markmap",
     "mindmap"
   ],
-  "repository": "git@github.com:gera2ld/markmap.git",
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-lib#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/markmap/markmap/issues"
+  },
   "devDependencies": {
     "@types/remarkable": "^2.0.3",
     "markmap-common": "^0.14.2",

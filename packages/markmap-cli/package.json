@@ -12,14 +12,14 @@
     "markdown",
     "mindmap"
   ],
-  "homepage": "https://github.com/gera2ld/markmap/packages/markmap-cli#readme",
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-cli#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gera2ld/markmap.git"
+    "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
@@ -28,7 +28,7 @@
     "build:js": "rollup -c rollup.conf.js"
   },
   "bugs": {
-    "url": "https://github.com/gera2ld/markmap/issues"
+    "url": "https://github.com/markmap/markmap/issues"
   },
   "main": "dist/index.js",
   "files": [

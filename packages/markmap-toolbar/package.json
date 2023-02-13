@@ -22,6 +22,14 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-toolbar#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/markmap/markmap/issues"
+  },
   "typings": "types/index.d.ts",
   "devDependencies": {
     "markmap-view": "^0.14.4"

@@ -20,6 +20,14 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-common#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/markmap/markmap/issues"
+  },
   "typings": "types/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.12.1"
