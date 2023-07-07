@@ -1,22 +1,14 @@
-import { loadJS } from 'markmap-common';
+import { buildJSItem, loadJS } from 'markmap-common';
 
 const enabled: Record<string, boolean> = {};
 
 export const ready = loadJS(
-  window.markmap?.autoLoader?.baseJs || [
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
-      },
-    },
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/combine/npm/markmap-lib@${process.env.LIB_VERSION},npm/markmap-view@${process.env.VIEW_VERSION}`,
-      },
-    },
-  ]
+  window.markmap?.autoLoader?.baseJs ||
+    [
+      `d3@${process.env.D3_VERSION}`,
+      `markmap-lib@${process.env.LIB_VERSION}`,
+      `markmap-view@${process.env.VIEW_VERSION}`,
+    ].map(buildJSItem)
 ).then(() => {
   const { markmap } = window;
   const style = document.createElement('style');

@@ -82,8 +82,11 @@ importers:
   packages/markmap-common:
     dependencies:
       '@babel/runtime':
-        specifier: ^7.12.1
-        version: 7.18.9
+        specifier: ^7.22.6
+        version: 7.22.6
+      npm2url:
+        specifier: ^0.1.1
+        version: 0.1.1
 
   packages/markmap-lib:
     dependencies:
@@ -1550,7 +1553,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
-    dev: false
 
   /@babel/runtime@7.22.6:
     resolution: {integrity: sha512-wDb5pWm4WDdF6LFUde3Jl8WzPA+3ZbxYqkC6xAXuD3irdEHN1k0NfTRrJD8ZD378SJ61miMLCqIOXYhd8x+AJQ==}
@@ -1638,7 +1640,7 @@ packages:
   /@gera2ld/jsx-dom@2.1.1:
     resolution: {integrity: sha512-O/NIYnqQH5gSf20rp9OOihgB0WAvSuskNqw67+6LgW+nz3Hfl0cEoC+UauAT5eSujgt2lFq2ZULFg4X2ognwaQ==}
     dependencies:
-      '@babel/runtime': 7.22.6
+      '@babel/runtime': 7.18.9
 
   /@gera2ld/plaid-common-ts@2.5.9(@babel/core@7.22.8)(@gera2ld/plaid@2.5.9)(eslint@8.44.0):
     resolution: {integrity: sha512-bUF46db6nyhv4xBWYby+iS+YhZ5CJq6I53v0a0VmDoXXLV7oxOKX0Sk0GDzH60WHKZAlJMrLgy7CLAL8FPF8oA==}
@@ -7916,6 +7918,10 @@ packages:
     dependencies:
       path-key: 3.1.1
     dev: true
+
+  /npm2url@0.1.1:
+    resolution: {integrity: sha512-hJ4cwVA/7QPgctNHA3pJKUezJDeJQJPNzMhg/vdgj95rT4rixQxscjtDgIiGv2r2ZIOBjlfMobi6HOsr+qLIQg==}
+    dev: false
 
   /npmlog@6.0.2:
     resolution: {integrity: sha512-/vBvz5Jfr9dT/aFWd0FIRf+T/Q2WBsLENygUaFUqstqsycmZAP/t5BvFJTK0viFmSUxiUKTUplWy5vt+rvKIxg==}

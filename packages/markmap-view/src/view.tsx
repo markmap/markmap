@@ -8,7 +8,6 @@ import {
   IMarkmapJSONOptions,
   getId,
   walkTree,
-  arrayFrom,
   addClass,
   childSelector,
   noop,
@@ -241,7 +240,7 @@ export class Markmap {
       if (isFoldRecursively) foldRecursively -= 1;
     });
 
-    const nodes = arrayFrom(container.childNodes).map(
+    const nodes = Array.from(container.childNodes).map(
       (group) => group.firstChild as HTMLElement
     );
     this.viewHooks.transformHtml.call(this, nodes);

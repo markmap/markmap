@@ -5,20 +5,16 @@ import {
   IMarkmapJSONOptions,
   persistJS,
   persistCSS,
+  buildJSItem,
 } from 'markmap-common';
 import { IAssets } from './types';
 
 const template: string = process.env.TEMPLATE;
 
-const BASE_JS: JSItem[] = [
-  `https://cdn.jsdelivr.net/npm/d3@${process.env.D3_VERSION}`,
-  `https://cdn.jsdelivr.net/npm/markmap-view@${process.env.VIEW_VERSION}`,
-].map((src) => ({
-  type: 'script',
-  data: {
-    src,
-  },
-}));
+export const baseJsPaths = [
+  `d3@${process.env.D3_VERSION}`,
+  `markmap-view@${process.env.VIEW_VERSION}`,
+];
 
 export function fillTemplate(
   root: INode | undefined,
@@ -30,9 +26,9 @@ export function fillTemplate(
   }
 ): string {
   extra = {
-    baseJs: BASE_JS,
     ...extra,
   };
+  extra.baseJs ??= baseJsPaths.map(buildJSItem);
   const { scripts, styles } = assets;
   const cssList = [...(styles ? persistCSS(styles) : [])];
   const context = {

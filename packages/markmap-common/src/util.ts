@@ -1,4 +1,4 @@
-import { IWrapContext, IDeferred } from './types';
+import { IDeferred } from './types';
 
 const uniqId = Math.random().toString(36).slice(2, 8);
 let globalIndex = 0;
@@ -29,30 +29,6 @@ export function walkTree<T>(
   walk(tree);
 }
 
-export function arrayFrom<T>(arrayLike: ArrayLike<T>): T[] {
-  if (Array.from) return Array.from(arrayLike);
-  const array = [];
-  for (let i = 0; i < arrayLike.length; i += 1) {
-    array.push(arrayLike[i]);
-  }
-  return array;
-}
-
-export function flatMap<T, U>(
-  arrayLike: ArrayLike<T>,
-  callback: (item?: T, index?: number, thisObj?: ArrayLike<T>) => U | U[]
-): U[] {
-  if ((arrayLike as Array<T>).flatMap)
-    return (arrayLike as Array<T>).flatMap(callback);
-  const array = [];
-  for (let i = 0; i < arrayLike.length; i += 1) {
-    const result = callback(arrayLike[i], i, arrayLike);
-    if (Array.isArray(result)) array.push(...result);
-    else array.push(result);
-  }
-  return array;
-}
-
 export function addClass(className: string, ...rest: string[]): string {
   const classList = (className || '').split(' ').filter(Boolean);
   rest.forEach((item) => {
@@ -70,7 +46,7 @@ export function childSelector<T extends Element>(
   }
   const filterFn = filter;
   return function selector(): T[] {
-    let nodes = arrayFrom((this as HTMLElement).childNodes as NodeListOf<T>);
+    let nodes = Array.from((this as HTMLElement).childNodes as NodeListOf<T>);
     if (filterFn) nodes = nodes.filter((node) => filterFn(node));
     return nodes;
   };
@@ -78,32 +54,9 @@ export function childSelector<T extends Element>(
 
 export function wrapFunction<T extends unknown[], U>(
   fn: (...args: T) => U,
-  {
-    before,
-    after,
-  }: {
-    before?: (ctx: IWrapContext<T, U>) => void;
-    after?: (ctx: IWrapContext<T, U>) => void;
-  }
+  wrapper: (fn: (...args: T) => U, ...args: T) => U
 ) {
-  return function wrapped(...args: T) {
-    const ctx: IWrapContext<T, U> = {
-      args,
-      thisObj: this,
-    };
-    try {
-      if (before) before(ctx);
-    } catch {
-      // ignore
-    }
-    ctx.result = fn.apply(ctx.thisObj, ctx.args);
-    try {
-      if (after) after(ctx);
-    } catch {
-      // ignore
-    }
-    return ctx.result;
-  };
+  return (...args: T) => wrapper(fn, ...args);
 }
 
 export function defer<T>() {

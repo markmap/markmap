@@ -91,7 +91,6 @@ export type CSSStylesheetItem = {
 export type CSSItem = CSSStyleItem | CSSStylesheetItem;
 
 export interface IWrapContext<T extends unknown[], U> {
-  thisObj: unknown;
   args: T;
   result?: U;
 }

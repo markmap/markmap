@@ -1,8 +1,9 @@
+import { buildCSSItem, buildJSItem } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
-const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
-const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
+const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
+const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
 
 const renderToolbar = () => {
   const { markmap, mm } = window;
@@ -26,23 +27,10 @@ export interface IDevelopOptions {
 
 export function addToolbar(assets: IAssets): IAssets {
   return {
-    styles: [
-      ...(assets.styles || []),
-      {
-        type: 'stylesheet',
-        data: {
-          href: `https://cdn.jsdelivr.net/${TOOLBAR_CSS}`,
-        },
-      },
-    ],
+    styles: [...(assets.styles || []), ...[TOOLBAR_CSS].map(buildCSSItem)],
     scripts: [
       ...(assets.scripts || []),
-      {
-        type: 'script',
-        data: {
-          src: `https://cdn.jsdelivr.net/${TOOLBAR_JS}`,
-        },
-      },
+      ...[TOOLBAR_JS].map(buildJSItem),
       {
         type: 'iife',
         data: {

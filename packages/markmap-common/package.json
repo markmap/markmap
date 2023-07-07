@@ -30,6 +30,7 @@
   },
   "typings": "types/index.d.ts",
   "dependencies": {
-    "@babel/runtime": "^7.12.1"
+    "@babel/runtime": "^7.22.6",
+    "npm2url": "^0.1.1"
   }
 }

@@ -9,10 +9,9 @@ export default definePlugin({
   name,
   transform(transformHooks: ITransformHooks) {
     transformHooks.beforeParse.tap((md, context) => {
-      const origParse = md.parse;
-      md.parse = wrapFunction(origParse, {
-        before(ctx) {
-          const [content] = ctx.args;
+      md.parse = wrapFunction(md.parse, (parse, content, ...rest) => {
+        let offset = 0;
+        (() => {
           if (!content.startsWith('---\n')) return;
           const endOffset = content.indexOf('\n---\n');
           if (endOffset < 0) return;
@@ -29,12 +28,13 @@ export default definePlugin({
             return;
           }
           context.frontmatter = frontmatter;
-          const offset = endOffset + 5;
-          ctx.args[0] = content.slice(offset);
-        },
-        after() {
-          md.parse = origParse;
-        },
+          offset = endOffset + 5;
+        })();
+        try {
+          return parse.call(md, content.slice(offset), ...rest);
+        } finally {
+          md.parse = parse;
+        }
       });
     });
     return {};

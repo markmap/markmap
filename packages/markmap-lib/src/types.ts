@@ -68,7 +68,7 @@ export interface ITransformResult extends ITransformContext {
 export interface ITransformPlugin {
   name: string;
   config?: IAssets & {
-    version?: Record<string, string>;
+    versions?: Record<string, string>;
     preloadScripts?: JSItem[];
   };
   /**

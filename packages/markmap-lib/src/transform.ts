@@ -70,11 +70,18 @@ export class Transformer {
 
   assetsMap: Record<string, IAssets> = {};
 
-  constructor(public plugins: ITransformPlugin[] = builtInPlugins) {
+  plugins: ITransformPlugin[];
+
+  constructor(
+    plugins: Array<ITransformPlugin | (() => ITransformPlugin)> = builtInPlugins
+  ) {
     this.hooks = createTransformHooks();
+    this.plugins = plugins.map((plugin) =>
+      typeof plugin === 'function' ? plugin() : plugin
+    );
 
     const assetsMap: typeof this.assetsMap = {};
-    for (const { name, transform } of plugins) {
+    for (const { name, transform } of this.plugins) {
       assetsMap[name] = transform(this.hooks);
     }
     this.assetsMap = assetsMap;
@@ -84,11 +91,14 @@ export class Transformer {
       breaks: true,
       maxNesting: Infinity,
     } as Remarkable.Options);
-    md.renderer.rules.htmltag = wrapFunction(md.renderer.rules.htmltag, {
-      after: (ctx) => {
-        this.hooks.htmltag.call(ctx);
-      },
-    });
+    md.renderer.rules.htmltag = wrapFunction(
+      md.renderer.rules.htmltag,
+      (render, ...args) => {
+        const result = render(...args);
+        this.hooks.htmltag.call({ args, result });
+        return result;
+      }
+    );
     this.md = md;
     this.hooks.parser.call(md);
   }

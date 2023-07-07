@@ -1,29 +1,18 @@
-import { CSSItem, JSItem } from 'markmap-common';
+import { buildJSItem, buildCSSItem } from 'markmap-common';
 
-export default {
-  versions: {
-    prismjs: process.env.PRISM_VERSION,
-  },
-  preloadScripts: [
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
-      },
+export function getConfig() {
+  const preloadScripts = [
+    `prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
+    `prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
+  ].map(buildJSItem);
+  const styles = [`prismjs@${process.env.PRISM_VERSION}/themes/prism.css`].map(
+    buildCSSItem
+  );
+  return {
+    versions: {
+      prismjs: process.env.PRISM_VERSION,
     },
-    {
-      type: 'script',
-      data: {
-        src: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
-      },
-    },
-  ] as JSItem[],
-  styles: [
-    {
-      type: 'stylesheet',
-      data: {
-        href: `https://cdn.jsdelivr.net/npm/prismjs@${process.env.PRISM_VERSION}/themes/prism.css`,
-      },
-    },
-  ] as CSSItem[],
-};
+    preloadScripts,
+    styles,
+  };
+}

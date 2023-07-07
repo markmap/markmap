@@ -1,4 +1,5 @@
-import { JSItem, JSScriptItem, CSSItem } from './types';
+import { cdnUrl, getFastestProvider, providers } from 'npm2url';
+import { JSItem, JSScriptItem, CSSItem, CSSStylesheetItem } from './types';
 import { memoize } from './util';
 
 function createElement(
@@ -94,4 +95,40 @@ export function loadCSS(items: CSSItem[]): void {
   for (const item of items) {
     loadCSSItem(item);
   }
+}
+
+let provider = 'jsdelivr';
+
+export async function findFastestProvider() {
+  provider = await getFastestProvider();
+}
+
+export function setProvider(name: string, factory?: (path: string) => string) {
+  if (factory) {
+    providers[name] = factory;
+  }
+  provider = name;
+}
+
+export function getFullUrl(path: string) {
+  if (path.includes('://')) return path;
+  return cdnUrl(provider, path);
+}
+
+export function buildJSItem(path: string): JSScriptItem {
+  return {
+    type: 'script',
+    data: {
+      src: getFullUrl(path),
+    },
+  };
+}
+
+export function buildCSSItem(path: string): CSSStylesheetItem {
+  return {
+    type: 'stylesheet',
+    data: {
+      href: getFullUrl(path),
+    },
+  };
 }

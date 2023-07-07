@@ -14,6 +14,8 @@ export function createTransformHooks(): ITransformHooks {
 /**
  * This function is only used to help type checking.
  */
-export function definePlugin(plugin: ITransformPlugin) {
+export function definePlugin(
+  plugin: ITransformPlugin | (() => ITransformPlugin)
+) {
   return plugin;
 }
