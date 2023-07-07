@@ -1,4 +1,4 @@
-import { loadJS } from 'markmap-common';
+import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
 import config from './prism.config';
@@ -23,7 +23,7 @@ export default definePlugin({
   name,
   config,
   transform(transformHooks: ITransformHooks) {
-    let enableFeature = () => {};
+    let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.set({
         highlight: (str, lang) => {

@@ -43,12 +43,10 @@
     "d3-flextree": "^2.1.1"
   },
   "devDependencies": {
-    "markmap-common": "^0.14.2"
+    "@gera2ld/jsx-dom": "^2.1.1",
+    "markmap-common": "workspace:*"
   },
   "peerDependencies": {
     "markmap-common": "*"
-  },
-  "engines": {
-    "node": ">=10"
   }
 }

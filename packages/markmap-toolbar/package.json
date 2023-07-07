@@ -31,8 +31,12 @@
     "url": "https://github.com/markmap/markmap/issues"
   },
   "typings": "types/index.d.ts",
+  "peerDependencies": {
+    "markmap-common": "*"
+  },
   "devDependencies": {
-    "markmap-view": "^0.14.4"
+    "markmap-common": "workspace:*",
+    "markmap-view": "workspace:*"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",

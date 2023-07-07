@@ -1,6 +1,6 @@
 import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
-import { loadJS } from 'markmap-common';
+import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import config from './katex.config';
 import { resolveNpmPaths } from './util';
@@ -31,7 +31,7 @@ export default definePlugin({
       });
       return source;
     };
-    let enableFeature = () => {};
+    let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.use(remarkableKatex);
       md.renderer.rules.katex = (

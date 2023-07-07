@@ -6,12 +6,10 @@
 
 Visualize your Markdown as mindmaps.
 
-Node.js >= 10 is required.
-
 ## Install
 
 ```sh
-$ yarn add markmap-lib
+$ npm install markmap-lib
 ```
 
 See [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli) for command-line usage.

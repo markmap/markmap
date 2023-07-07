@@ -13,6 +13,7 @@ const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 
 const external = getRollupExternal([
   '@gera2ld/jsx-dom',
+  'markmap-common',
 ]);
 const bundleOptions = {
   extend: true,

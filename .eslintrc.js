@@ -1,15 +1,10 @@
 module.exports = {
-  root: true,
-  extends: [
-    require.resolve('@gera2ld/plaid-common-ts/eslint'),
-    'plugin:prettier/recommended',
-  ],
-  parserOptions: {
-    project: './tsconfig.json',
-  },
-  rules: {
-    'no-continue': 'off',
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-this-alias': 'off',
-  },
+	root: true,
+	parser: '@typescript-eslint/parser',
+	extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+	plugins: ['@typescript-eslint'],
+	parserOptions: {
+		sourceType: 'module',
+		ecmaVersion: 2020,
+	},
 };

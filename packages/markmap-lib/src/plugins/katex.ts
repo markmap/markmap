@@ -1,6 +1,6 @@
 import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
-import { wrapFunction } from 'markmap-common';
+import { noop, wrapFunction } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import config from './katex.config';
 import { definePlugin } from './base';
@@ -11,7 +11,7 @@ export default definePlugin({
   name,
   config,
   transform(transformHooks: ITransformHooks) {
-    let enableFeature = () => {};
+    let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.use(remarkableKatex);
       md.renderer.rules.katex = wrapFunction(

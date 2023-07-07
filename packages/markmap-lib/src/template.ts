@@ -50,9 +50,9 @@ export function fillTemplate(
           type: 'iife',
           data: {
             fn: (
-              getMarkmap: typeof context['getMarkmap'],
-              getOptions: typeof context['getOptions'],
-              root: typeof context['root'],
+              getMarkmap: (typeof context)['getMarkmap'],
+              getOptions: (typeof context)['getOptions'],
+              root: (typeof context)['root'],
               jsonOptions: IMarkmapJSONOptions
             ) => {
               const markmap = getMarkmap();

@@ -1,8 +1,11 @@
 import { promises as fs } from 'fs';
 import { Command } from 'commander';
 import open from 'open';
-import { Transformer, fillTemplate } from 'markmap-lib';
-import type { IMarkmapCreateOptions } from 'markmap-lib';
+import {
+  Transformer,
+  fillTemplate,
+  type IMarkmapCreateOptions,
+} from 'markmap-lib';
 import { IDevelopOptions, addToolbar } from './util';
 import { develop } from './dev-server';
 

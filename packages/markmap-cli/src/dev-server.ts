@@ -23,17 +23,12 @@ interface IContentProvider {
   dispose: () => void;
 }
 
-function consecutive(fn: () => Promise<void>) {
+function sequence(fn: () => Promise<void>) {
   let promise: Promise<void>;
   return () => {
-    if (!promise) {
-      promise = fn();
-      promise
-        .catch(() => {})
-        .then(() => {
-          promise = null;
-        });
-    }
+    promise ||= fn().finally(() => {
+      promise = null;
+    });
     return promise;
   };
 }
@@ -98,7 +93,9 @@ class BufferContentProvider implements IContentProvider {
     this.events.emit('content');
   }
 
-  dispose() {}
+  dispose() {
+    /* noop */
+  }
 }
 
 class FileSystemProvider
@@ -111,7 +108,7 @@ class FileSystemProvider
     super();
     this.watcher = chokidar.watch(fileName).on(
       'all',
-      consecutive(() => this.update())
+      sequence(() => this.update())
     );
   }
 

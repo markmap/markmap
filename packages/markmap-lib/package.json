@@ -4,9 +4,6 @@
   "description": "Visualize your Markdown as mindmaps with Markmap",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
-  "engines": {
-    "node": ">=10"
-  },
   "scripts": {
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist types",
@@ -50,8 +47,8 @@
   },
   "devDependencies": {
     "@types/remarkable": "^2.0.3",
-    "markmap-common": "^0.14.2",
-    "markmap-view": "^0.14.4",
+    "markmap-common": "workspace:*",
+    "markmap-view": "workspace:*",
     "webfontloader": "^1.6.28"
   },
   "dependencies": {

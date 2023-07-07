@@ -562,7 +562,6 @@ export class Markmap {
     node: INode,
     padding: Partial<IPadding> | undefined
   ): Promise<void> {
-    let g: SVGGElement | undefined;
     let itemData: IMarkmapFlexTreeItem | undefined;
     this.g
       .selectAll<SVGGElement, IMarkmapFlexTreeItem>(
@@ -570,11 +569,10 @@ export class Markmap {
       )
       .each(function walk(d) {
         if (d.data === node) {
-          g = this;
           itemData = d;
         }
       });
-    if (!g || !itemData) return;
+    if (!itemData) return;
     const svgNode = this.svg.node();
     const relRect = svgNode.getBoundingClientRect();
     const transform = d3.zoomTransform(svgNode);

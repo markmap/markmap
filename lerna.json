@@ -4,10 +4,6 @@
       "graphType": "all"
     }
   },
-  "packages": [
-    "packages/*"
-  ],
-  "npmClient": "yarn",
-  "useWorkspaces": true,
+  "npmClient": "pnpm",
   "version": "0.14.4"
 }
