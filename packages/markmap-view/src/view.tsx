@@ -185,13 +185,28 @@ export class Markmap {
     this.svg.call(this.zoom.transform, newTransform);
   }
 
-  handleClick(_: MouseEvent, d: IMarkmapFlexTreeItem): void {
-    const { data } = d;
-    data.payload = {
-      ...data.payload,
-      fold: data.payload?.fold ? 0 : 1,
-    };
-    this.renderData(d.data);
+  toggleNode(data: INode, recursive = false): void {
+    const fold = data.payload?.fold ? 0 : 1;
+    if (recursive) {
+      // recursively
+      walkTree(data, (item, next) => {
+        item.payload = {
+          ...item.payload,
+          fold,
+        };
+        next();
+      });
+    } else {
+      data.payload = {
+        ...data.payload,
+        fold: data.payload?.fold ? 0 : 1,
+      };
+    }
+    this.renderData(data);
+  }
+
+  handleClick(e: MouseEvent, d: IMarkmapFlexTreeItem): void {
+    this.toggleNode(d.data, e.ctrlKey);
   }
 
   initializeData(node: INode): void {
@@ -419,8 +434,7 @@ export class Markmap {
             .attr('cy', (d) => d.xSize)
             .attr('r', 0)
             .on('click', (e, d) => this.handleClick(e, d))
-            .on('mousedown', stopPropagation)
-            .on('dblclick', stopPropagation);
+            .on('mousedown', stopPropagation);
         },
         (update) => update,
         (exit) => exit.remove()

@@ -1,5 +1,4 @@
 import { mountDom, VChildren } from '@gera2ld/jsx-dom';
-import { walkTree } from 'markmap-common';
 import type { Markmap } from 'markmap-view';
 import './style.css';
 
@@ -10,12 +9,7 @@ interface IToolbarItem {
   onClick?: (e: Event) => void;
 }
 
-type PatchedMarkmapClick = Markmap['handleClick'] & {
-  __reset?: () => void;
-};
-
 const clsToolbarItem = 'mm-toolbar-item';
-const clsActive = 'active';
 
 function renderBrand() {
   return (
@@ -107,19 +101,6 @@ export class Toolbar {
       ),
       onClick: this.getHandler((mm) => mm.fit()),
     });
-    this.register({
-      id: 'recurse',
-      title: 'Recursively toggle the next node',
-      content: Toolbar.icon('M16 4h-12v12h12v-8h-8v4h2v-2h4v4h-8v-8h10z'),
-      onClick: (e) => {
-        const button = (e.target as HTMLDivElement).closest<HTMLDivElement>(
-          `.${clsToolbarItem}`
-        );
-        const toggle = () => button.classList.toggle(clsActive);
-        const active = toggle();
-        this.handleRecurse(active, toggle);
-      },
-    });
     this.setItems(Toolbar.defaultItems);
   }
 
@@ -144,33 +125,6 @@ export class Toolbar {
 
   attach(mm: Markmap) {
     this.markmap = mm;
-  }
-
-  handleRecurse(active: boolean, reset: () => void) {
-    const mm = this.markmap;
-    if (!active) {
-      mm.handleClick?.['__reset']?.();
-      return;
-    }
-    const originalClick = mm.handleClick;
-    if (!originalClick) return;
-    const handleClick: PatchedMarkmapClick = (_, d) => {
-      const fold = d.data.payload?.fold ? 0 : 1;
-      walkTree(d.data, (item, next) => {
-        item.payload = {
-          ...item.payload,
-          fold,
-        };
-        next();
-      });
-      mm.renderData(d.data);
-      reset();
-      handleClick.__reset();
-    };
-    handleClick.__reset = () => {
-      mm.handleClick = originalClick;
-    };
-    mm.handleClick = handleClick;
   }
 
   render() {
