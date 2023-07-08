@@ -188,10 +188,12 @@ export class Transformer {
 
   transform(content: string): ITransformResult {
     const context: ITransformContext = {
+      content,
       features: {},
+      contentLineOffset: 0,
     };
     this.hooks.beforeParse.call(this.md, context);
-    const tokens = this.md.parse(content, {});
+    const tokens = this.md.parse(context.content, {});
     this.hooks.afterParse.call(this.md, context);
     let root = this.buildTree(tokens);
     cleanNode(root);

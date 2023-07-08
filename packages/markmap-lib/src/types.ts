@@ -56,9 +56,12 @@ export interface IFeatures {
 
 export interface ITransformContext {
   features: IFeatures;
+  content: string;
   frontmatter?: {
     markmap?: IMarkmapJSONOptions;
   };
+  /** The index of line where content without frontmatter starts */
+  contentLineOffset: number;
 }
 
 export interface ITransformResult extends ITransformContext {

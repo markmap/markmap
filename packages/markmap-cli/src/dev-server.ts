@@ -127,6 +127,7 @@ function startServer(paddingBottom: number) {
   let ts = 0;
   let root: INode;
   let line: number;
+  let offset = 0;
   const { mm, markmap } = window;
   refresh();
   function refresh() {
@@ -134,12 +135,13 @@ function startServer(paddingBottom: number) {
       .then((res) => res.json())
       .then((res) => {
         if (res.ts && res.ts > ts && res.result) {
-          const { root, frontmatter } = res.result;
+          const { root, frontmatter, contentLineOffset } = res.result;
+          offset = contentLineOffset;
           mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
           mm.setData(root);
           if (!ts) mm.fit();
           ts = res.ts;
-          line = null;
+          line = -1;
         }
         if (root && res.line != null && line !== res.line) {
           line = res.line;
@@ -150,12 +152,17 @@ function startServer(paddingBottom: number) {
       });
   }
   function findActiveNode() {
+    const lineWithoutFrontmatter = line - offset;
     let best: INode;
     dfs(root);
     return best;
     function dfs(node: INode) {
       const lines = node.payload?.lines;
-      if (lines && lines[0] <= line && line < lines[1]) {
+      if (
+        lines &&
+        lines[0] <= lineWithoutFrontmatter &&
+        lineWithoutFrontmatter < lines[1]
+      ) {
         best = node;
       }
       node.children?.forEach(dfs);

@@ -9,33 +9,26 @@ export default definePlugin({
   name,
   transform(transformHooks: ITransformHooks) {
     transformHooks.beforeParse.tap((md, context) => {
-      md.parse = wrapFunction(md.parse, (parse, content, ...rest) => {
-        let offset = 0;
-        (() => {
-          if (!content.startsWith('---\n')) return;
-          const endOffset = content.indexOf('\n---\n');
-          if (endOffset < 0) return;
-          const raw = content.slice(4, endOffset);
-          let frontmatter: typeof context.frontmatter;
-          try {
-            frontmatter = yaml.load(raw);
-            if (frontmatter?.markmap) {
-              frontmatter.markmap = normalizeMarkmapJsonOptions(
-                frontmatter.markmap
-              );
-            }
-          } catch {
-            return;
-          }
-          context.frontmatter = frontmatter;
-          offset = endOffset + 5;
-        })();
-        try {
-          return parse.call(md, content.slice(offset), ...rest);
-        } finally {
-          md.parse = parse;
+      const { content } = context;
+      if (!content.startsWith('---\n')) return;
+      const endOffset = content.indexOf('\n---\n');
+      if (endOffset < 0) return;
+      const raw = content.slice(4, endOffset);
+      let frontmatter: typeof context.frontmatter;
+      try {
+        frontmatter = yaml.load(raw);
+        if (frontmatter?.markmap) {
+          frontmatter.markmap = normalizeMarkmapJsonOptions(
+            frontmatter.markmap
+          );
         }
-      });
+      } catch {
+        return;
+      }
+      context.frontmatter = frontmatter;
+      context.content = content.slice(endOffset + 5);
+      context.contentLineOffset =
+        content.slice(0, endOffset).split('\n').length + 1;
     });
     return {};
   },
