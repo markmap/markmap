@@ -40,14 +40,13 @@ const rollupConfig = [
     },
     output: {
       format: 'esm',
-      file: `${DIST}/${FILENAME}.esm.js`,
+      file: `${DIST}/${FILENAME}.mjs`,
     },
   },
-  ...[false, true].map(minimize => ({
+  {
     input: {
       input: 'src/index.ts',
       plugins: getRollupPlugins({
-        minimize,
         esm: true,
         extensions: defaultOptions.extensions,
         postcss: {
@@ -61,11 +60,11 @@ const rollupConfig = [
     },
     output: {
       format: 'umd',
-      file: `${DIST}/${FILENAME}.umd${minimize ? '.min' : ''}.js`,
+      file: `${DIST}/${FILENAME}.js`,
       name: 'markmap',
       ...bundleOptions,
     },
-  })),
+  },
 ];
 
 rollupConfig.forEach((item) => {

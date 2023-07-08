@@ -3,7 +3,6 @@ const {
   getRollupExternal,
   getRollupPlugins,
   loadConfigSync,
-  rollupMinify,
 } = require('@gera2ld/plaid');
 const pkg = require('./package.json');
 
@@ -54,7 +53,7 @@ const rollupConfig = [
     },
     output: {
       format: 'esm',
-      file: `${DIST}/${FILENAME}.esm.js`,
+      file: `${DIST}/${FILENAME}.mjs`,
     },
   },
 ];

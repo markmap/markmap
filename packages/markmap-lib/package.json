@@ -15,19 +15,19 @@
     "registry": "https://registry.npmjs.org/"
   },
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "unpkg": "dist/browser/index.min.js",
-  "jsdelivr": "dist/browser/index.min.js",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/browser/index.js",
+  "jsdelivr": "dist/browser/index.js",
   "exports": {
     ".": {
-      "browser": "./dist/browser/index.js",
-      "node": "./dist/index.js",
+      "types": "./types/index.d.ts",
+      "browser": "./dist/browser/index.mjs",
       "require": "./dist/index.js",
-      "default": "./dist/index.esm.js"
+      "default": "./dist/index.mjs"
     },
     "./package.json": "./package.json"
   },
-  "typings": "types/index.d.ts",
+  "types": "types/index.d.ts",
   "files": [
     "dist",
     "types"

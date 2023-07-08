@@ -10,10 +10,10 @@
     "build:types": "tsc",
     "build:js": "rollup -c rollup.conf.js"
   },
-  "main": "dist/index.umd.js",
-  "module": "dist/index.esm.js",
-  "unpkg": "dist/index.umd.min.js",
-  "jsdelivr": "dist/index.umd.min.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/index.js",
+  "jsdelivr": "dist/index.js",
   "files": [
     "dist",
     "types"

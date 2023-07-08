@@ -18,30 +18,6 @@ const postcssOptions = {
   minimize: true,
 };
 const rollupConfig = [
-  ...[false, true].map(minimize => ({
-    input: {
-      input: 'src/index.ts',
-      external: ['d3'],
-      plugins: getRollupPlugins({
-        minimize,
-        esm: true,
-        postcss: postcssOptions,
-        extensions: defaultOptions.extensions,
-        babelConfig: {
-          rootMode: 'upward',
-        },
-      }),
-    },
-    output: {
-      format: 'iife',
-      file: `${DIST}/index${minimize ? '.min' : ''}.js`,
-      name: 'markmap',
-      globals: {
-        d3: 'd3',
-      },
-      ...bundleOptions,
-    },
-  })),
   {
     input: {
       input: 'src/index.ts',
@@ -56,7 +32,7 @@ const rollupConfig = [
     },
     output: {
       format: 'cjs',
-      file: `${DIST}/index.cjs.js`,
+      file: `${DIST}/index.js`,
       name: 'markmap',
       ...bundleOptions,
     },
@@ -76,8 +52,33 @@ const rollupConfig = [
     },
     output: {
       format: 'esm',
-      file: `${DIST}/index.esm.js`,
+      file: `${DIST}/index.mjs`,
       name: 'markmap',
+      ...bundleOptions,
+    },
+  },
+  {
+    input: {
+      input: 'src/index.ts',
+      external: [
+        'd3',
+      ],
+      plugins: getRollupPlugins({
+        esm: true,
+        postcss: postcssOptions,
+        extensions: defaultOptions.extensions,
+        babelConfig: {
+          rootMode: 'upward',
+        },
+      }),
+    },
+    output: {
+      format: 'iife',
+      file: `${DIST}/browser/index.js`,
+      name: 'markmap',
+      globals: {
+        d3: 'd3',
+      },
       ...bundleOptions,
     },
   },

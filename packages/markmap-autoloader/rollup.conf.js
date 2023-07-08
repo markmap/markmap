@@ -21,12 +21,11 @@ const bundleOptions = {
   esModule: false,
 };
 const rollupConfig = [
-  ...[false, true].map(minimize => ({
+  {
     input: {
       input: 'src/index.ts',
       external: globalList,
       plugins: getRollupPlugins({
-        minimize,
         esm: true,
         extensions: defaultOptions.extensions,
         babelConfig: {
@@ -37,11 +36,11 @@ const rollupConfig = [
     },
     output: {
       format: 'iife',
-      file: `${DIST}/index${minimize ? '.min' : ''}.js`,
+      file: `${DIST}/index.js`,
       name: 'markmap.autoLoader',
       ...bundleOptions,
     },
-  })),
+  },
 ];
 
 rollupConfig.forEach((item) => {

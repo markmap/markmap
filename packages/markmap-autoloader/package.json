@@ -28,8 +28,8 @@
     "url": "https://github.com/markmap/markmap/issues"
   },
   "main": "dist/index.js",
-  "unpkg": "dist/index.min.js",
-  "jsdelivr": "dist/index.min.js",
+  "unpkg": "dist/index.js",
+  "jsdelivr": "dist/index.js",
   "files": [
     "dist",
     "types"

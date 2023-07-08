@@ -11,7 +11,7 @@
     "build:js": "rollup -c rollup.conf.js"
   },
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.mjs",
   "files": [
     "dist",
     "types"

@@ -64,18 +64,17 @@ const rollupConfig = [
     },
     output: {
       format: 'esm',
-      file: `${DIST}/index.esm.js`,
+      file: `${DIST}/index.mjs`,
       ...bundleOptions,
     },
   },
-  ...[false, true].map(minimize => ({
+  {
     input: {
       input: 'src/index.ts',
       external: [
         'katex',
       ],
       plugins: getRollupPlugins({
-        minimize,
         esm: true,
         extensions: [
           '.browser.ts',
@@ -89,14 +88,42 @@ const rollupConfig = [
     },
     output: {
       format: 'umd',
-      file: `${DIST}/browser/index${minimize ? '.min' : ''}.js`,
+      file: `${DIST}/browser/index.js`,
       name: 'markmap',
       globals: {
         katex: 'window.katex',
       },
       ...bundleOptions,
     },
-  })),
+  },
+  {
+    input: {
+      input: 'src/index.ts',
+      external: [
+        'katex',
+      ],
+      plugins: getRollupPlugins({
+        esm: true,
+        extensions: [
+          '.browser.ts',
+          ...defaultOptions.extensions,
+        ],
+        babelConfig: {
+          rootMode: 'upward',
+        },
+        replaceValues,
+      }),
+    },
+    output: {
+      format: 'esm',
+      file: `${DIST}/browser/index.mjs`,
+      name: 'markmap',
+      globals: {
+        katex: 'window.katex',
+      },
+      ...bundleOptions,
+    },
+  },
 ];
 
 rollupConfig.forEach((item) => {
