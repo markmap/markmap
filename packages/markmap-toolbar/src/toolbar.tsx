@@ -2,7 +2,7 @@ import { mountDom, VChildren } from '@gera2ld/jsx-dom';
 import type { Markmap } from 'markmap-view';
 import './style.css';
 
-interface IToolbarItem {
+export interface IToolbarItem {
   id?: string;
   title?: string;
   content: VChildren;
@@ -51,19 +51,17 @@ export class Toolbar {
 
   private markmap: Markmap = null;
 
-  static defaultItems: (string | IToolbarItem)[] = [
-    'zoomIn',
-    'zoomOut',
-    'fit',
-    'recurse',
-  ];
+  static defaultItems: (string | IToolbarItem)[] = ['zoomIn', 'zoomOut', 'fit'];
+
+  el = mountDom(<div className="mm-toolbar" />) as HTMLDivElement;
 
   items: (string | IToolbarItem)[];
 
   static create(mm: Markmap) {
     const toolbar = new Toolbar();
     toolbar.attach(mm);
-    return toolbar.render();
+    toolbar.render();
+    return toolbar;
   }
 
   static icon(path: string, attrs = {}) {
@@ -101,11 +99,12 @@ export class Toolbar {
       ),
       onClick: this.getHandler((mm) => mm.fit()),
     });
-    this.setItems(Toolbar.defaultItems);
+    this.items = Toolbar.defaultItems;
   }
 
   setBrand(show: boolean) {
     this.showBrand = show;
+    return this.render();
   }
 
   register(data: IToolbarItem & { id: string }) {
@@ -121,6 +120,7 @@ export class Toolbar {
 
   setItems(items: (string | IToolbarItem)[]) {
     this.items = [...items];
+    return this.render();
   }
 
   attach(mm: Markmap) {
@@ -138,11 +138,17 @@ export class Toolbar {
         return item;
       })
       .filter(Boolean);
-    return mountDom(
-      <div className="mm-toolbar">
-        {this.showBrand && renderBrand()}
-        {items.map(renderItem)}
-      </div>
+    while (this.el.firstChild) {
+      this.el.firstChild.remove();
+    }
+    this.el.append(
+      mountDom(
+        <>
+          {this.showBrand && renderBrand()}
+          {items.map(renderItem)}
+        </>
+      )
     );
+    return this.el;
   }
 }
