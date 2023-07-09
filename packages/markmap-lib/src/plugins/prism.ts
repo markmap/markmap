@@ -1,5 +1,5 @@
 import Prism from 'prismjs';
-import loadLanguages from 'prismjs/components/';
+import loadLanguages from 'prismjs/components/index.js';
 import { noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
