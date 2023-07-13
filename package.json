@@ -18,7 +18,7 @@
     "prepare": "husky install",
     "build": "run-s lint clean build:types build:js",
     "lint": "eslint --ext .ts,.tsx . && prettier --ignore-path .eslintignore --check .",
-		"lint:fix": "eslint --ext .ts,.tsx . --fix && prettier --ignore-path .eslintignore --write .",
+    "lint:fix": "eslint --ext .ts,.tsx . --fix && prettier --ignore-path .eslintignore --write .",
     "test": "pnpm -r test",
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",

@@ -129,5 +129,6 @@ export interface IMarkmapOptions {
   initialExpandLevel: number;
   zoom: boolean;
   pan: boolean;
+  toggleRecursively: boolean;
   style?: (id: string) => string;
 }

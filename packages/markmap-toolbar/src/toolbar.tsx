@@ -10,6 +10,7 @@ export interface IToolbarItem {
 }
 
 const clsToolbarItem = 'mm-toolbar-item';
+const clsActive = 'active';
 
 function renderBrand() {
   return (
@@ -51,7 +52,12 @@ export class Toolbar {
 
   private markmap: Markmap = null;
 
-  static defaultItems: (string | IToolbarItem)[] = ['zoomIn', 'zoomOut', 'fit'];
+  static defaultItems: (string | IToolbarItem)[] = [
+    'zoomIn',
+    'zoomOut',
+    'fit',
+    'recurse',
+  ];
 
   el = mountDom(<div className="mm-toolbar" />) as HTMLDivElement;
 
@@ -98,6 +104,21 @@ export class Toolbar {
         'M4 7h2v-2h2v4h-4zM4 13h2v2h2v-4h-4zM16 7h-2v-2h-2v4h4zM16 13h-2v2h-2v-4h4z'
       ),
       onClick: this.getHandler((mm) => mm.fit()),
+    });
+    this.register({
+      id: 'recurse',
+      title: 'Toggle recursively',
+      content: Toolbar.icon('M16 4h-12v12h12v-8h-8v4h2v-2h4v4h-8v-8h10z'),
+      onClick: (e) => {
+        const button = (e.target as HTMLDivElement).closest<HTMLDivElement>(
+          `.${clsToolbarItem}`
+        );
+        const toggle = () => button.classList.toggle(clsActive);
+        const active = toggle();
+        this.markmap.setOptions({
+          toggleRecursively: active,
+        });
+      },
     });
     this.items = Toolbar.defaultItems;
   }
