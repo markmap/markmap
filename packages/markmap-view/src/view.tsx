@@ -90,6 +90,7 @@ export class Markmap {
     initialExpandLevel: -1,
     zoom: true,
     pan: true,
+    toggleRecursively: false,
   };
 
   options: IMarkmapOptions;
@@ -206,7 +207,9 @@ export class Markmap {
   }
 
   handleClick(e: MouseEvent, d: IMarkmapFlexTreeItem): void {
-    this.toggleNode(d.data, e.ctrlKey);
+    let recursive = this.options.toggleRecursively;
+    if (e.ctrlKey) recursive = !recursive;
+    this.toggleNode(d.data, recursive);
   }
 
   initializeData(node: INode): void {
