@@ -12,8 +12,8 @@ import { IAssets } from './types';
 const template: string = process.env.TEMPLATE;
 
 export const baseJsPaths = [
-  `d3@${process.env.D3_VERSION}`,
-  `markmap-view@${process.env.VIEW_VERSION}`,
+  `d3@${process.env.D3_VERSION}/dist/d3.min.js`,
+  `markmap-view@${process.env.VIEW_VERSION}/dist/browser/index.js`,
 ];
 
 export function fillTemplate(

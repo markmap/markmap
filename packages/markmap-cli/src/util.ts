@@ -16,13 +16,18 @@ const renderToolbar = () => {
 
 export interface IDevelopOptions {
   /**
-   * whether to open the generated markmap in browser
+   * Whether to open the generated markmap in browser
    */
   open: boolean;
   /**
-   * whether to show default toolbar
+   * Whether to show the default toolbar
    */
   toolbar: boolean;
+  /**
+   * Whether to inline all assets to make the HTML work offline.
+   * Ignored in watching mode.
+   */
+  offline: boolean;
 }
 
 export function addToolbar(assets: IAssets): IAssets {
@@ -56,4 +61,11 @@ export class Defer<T> {
     this.resolve = resolve;
     this.reject = reject;
   });
+}
+
+export function localProvider(path: string) {
+  const parts = path.split('/');
+  parts[0] = parts[0].replace(/@[\d.]+$/, '');
+  path = parts.join('/');
+  return `/node_modules/${path}`;
 }

@@ -41,6 +41,9 @@ importers:
       markmap-lib:
         specifier: workspace:*
         version: link:../markmap-lib
+      markmap-toolbar:
+        specifier: workspace:*
+        version: link:../markmap-toolbar
       markmap-view:
         specifier: workspace:*
         version: link:../markmap-view
@@ -56,6 +59,12 @@ importers:
       commander:
         specifier: ^7.1.0
         version: 7.1.0
+      d3:
+        specifier: ^6.2.0
+        version: 6.2.0
+      katex:
+        specifier: ^0.16.0
+        version: 0.16.0
       koa:
         specifier: ^2.13.1
         version: 2.13.1
@@ -65,19 +74,24 @@ importers:
       markmap-lib:
         specifier: workspace:*
         version: link:../markmap-lib
-      open:
-        specifier: ^8.0.3
-        version: 8.0.3
-      update-notifier:
-        specifier: ^5.1.0
-        version: 5.1.0
-    devDependencies:
       markmap-toolbar:
         specifier: workspace:*
         version: link:../markmap-toolbar
       markmap-view:
         specifier: workspace:*
         version: link:../markmap-view
+      open:
+        specifier: ^8.0.3
+        version: 8.0.3
+      prismjs:
+        specifier: ^1.28.0
+        version: 1.28.0
+      update-notifier:
+        specifier: ^5.1.0
+        version: 5.1.0
+      webfontloader:
+        specifier: ^1.6.28
+        version: 1.6.28
 
   packages/markmap-common:
     dependencies:
@@ -10585,7 +10599,6 @@ packages:
 
   /webfontloader@1.6.28:
     resolution: {integrity: sha512-Egb0oFEga6f+nSgasH3E0M405Pzn6y3/9tOVanv/DLfa1YBIgcv90L18YyWnvXkRbIM17v5Kv6IT2N6g1x5tvQ==}
-    dev: true
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}

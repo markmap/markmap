@@ -302,6 +302,7 @@ export class Markmap {
   setData(data?: INode, opts?: Partial<IMarkmapOptions>): void {
     if (data) this.state.data = data;
     if (opts) this.setOptions(opts);
+    if (!this.state.data) return;
     this.initializeData(this.state.data);
     this.updateStyle();
     this.renderData();

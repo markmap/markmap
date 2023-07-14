@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream } from 'fs';
+import { extname } from 'path';
 import { EventEmitter } from 'events';
 import { AddressInfo } from 'net';
 import http from 'http';
@@ -7,8 +8,8 @@ import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
 import { Transformer, fillTemplate } from 'markmap-lib';
-import type { INode } from 'markmap-common';
-import { IDevelopOptions, Defer, addToolbar } from './util';
+import { INode, setProvider } from 'markmap-common';
+import { IDevelopOptions, Defer, addToolbar, localProvider } from './util';
 
 interface IFileUpdate {
   ts?: number;
@@ -194,6 +195,17 @@ function setUpServer(
           : transformer.transform(update.content || '');
       ctx.body = { ts: update.ts, result, line: update.line };
     } else {
+      if (ctx.path.startsWith('/node_modules/')) {
+        const relpath = ctx.path.slice(14);
+        try {
+          const realpath = require.resolve(relpath);
+          ctx.type = extname(relpath);
+          ctx.body = createReadStream(realpath);
+          return;
+        } catch {
+          // ignore
+        }
+      }
       await next();
     }
   });
@@ -226,6 +238,7 @@ export async function develop(
   fileName: string | undefined,
   options: IDevelopOptions
 ) {
+  setProvider('local', localProvider);
   const transformer = new Transformer();
   const provider = fileName
     ? new FileSystemProvider(fileName)

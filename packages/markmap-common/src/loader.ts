@@ -101,6 +101,7 @@ let provider = 'jsdelivr';
 
 export async function findFastestProvider() {
   provider = await getFastestProvider();
+  return provider;
 }
 
 export function setProvider(name: string, factory?: (path: string) => string) {
@@ -108,6 +109,7 @@ export function setProvider(name: string, factory?: (path: string) => string) {
     providers[name] = factory;
   }
   provider = name;
+  return provider;
 }
 
 export function getFullUrl(path: string, overrideProvider = provider) {

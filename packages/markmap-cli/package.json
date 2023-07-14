@@ -41,14 +41,16 @@
     "@babel/runtime": "^7.13.10",
     "chokidar": "^3.5.1",
     "commander": "^7.1.0",
+    "d3": "^6.2.0",
+    "katex": "^0.16.0",
     "koa": "^2.13.1",
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
-    "open": "^8.0.3",
-    "update-notifier": "^5.1.0"
-  },
-  "devDependencies": {
     "markmap-toolbar": "workspace:*",
-    "markmap-view": "workspace:*"
+    "markmap-view": "workspace:*",
+    "open": "^8.0.3",
+    "prismjs": "^1.28.0",
+    "update-notifier": "^5.1.0",
+    "webfontloader": "^1.6.28"
   }
 }
