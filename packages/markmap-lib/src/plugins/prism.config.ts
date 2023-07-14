@@ -4,9 +4,9 @@ export function getConfig() {
   const preloadScripts = [
     `prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,
     `prismjs@${process.env.PRISM_VERSION}/plugins/autoloader/prism-autoloader.min.js`,
-  ].map(buildJSItem);
+  ].map((path) => buildJSItem(path));
   const styles = [`prismjs@${process.env.PRISM_VERSION}/themes/prism.css`].map(
-    buildCSSItem
+    (path) => buildCSSItem(path)
   );
   return {
     versions: {

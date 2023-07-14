@@ -3,13 +3,13 @@ import { JSItem, buildJSItem, buildCSSItem } from 'markmap-common';
 export function getConfig() {
   const preloadScripts = [
     `katex@${process.env.KATEX_VERSION}/dist/katex.min.js`,
-  ].map(buildJSItem);
+  ].map((path) => buildJSItem(path));
   const webfontloader = buildJSItem(
     `webfontloader@${process.env.WEBFONTLOADER_VERSION}/webfontloader.js`
   );
   webfontloader.data.defer = true;
   const styles = [`katex@${process.env.KATEX_VERSION}/dist/katex.min.css`].map(
-    buildCSSItem
+    (path) => buildCSSItem(path)
   );
   return {
     versions: {

@@ -110,25 +110,31 @@ export function setProvider(name: string, factory?: (path: string) => string) {
   provider = name;
 }
 
-export function getFullUrl(path: string) {
+export function getFullUrl(path: string, overrideProvider = provider) {
   if (path.includes('://')) return path;
-  return cdnUrl(provider, path);
+  return cdnUrl(overrideProvider, path);
 }
 
-export function buildJSItem(path: string): JSScriptItem {
+export function buildJSItem(
+  path: string,
+  overrideProvider?: string
+): JSScriptItem {
   return {
     type: 'script',
     data: {
-      src: getFullUrl(path),
+      src: getFullUrl(path, overrideProvider),
     },
   };
 }
 
-export function buildCSSItem(path: string): CSSStylesheetItem {
+export function buildCSSItem(
+  path: string,
+  overrideProvider?: string
+): CSSStylesheetItem {
   return {
     type: 'stylesheet',
     data: {
-      href: getFullUrl(path),
+      href: getFullUrl(path, overrideProvider),
     },
   };
 }

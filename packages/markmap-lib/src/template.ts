@@ -28,7 +28,7 @@ export function fillTemplate(
   extra = {
     ...extra,
   };
-  extra.baseJs ??= baseJsPaths.map(buildJSItem);
+  extra.baseJs ??= baseJsPaths.map((path) => buildJSItem(path));
   const { scripts, styles } = assets;
   const cssList = [...(styles ? persistCSS(styles) : [])];
   const context = {

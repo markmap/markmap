@@ -1,21 +1,39 @@
-import { buildJSItem, loadJS } from 'markmap-common';
+import { buildJSItem, buildCSSItem, loadCSS, loadJS } from 'markmap-common';
+import type { AutoLoaderOptions } from './types';
 
 const enabled: Record<string, boolean> = {};
 
-export const ready = loadJS(
-  window.markmap?.autoLoader?.baseJs ||
-    [
-      `d3@${process.env.D3_VERSION}`,
-      `markmap-lib@${process.env.LIB_VERSION}`,
-      `markmap-view@${process.env.VIEW_VERSION}`,
-    ].map(buildJSItem)
-).then(() => {
+const autoLoaderOptions: AutoLoaderOptions = {
+  baseJs: [
+    `d3@${process.env.D3_VERSION}`,
+    `markmap-lib@${process.env.LIB_VERSION}`,
+    `markmap-view@${process.env.VIEW_VERSION}`,
+    `markmap-toolbar@${process.env.TOOLBAR_VERSION}`,
+  ],
+  baseCss: [`markmap-toolbar@${process.env.TOOLBAR_VERSION}/dist/style.css`],
+  manual: false,
+  toolbar: false,
+  ...window.markmap?.autoLoader,
+};
+
+export const ready = Promise.all([
+  loadJS(
+    autoLoaderOptions.baseJs.map((item) =>
+      typeof item === 'string' ? buildJSItem(item) : item
+    )
+  ),
+  loadCSS(
+    autoLoaderOptions.baseCss.map((item) =>
+      typeof item === 'string' ? buildCSSItem(item) : item
+    )
+  ),
+]).then(() => {
   const { markmap } = window;
   const style = document.createElement('style');
   style.textContent = markmap.globalCSS;
   // Insert global CSS to body so it has higher priority than prism.css, etc.
   document.body.prepend(style);
-  markmap.autoLoader?.onReady?.();
+  autoLoaderOptions.onReady?.();
 });
 
 function transform(
@@ -35,7 +53,7 @@ function transform(
 }
 
 export function render(el: HTMLElement) {
-  const { Transformer, Markmap, autoLoader, deriveOptions } = window.markmap;
+  const { Transformer, Markmap, deriveOptions, Toolbar } = window.markmap;
   const lines = el.textContent.split('\n');
   let indent = Infinity;
   lines.forEach((line) => {
@@ -46,10 +64,19 @@ export function render(el: HTMLElement) {
     .map((line) => line.slice(indent))
     .join('\n')
     .trim();
-  const transformer = new Transformer(autoLoader?.transformPlugins);
+  const transformer = new Transformer(autoLoaderOptions.transformPlugins);
   el.innerHTML = '<svg></svg>';
   const svg = el.firstChild as SVGElement;
   const mm = Markmap.create(svg, { embedGlobalCSS: false });
+  if (autoLoaderOptions.toolbar) {
+    const { el: toolbar } = Toolbar.create(mm);
+    Object.assign(toolbar.style, {
+      position: 'absolute',
+      right: '20px',
+      bottom: '20px',
+    });
+    el.append(toolbar);
+  }
   const doRender = () => {
     const { root, frontmatter } = transform(transformer, content);
     const markmapOptions = frontmatter?.markmap;
@@ -70,7 +97,7 @@ export function renderAll() {
   return renderAllUnder(document);
 }
 
-if (!window.markmap?.autoLoader?.manual) {
+if (!autoLoaderOptions.manual) {
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', () => {
       renderAll();

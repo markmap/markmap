@@ -12,18 +12,23 @@ HTML:
 
 ```html
 <style>
-.markmap > svg {
-  width: 100%;
-  height: 300px;
-}
+  .markmap {
+    position: relative;
+  }
+  .markmap > svg {
+    width: 100%;
+    height: 300px;
+  }
 </style>
 
-<div class="markmap"><script type="text/template">
-- markmap
-  - autoloader
-  - transformer
-  - view
-</script></div>
+<div class="markmap">
+  <script type="text/template">
+    - markmap
+      - autoloader
+      - transformer
+      - view
+  </script>
+</div>
 ```
 
 Note that `<script type="text/template">` is optional, for the content inside to be invisible before the markmap is rendered.
@@ -44,16 +49,16 @@ Load manually:
 
 ```html
 <script>
-window.markmap = {
-  autoLoader: { manual: true },
-};
+  window.markmap = {
+    autoLoader: { manual: true },
+  };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
 <script>
-// Render in 5s
-setTimeout(() => {
-  markmap.autoLoader.renderAll();
-}, 5000);
+  // Render in 5s
+  setTimeout(() => {
+    markmap.autoLoader.renderAll();
+  }, 5000);
 </script>
 ```
 
@@ -61,11 +66,11 @@ Disable built-in plugins:
 
 ```html
 <script>
-window.markmap = {
-  autoLoader: {
-    transformPlugins: [],
-  },
-};
+  window.markmap = {
+    autoLoader: {
+      transformPlugins: [],
+    },
+  };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader"></script>
 ```
@@ -76,17 +81,17 @@ window.markmap = {
 
 If `window.markmap.autoLoader` is defined before this package is loaded, it will be regarded as autoLoader options.
 
-- `autoLoader.manual` *boolean* default as `false`
+- `autoLoader.manual` _boolean_ default as `false`
 
-    Whether to render markmaps manually. If false, all elements matching `.markmap` will be rendered once this package loads or DOMContentLoaded is emitted, whichever later.
+  Whether to render markmaps manually. If false, all elements matching `.markmap` will be rendered once this package loads or DOMContentLoaded is emitted, whichever later.
 
-- `autoLoader.transformPlugins` *ITransformPlugin[]*
+- `autoLoader.transformPlugins` _ITransformPlugin[]_
 
-    Override built-in plugins if provided. Set to `[]` to disable all built-in plugins for auto-loader.
+  Override built-in plugins if provided. Set to `[]` to disable all built-in plugins for auto-loader.
 
-- `autoLoader.onReady` *function*
+- `autoLoader.onReady` _function_
 
-    Callback when markmap-lib/markmap-view and their dependencies are loaded. We can tweak global options in this callback.
+  Callback when markmap-lib/markmap-view and their dependencies are loaded. We can tweak global options in this callback.
 
 ### markmap.autoLoader.renderAll()
 
