@@ -260,9 +260,9 @@ export class Markmap {
       node.parentNode?.append(node.cloneNode(true));
     });
     walkTree(node, (item, next, parent) => {
-      const state = item.state!;
-      const rect = state.el!.getBoundingClientRect();
-      item.content = state.el!.innerHTML;
+      const state = item.state;
+      const rect = state.el.getBoundingClientRect();
+      item.content = state.el.innerHTML;
       state.size = [
         Math.ceil(rect.width) + 1,
         Math.max(Math.ceil(rect.height), nodeMinHeight),
@@ -279,7 +279,7 @@ export class Markmap {
 
   setOptions(opts?: Partial<IMarkmapOptions>): void {
     this.options = {
-      ...Markmap.defaultOptions,
+      ...this.options,
       ...opts,
     };
     if (this.options.zoom) {
