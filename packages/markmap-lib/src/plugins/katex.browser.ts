@@ -40,7 +40,7 @@ export default definePlugin(() => {
           idx: number
         ) => {
           enableFeature();
-          const result = renderKatex(tokens[idx].content, tokens[idx].block);
+          const result = renderKatex(tokens[idx].content, !!tokens[idx].block);
           return result;
         };
       });
@@ -50,12 +50,13 @@ export default definePlugin(() => {
         };
       });
       transformHooks.afterParse.tap((_, context) => {
-        const { frontmatter } = context;
-        if (frontmatter?.markmap) {
+        const markmap = context.frontmatter?.markmap;
+        if (markmap) {
           ['extraJs', 'extraCss'].forEach((key) => {
-            if (frontmatter.markmap[key]) {
-              frontmatter.markmap[key] = addDefaultVersions(
-                frontmatter.markmap[key],
+            const value = markmap[key];
+            if (value) {
+              markmap[key] = addDefaultVersions(
+                value,
                 name,
                 plugin.config.versions.katex
               );

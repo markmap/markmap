@@ -1,4 +1,4 @@
-import { buildCSSItem, buildJSItem } from 'markmap-common';
+import { buildCSSItem, buildJSItem, JSItem } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
@@ -47,20 +47,9 @@ export function addToolbar(assets: IAssets): IAssets {
           },
           getParams: () => [renderToolbar],
         },
-      },
+      } as JSItem,
     ],
   };
-}
-
-export class Defer<T> {
-  resolve: (value: T) => void;
-
-  reject: (err: Error) => void;
-
-  promise = new Promise((resolve, reject) => {
-    this.resolve = resolve;
-    this.reject = reject;
-  });
 }
 
 export function localProvider(path: string) {

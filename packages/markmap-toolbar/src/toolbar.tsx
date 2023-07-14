@@ -32,7 +32,7 @@ function renderItem({ title, content, onClick }: IToolbarItem) {
   );
 }
 
-let promise: Promise<void>;
+let promise: Promise<void> | undefined;
 function safeCaller<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
   return async (...args: T) => {
     if (promise) return;
@@ -40,7 +40,7 @@ function safeCaller<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
     try {
       await promise;
     } finally {
-      promise = null;
+      promise = undefined;
     }
   };
 }
@@ -50,7 +50,7 @@ export class Toolbar {
 
   private registry: { [id: string]: IToolbarItem } = {};
 
-  private markmap: Markmap = null;
+  private markmap: Markmap | undefined;
 
   static defaultItems: (string | IToolbarItem)[] = [
     'zoomIn',
@@ -113,9 +113,8 @@ export class Toolbar {
         const button = (e.target as HTMLDivElement).closest<HTMLDivElement>(
           `.${clsToolbarItem}`
         );
-        const toggle = () => button.classList.toggle(clsActive);
-        const active = toggle();
-        this.markmap.setOptions({
+        const active = button?.classList.toggle(clsActive);
+        this.markmap?.setOptions({
           toggleRecursively: active,
         });
       },

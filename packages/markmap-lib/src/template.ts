@@ -1,15 +1,15 @@
 import {
   JSItem,
-  INode,
   IMarkmapOptions,
   IMarkmapJSONOptions,
   persistJS,
   persistCSS,
   buildJSItem,
+  IPureNode,
 } from 'markmap-common';
 import { IAssets } from './types';
 
-const template: string = process.env.TEMPLATE;
+const template = process.env.TEMPLATE || '';
 
 export const baseJsPaths = [
   `d3@${process.env.D3_VERSION}/dist/d3.min.js`,
@@ -17,7 +17,7 @@ export const baseJsPaths = [
 ];
 
 export function fillTemplate(
-  root: INode | undefined,
+  root: IPureNode | null,
   assets: IAssets,
   extra?: {
     baseJs?: JSItem[];
@@ -62,7 +62,7 @@ export function fillTemplate(
               return [getMarkmap, getOptions, root, jsonOptions];
             },
           },
-        },
+        } as JSItem,
       ],
       context
     ),

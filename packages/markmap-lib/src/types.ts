@@ -2,7 +2,7 @@ import type { Remarkable } from 'remarkable';
 import {
   CSSItem,
   JSItem,
-  INode,
+  IPureNode,
   IWrapContext,
   Hook,
   IMarkmapJSONOptions,
@@ -65,7 +65,7 @@ export interface ITransformContext {
 }
 
 export interface ITransformResult extends ITransformContext {
-  root: INode;
+  root: IPureNode;
 }
 
 export interface ITransformPlugin {

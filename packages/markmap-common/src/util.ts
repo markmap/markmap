@@ -11,16 +11,15 @@ export function noop(): void {
   // noop
 }
 
-export function walkTree<T>(
+export function walkTree<T extends { children?: T[] }>(
   tree: T,
-  callback: (item: T, next: () => void, parent?: T) => void,
-  key = 'children'
+  callback: (item: T, next: () => void, parent?: T) => void
 ): void {
   const walk = (item: T, parent?: T): void =>
     callback(
       item,
       () => {
-        item[key]?.forEach((child: T) => {
+        item.children?.forEach((child: T) => {
           walk(child, item);
         });
       },
@@ -45,8 +44,8 @@ export function childSelector<T extends Element>(
     filter = (el: T): boolean => el.tagName === tagName;
   }
   const filterFn = filter;
-  return function selector(): T[] {
-    let nodes = Array.from((this as HTMLElement).childNodes as NodeListOf<T>);
+  return function selector(this: HTMLElement): T[] {
+    let nodes = Array.from(this.childNodes as NodeListOf<T>);
     if (filterFn) nodes = nodes.filter((node) => filterFn(node));
     return nodes;
   };

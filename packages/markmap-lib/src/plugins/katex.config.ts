@@ -13,8 +13,8 @@ export function getConfig() {
   );
   return {
     versions: {
-      katex: process.env.KATEX_VERSION,
-      webfontloader: process.env.WEBFONTLOADER_VERSION,
+      katex: process.env.KATEX_VERSION || '',
+      webfontloader: process.env.WEBFONTLOADER_VERSION || '',
     },
     preloadScripts,
     scripts: [

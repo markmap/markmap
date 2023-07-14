@@ -46,7 +46,7 @@ function normalizeMarkmapJsonOptions(options?: IMarkmapJSONOptions) {
 }
 
 function normalizeStringArray(value: string | string[]) {
-  let result: string[];
+  let result: string[] | undefined;
   if (typeof value === 'string') result = [value];
   else if (Array.isArray(value))
     result = value.filter((item) => item && typeof item === 'string');

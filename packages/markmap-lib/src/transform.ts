@@ -1,5 +1,5 @@
 import { Remarkable } from 'remarkable';
-import { INode, CSSItem, JSItem, wrapFunction } from 'markmap-common';
+import { IPureNode, CSSItem, JSItem, wrapFunction } from 'markmap-common';
 import {
   ITransformResult,
   ITransformPlugin,
@@ -12,7 +12,7 @@ import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 
 export { builtInPlugins };
 
-function cleanNode(node: INode): void {
+function cleanNode(node: IPureNode): void {
   if (node.type === 'heading') {
     // drop all paragraphs
     node.children = node.children.filter((item) => item.type !== 'paragraph');
@@ -46,9 +46,7 @@ function cleanNode(node: INode): void {
       }
     });
   }
-  if (node.children.length === 0) {
-    delete node.children;
-  } else {
+  if (node.children.length > 0) {
     node.children.forEach((child) => cleanNode(child));
     if (node.children.length === 1 && !node.children[0].content) {
       node.children = node.children[0].children;
@@ -56,9 +54,9 @@ function cleanNode(node: INode): void {
   }
 }
 
-function resetDepth(node: INode, depth = 0) {
+function resetDepth(node: IPureNode, depth = 0) {
   node.depth = depth;
-  node.children?.forEach((child) => {
+  node.children.forEach((child) => {
     resetDepth(child, depth + 1);
   });
 }
@@ -103,9 +101,9 @@ export class Transformer {
     this.hooks.parser.call(md);
   }
 
-  buildTree(tokens: Remarkable.Token[]): INode {
+  buildTree(tokens: Remarkable.Token[]): IPureNode {
     const { md } = this;
-    const root: INode = {
+    const root: IPureNode = {
       type: 'root',
       depth: 0,
       content: '',
@@ -118,7 +116,7 @@ export class Transformer {
       let current = stack[stack.length - 1];
       if (token.type.endsWith('_open')) {
         const type = token.type.slice(0, -5);
-        const payload: INode['payload'] = {};
+        const payload: IPureNode['payload'] = {};
         if (token.lines) {
           payload.lines = token.lines;
         }
@@ -136,7 +134,7 @@ export class Transformer {
             ).order;
           }
         }
-        const item: INode = {
+        const item: IPureNode = {
           type,
           depth,
           payload,
@@ -156,12 +154,13 @@ export class Transformer {
         }
       } else if (token.type === 'inline') {
         const revoke = this.hooks.htmltag.tap((ctx) => {
-          const comment = ctx.result.match(/^<!--([\s\S]*?)-->$/);
+          const comment = ctx.result?.match(/^<!--([\s\S]*?)-->$/);
           const data = comment?.[1].trim().split(' ');
-          if (data[0] === 'fold') {
-            current.payload.fold = ['all', 'recursively'].includes(data[1])
-              ? 2
-              : 1;
+          if (data?.[0] === 'fold') {
+            current.payload = {
+              ...current.payload,
+              fold: ['all', 'recursively'].includes(data[1]) ? 2 : 1,
+            };
             ctx.result = '';
           }
         });

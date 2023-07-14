@@ -10,7 +10,7 @@ export function getConfig() {
   );
   return {
     versions: {
-      prismjs: process.env.PRISM_VERSION,
+      prismjs: process.env.PRISM_VERSION || '',
     },
     preloadScripts,
     styles,

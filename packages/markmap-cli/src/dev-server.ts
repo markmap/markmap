@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { promises as fs, createReadStream } from 'fs';
 import { extname } from 'path';
 import { EventEmitter } from 'events';
@@ -8,8 +7,8 @@ import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
 import { Transformer, fillTemplate } from 'markmap-lib';
-import { INode, setProvider } from 'markmap-common';
-import { IDevelopOptions, Defer, addToolbar, localProvider } from './util';
+import { INode, setProvider, defer, IDeferred } from 'markmap-common';
+import { IDevelopOptions, addToolbar, localProvider } from './util';
 
 interface IFileUpdate {
   ts?: number;
@@ -25,25 +24,25 @@ interface IContentProvider {
 }
 
 function sequence(fn: () => Promise<void>) {
-  let promise: Promise<void>;
+  let promise: Promise<void> | undefined;
   return () => {
     promise ||= fn().finally(() => {
-      promise = null;
+      promise = undefined;
     });
     return promise;
   };
 }
 
 class BufferContentProvider implements IContentProvider {
-  private deferredSet = new Set<Defer<IFileUpdate>>();
+  private deferredSet = new Set<IDeferred<IFileUpdate>>();
 
   private events = new EventEmitter();
 
   private ts = 0;
 
-  private content: string;
+  private content = '';
 
-  private line: number;
+  private line = -1;
 
   constructor() {
     this.events.on('content', () => {
@@ -60,7 +59,7 @@ class BufferContentProvider implements IContentProvider {
   }
 
   async getUpdate(ts: number, timeout = 10000): Promise<IFileUpdate> {
-    const deferred = new Defer<IFileUpdate>();
+    const deferred = defer<IFileUpdate>();
     this.deferredSet.add(deferred);
     setTimeout(() => {
       this.feed({}, deferred);
@@ -71,7 +70,7 @@ class BufferContentProvider implements IContentProvider {
     return deferred.promise;
   }
 
-  protected feed(data: IFileUpdate, deferred?: Defer<IFileUpdate>) {
+  protected feed(data: IFileUpdate, deferred?: IDeferred<IFileUpdate>) {
     if (deferred) {
       deferred.resolve(data);
       this.deferredSet.delete(deferred);
@@ -154,7 +153,7 @@ function startServer(paddingBottom: number) {
   }
   function findActiveNode() {
     const lineWithoutFrontmatter = line - offset;
-    let best: INode;
+    let best: INode | undefined;
     dfs(root);
     return best;
     function dfs(node: INode) {

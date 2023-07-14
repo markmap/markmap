@@ -98,6 +98,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.22.6
         version: 7.22.6
+      '@gera2ld/jsx-dom':
+        specifier: ^2.2.2
+        version: 2.2.2
       npm2url:
         specifier: ^0.1.1
         version: 0.1.1
@@ -142,8 +145,8 @@ importers:
         specifier: ^7.16.3
         version: 7.18.9
       '@gera2ld/jsx-dom':
-        specifier: ^2.1.1
-        version: 2.1.1
+        specifier: ^2.2.2
+        version: 2.2.2
     devDependencies:
       markmap-common:
         specifier: workspace:*
@@ -168,6 +171,9 @@ importers:
         version: 2.1.1
     devDependencies:
       '@gera2ld/jsx-dom':
+        specifier: ^2.2.2
+        version: 2.2.2
+      '@types/d3-flextree':
         specifier: ^2.1.1
         version: 2.1.1
       markmap-common:
@@ -1567,6 +1573,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.13.11
+    dev: false
 
   /@babel/runtime@7.22.6:
     resolution: {integrity: sha512-wDb5pWm4WDdF6LFUde3Jl8WzPA+3ZbxYqkC6xAXuD3irdEHN1k0NfTRrJD8ZD378SJ61miMLCqIOXYhd8x+AJQ==}
@@ -1651,10 +1658,10 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@gera2ld/jsx-dom@2.1.1:
-    resolution: {integrity: sha512-O/NIYnqQH5gSf20rp9OOihgB0WAvSuskNqw67+6LgW+nz3Hfl0cEoC+UauAT5eSujgt2lFq2ZULFg4X2ognwaQ==}
+  /@gera2ld/jsx-dom@2.2.2:
+    resolution: {integrity: sha512-EOqf31IATRE6zS1W1EoWmXZhGfLAoO9FIlwTtHduSrBdud4npYBxYAkv8dZ5hudDPwJeeSjn40kbCL4wAzr8dA==}
     dependencies:
-      '@babel/runtime': 7.18.9
+      '@babel/runtime': 7.22.6
 
   /@gera2ld/plaid-common-ts@2.5.9(@babel/core@7.22.8)(@gera2ld/plaid@2.5.9)(eslint@8.44.0):
     resolution: {integrity: sha512-bUF46db6nyhv4xBWYby+iS+YhZ5CJq6I53v0a0VmDoXXLV7oxOKX0Sk0GDzH60WHKZAlJMrLgy7CLAL8FPF8oA==}
@@ -2725,6 +2732,12 @@ packages:
       '@types/d3-dsv': 3.0.1
     dev: false
 
+  /@types/d3-flextree@2.1.1:
+    resolution: {integrity: sha512-GgDiBz4J//jMqVqY3HfOc9BEwHVXNk0z2XfQ8tHzCl01w9FzLqz37AQqPIcJpC0Htyjee/XBo1qDOu2FwL+2Zg==}
+    dependencies:
+      '@types/d3-hierarchy': 3.1.2
+    dev: true
+
   /@types/d3-force@3.0.4:
     resolution: {integrity: sha512-q7xbVLrWcXvSBBEoadowIUJ7sRpS1yvgMWnzHJggFy5cUZBq2HZL5k/pBSm0GdYWS1vs5/EDwMjSKF55PDY4Aw==}
     dev: false
@@ -2741,7 +2754,6 @@ packages:
 
   /@types/d3-hierarchy@3.1.2:
     resolution: {integrity: sha512-9hjRTVoZjRFR6xo8igAJyNXQyPX6Aq++Nhb5ebrUF414dv4jr2MitM2fWiOY475wa3Za7TOS2Gh9fmqEhLTt0A==}
-    dev: false
 
   /@types/d3-interpolate@3.0.1:
     resolution: {integrity: sha512-jx5leotSeac3jr0RePOH1KdR9rISG91QIE4Q2PYTu4OymLTZfA3SrnURSLzKH48HmXVUru50b8nje4E79oQSQw==}

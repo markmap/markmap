@@ -9,10 +9,12 @@ export default definePlugin({
   transform(transformHooks: ITransformHooks) {
     transformHooks.afterParse.tap((_, context) => {
       const { frontmatter } = context;
-      if (frontmatter?.markmap) {
-        ['extraJs', 'extraCss'].forEach((key) => {
-          if (frontmatter.markmap[key]) {
-            frontmatter.markmap[key] = frontmatter.markmap[key].map((path) => {
+      const markmap = frontmatter?.markmap;
+      if (markmap) {
+        (['extraJs', 'extraCss'] as const).forEach((key) => {
+          const value = markmap[key];
+          if (value) {
+            markmap[key] = value.map((path) => {
               if (path.startsWith('npm:')) {
                 return getFullUrl(path.slice(4));
               }

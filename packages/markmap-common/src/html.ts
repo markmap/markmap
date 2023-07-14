@@ -1,15 +1,13 @@
 import { JSItem, CSSItem } from './types';
 
+const escapeChars: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '"': '&quot;',
+};
+
 export function escapeHtml(html: string): string {
-  return html.replace(
-    /[&<"]/g,
-    (m) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '"': '&quot;',
-      }[m])
-  );
+  return html.replace(/[&<"]/g, (m) => escapeChars[m]);
 }
 
 export function escapeScript(content: string): string {
@@ -40,7 +38,7 @@ export function htmlClose(tagName: string): string {
 
 export function wrapHtml(
   tagName: string,
-  content?: string,
+  content?: string | null,
   attrs?: Record<string, string | boolean>
 ): string {
   if (content == null) return htmlOpen(tagName, attrs);

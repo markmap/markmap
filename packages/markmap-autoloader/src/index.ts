@@ -54,10 +54,10 @@ function transform(
 
 export function render(el: HTMLElement) {
   const { Transformer, Markmap, deriveOptions, Toolbar } = window.markmap;
-  const lines = el.textContent.split('\n');
+  const lines = el.textContent?.split('\n') || [];
   let indent = Infinity;
   lines.forEach((line) => {
-    const spaces = line.match(/^\s*/)[0].length;
+    const spaces = line.match(/^\s*/)?.[0].length || 0;
     if (spaces < line.length) indent = Math.min(indent, spaces);
   });
   const content = lines
@@ -90,7 +90,7 @@ export function render(el: HTMLElement) {
 
 export async function renderAllUnder(container: ParentNode) {
   await ready;
-  container.querySelectorAll('.markmap').forEach(render);
+  container.querySelectorAll<HTMLElement>('.markmap').forEach(render);
 }
 
 export function renderAll() {

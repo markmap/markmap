@@ -2,6 +2,9 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "es2020",
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",

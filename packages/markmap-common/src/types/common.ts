@@ -1,5 +1,10 @@
-export interface IHierarchy<T> {
+export interface IPureNode {
   type: string;
+  depth: number;
+  /**
+   * HTML of the node content.
+   */
+  content: string;
   /**
    * Additional data created on transformation.
    */
@@ -25,36 +30,34 @@ export interface IHierarchy<T> {
      */
     lines?: [startLine: number, endLine: number];
   };
+  children: IPureNode[];
+}
+
+export interface INode extends IPureNode {
   /**
    * Store temporary data that helps rendering.
    */
-  state?: {
-    /**
-     * An auto-increment unique ID for each node.
-     */
-    id?: number;
-    /**
-     * A dot separated sequence of the node and its ancestors.
-     */
-    path?: string;
-    /**
-     * The unique identifier of a node, supposed to be based on content.
-     */
-    key?: string;
-    el?: HTMLElement;
-    x0?: number;
-    y0?: number;
-    size?: [width: number, height: number];
-  };
-  children?: T[];
+  state: INodeState;
+  children: INode[];
 }
 
-export interface INode extends IHierarchy<INode> {
-  depth?: number;
+export interface INodeState {
   /**
-   * HTML of the node content.
+   * An auto-increment unique ID for each node.
    */
-  content: string;
+  id: number;
+  /**
+   * A dot separated sequence of the node and its ancestors.
+   */
+  path: string;
+  /**
+   * The unique identifier of a node, supposed to be based on content.
+   */
+  key: string;
+  el: HTMLElement;
+  x0: number;
+  y0: number;
+  size: [width: number, height: number];
 }
 
 export type JSScriptItem = {
