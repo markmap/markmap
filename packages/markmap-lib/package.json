@@ -8,7 +8,7 @@
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist types",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js"
+    "build:js": "rollup -c"
   },
   "publishConfig": {
     "access": "public",
@@ -52,10 +52,10 @@
     "webfontloader": "^1.6.28"
   },
   "dependencies": {
-    "@babel/runtime": "^7.18.9",
+    "@babel/runtime": "^7.22.6",
     "js-yaml": "^4.1.0",
-    "katex": "^0.16.0",
-    "prismjs": "^1.28.0",
+    "katex": "^0.16.8",
+    "prismjs": "^1.29.0",
     "remarkable": "^2.0.1",
     "remarkable-katex": "^1.2.1"
   },

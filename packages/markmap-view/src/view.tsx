@@ -1,4 +1,16 @@
-import * as d3 from 'd3';
+import type * as d3 from 'd3';
+import {
+  minIndex,
+  scaleOrdinal,
+  schemeCategory10,
+  select,
+  zoom,
+  zoomTransform,
+  zoomIdentity,
+  linkHorizontal,
+  min,
+  max,
+} from 'd3';
 import { flextree, FlextreeNode } from 'd3-flextree';
 import { mountDom } from '@gera2ld/jsx-dom';
 import {
@@ -32,7 +44,7 @@ function linkWidth(nodeData: d3.HierarchyNode<INode>): number {
 }
 
 function minBy(numbers: number[], by: (v: number) => number): number {
-  const index = d3.minIndex(numbers, by);
+  const index = minIndex(numbers, by);
   return numbers[index];
 }
 
@@ -58,7 +70,7 @@ function createViewHooks() {
  */
 export const refreshHook = new Hook<[]>();
 
-export const defaultColorFn = d3.scaleOrdinal(d3.schemeCategory10);
+export const defaultColorFn = scaleOrdinal(schemeCategory10);
 
 const isMacintosh =
   typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
@@ -115,10 +127,9 @@ export class Markmap {
     this.viewHooks = createViewHooks();
     this.svg = (svg as ID3SVGElement).datum
       ? (svg as ID3SVGElement)
-      : d3.select(svg as string);
+      : select(svg as string);
     this.styleNode = this.svg.append('style');
-    this.zoom = d3
-      .zoom<SVGElement, FlextreeNode<INode>>()
+    this.zoom = zoom<SVGElement, FlextreeNode<INode>>()
       .filter((event) => {
         if (this.options.scrollForPan) {
           // Pan with wheels, zoom with ctrl+wheels
@@ -168,7 +179,7 @@ export class Markmap {
 
   handlePan = (e: WheelEvent) => {
     e.preventDefault();
-    const transform = d3.zoomTransform(this.svg.node()!);
+    const transform = zoomTransform(this.svg.node()!);
     const newTransform = transform.translate(
       -e.deltaX / transform.k,
       -e.deltaY / transform.k
@@ -322,11 +333,11 @@ export class Markmap {
     layout(tree);
     const descendants = tree.descendants().reverse();
     const links = tree.links();
-    const linkShape = d3.linkHorizontal();
-    const minX = d3.min(descendants, (d) => d.x - d.xSize / 2);
-    const maxX = d3.max(descendants, (d) => d.x + d.xSize / 2);
-    const minY = d3.min(descendants, (d) => d.y);
-    const maxY = d3.max(descendants, (d) => d.y + d.ySize - spacingHorizontal);
+    const linkShape = linkHorizontal();
+    const minX = min(descendants, (d) => d.x - d.xSize / 2);
+    const maxX = max(descendants, (d) => d.x + d.xSize / 2);
+    const minY = min(descendants, (d) => d.y);
+    const maxY = max(descendants, (d) => d.y + d.ySize - spacingHorizontal);
     Object.assign(this.state, {
       minX,
       maxX,
@@ -560,7 +571,7 @@ export class Markmap {
       (offsetHeight / naturalHeight) * fitRatio,
       2
     );
-    const initialZoom = d3.zoomIdentity
+    const initialZoom = zoomIdentity
       .translate(
         (offsetWidth - naturalWidth * scale) / 2 - minY * scale,
         (offsetHeight - naturalHeight * scale) / 2 - minX * scale
@@ -593,7 +604,7 @@ export class Markmap {
     const svgNode = this.svg.node()!;
     const { spacingHorizontal } = this.options;
     const relRect = svgNode.getBoundingClientRect();
-    const transform = d3.zoomTransform(svgNode);
+    const transform = zoomTransform(svgNode);
     const [left, right] = [
       itemData.y,
       itemData.y + itemData.ySize - spacingHorizontal + 2,
@@ -632,7 +643,7 @@ export class Markmap {
       svgNode.getBoundingClientRect();
     const halfWidth = offsetWidth / 2;
     const halfHeight = offsetHeight / 2;
-    const transform = d3.zoomTransform(svgNode);
+    const transform = zoomTransform(svgNode);
     const newTransform = transform
       .translate(
         ((halfWidth - transform.x) * (1 - scale)) / transform.k,
@@ -676,7 +687,7 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
     const solidColor = color[0];
     derivedOptions.color = () => solidColor;
   } else if (color?.length) {
-    const colorFn = d3.scaleOrdinal(color);
+    const colorFn = scaleOrdinal(color);
     derivedOptions.color = (node: INode) => colorFn(`${node.state.path}`);
   }
   if (colorFreezeLevel) {

@@ -39,7 +39,7 @@
     "markmap-view": "workspace:*"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
+    "@babel/runtime": "^7.22.6",
     "@gera2ld/jsx-dom": "^2.2.2"
   }
 }

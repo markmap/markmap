@@ -19,10 +19,10 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
+    "dev": "rollup -wc",
     "clean": "del-cli dist types",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js"
+    "build:js": "rollup -c"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"

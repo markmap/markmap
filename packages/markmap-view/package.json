@@ -19,16 +19,17 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
+    "dev": "rollup -wc",
     "clean": "del-cli dist types",
-    "build:js": "rollup -c rollup.conf.js",
+    "build:js": "rollup -c",
     "build:types": "tsc"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
   },
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "unpkg": "dist/browser/index.js",
   "jsdelivr": "dist/browser/index.js",
   "files": [
@@ -37,13 +38,13 @@
   ],
   "typings": "types/index.d.ts",
   "dependencies": {
-    "@babel/runtime": "^7.12.5",
-    "@types/d3": "^6.0.0",
-    "d3": "^6.2.0",
-    "d3-flextree": "^2.1.1"
+    "@babel/runtime": "^7.22.6",
+    "@gera2ld/jsx-dom": "^2.2.2",
+    "@types/d3": "^7.4.0",
+    "d3": "^7.8.5",
+    "d3-flextree": "^2.1.2"
   },
   "devDependencies": {
-    "@gera2ld/jsx-dom": "^2.2.2",
     "@types/d3-flextree": "^2.1.1",
     "markmap-common": "workspace:*"
   },

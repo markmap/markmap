@@ -12,7 +12,8 @@
     "@gera2ld/plaid-test": "~2.5.9",
     "del-cli": "^5.0.0",
     "husky": "^8.0.3",
-    "lerna": "^7.1.1"
+    "lerna": "^7.1.1",
+    "read-pkg-up": "^10.0.0"
   },
   "scripts": {
     "prepare": "husky install",
