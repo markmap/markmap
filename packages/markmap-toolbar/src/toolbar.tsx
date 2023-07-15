@@ -61,12 +61,11 @@ export class Toolbar {
 
   el = mountDom(<div className="mm-toolbar" />) as HTMLDivElement;
 
-  items: (string | IToolbarItem)[];
+  items = [...Toolbar.defaultItems];
 
   static create(mm: Markmap) {
     const toolbar = new Toolbar();
     toolbar.attach(mm);
-    toolbar.render();
     return toolbar;
   }
 
@@ -119,7 +118,7 @@ export class Toolbar {
         });
       },
     });
-    this.items = Toolbar.defaultItems;
+    this.render();
   }
 
   setBrand(show: boolean) {
