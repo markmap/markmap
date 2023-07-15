@@ -12,7 +12,12 @@ const memoizedPreloadJS = memoize((url: string) => {
   );
 });
 
+const jsCache: Record<string, Promise<void>> = {};
+const cssCache: Record<string, boolean> = {};
+
 async function loadJSItem(item: JSItem, context: unknown): Promise<void> {
+  const src = (item.type === 'script' && item.data?.src) || '';
+  item.loaded ||= jsCache[src];
   if (!item.loaded) {
     if (item.type === 'script') {
       item.loaded = new Promise((resolve, reject) => {
@@ -23,11 +28,14 @@ async function loadJSItem(item: JSItem, context: unknown): Promise<void> {
             onError: reject,
           })
         );
-        // Run inline script synchronously
-        if (!item.data?.src) resolve(undefined);
+        if (!src) {
+          // Run inline script synchronously
+          resolve(undefined);
+        }
       }).then(() => {
         item.loaded = true;
       });
+      if (src) jsCache[src] = item.loaded;
     }
     if (item.type === 'iife') {
       const { fn, getParams } = item.data;
@@ -39,8 +47,11 @@ async function loadJSItem(item: JSItem, context: unknown): Promise<void> {
 }
 
 function loadCSSItem(item: CSSItem): void {
+  const url = (item.type === 'stylesheet' && item.data.href) || '';
+  item.loaded ||= cssCache[url];
   if (item.loaded) return;
   item.loaded = true;
+  if (url) cssCache[url] = true;
   if (item.type === 'style') {
     document.head.append(
       hm('style', {
