@@ -168,10 +168,7 @@ export class Transformer {
         revoke();
         current.content = `${current.content || ''}${text}`;
       } else if (token.type === 'fence') {
-        let result = md.renderer.render([token], (md as any).options, {});
-        // Remarkable only adds className to `<code>` but not `<pre>`, copy it to make PrismJS style work.
-        const matches = result.match(/<code( class="[^"]*")>/);
-        if (matches) result = result.replace('<pre>', `<pre${matches[1]}>`);
+        const result = md.renderer.render([token], (md as any).options, {});
         current.children.push({
           type: token.type,
           depth: depth + 1,

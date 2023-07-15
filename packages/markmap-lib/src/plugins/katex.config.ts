@@ -1,5 +1,7 @@
 import { JSItem, buildJSItem, buildCSSItem } from 'markmap-common';
 
+export const name = 'katex';
+
 export function getConfig() {
   const preloadScripts = [
     `katex@${process.env.KATEX_VERSION}/dist/katex.min.js`,

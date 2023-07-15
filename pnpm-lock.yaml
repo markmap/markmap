@@ -65,6 +65,9 @@ importers:
       d3:
         specifier: ^7.8.5
         version: 7.8.5
+      highlight.js:
+        specifier: ^11.8.0
+        version: 11.8.0
       katex:
         specifier: ^0.16.8
         version: 0.16.8
@@ -113,6 +116,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.22.6
         version: 7.22.6
+      highlight.js:
+        specifier: ^11.8.0
+        version: 11.8.0
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -6235,6 +6241,11 @@ packages:
     dependencies:
       function-bind: 1.1.1
     dev: true
+
+  /highlight.js@11.8.0:
+    resolution: {integrity: sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==}
+    engines: {node: '>=12.0.0'}
+    dev: false
 
   /highlight.js@9.18.5:
     resolution: {integrity: sha512-a5bFyofd/BHCX52/8i8uJkjr9DYwXIPnM/plwI6W7ezItLGqzt7X2G2nXuYSfsIJdkwwj/g9DG1LkcGJI/dDoA==}

@@ -1,9 +1,7 @@
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
-import { getConfig } from './prism.config';
-
-const name = 'prism';
+import { getConfig, name } from './prism.config';
 
 export default definePlugin(() => {
   const plugin = {

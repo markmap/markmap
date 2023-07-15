@@ -2,11 +2,9 @@ import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
-import { getConfig } from './katex.config';
+import { getConfig, name } from './katex.config';
 import { addDefaultVersions } from './util';
 import { definePlugin } from './base';
-
-const name = 'katex';
 
 export default definePlugin(() => {
   const plugin = {

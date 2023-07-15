@@ -22,14 +22,18 @@
     }
 
     code {
+      padding: 0.25em;
       font-size: calc(1em - 2px);
       color: #555;
       background-color: #f0f0f0;
       border-radius: 2px;
     }
 
-    :not(pre) > code {
-      padding: 0.2em 0.4em;
+    pre {
+      margin: 0;
+      > code {
+        display: block;
+      }
     }
 
     del {
@@ -46,13 +50,6 @@
 
     mark {
       background: #ffeaa7;
-    }
-
-    pre,
-    /* override Prism style */
-    pre[class*="language-"] {
-      margin: 0;
-      padding: 0.2em 0.4em;
     }
   }
 }

@@ -18,6 +18,7 @@ export default async () => {
     'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
     'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
     'process.env.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
+    'process.env.HLJS_VERSION': JSON.stringify(await getVersion('highlight.js')),
     'process.env.KATEX_VERSION': JSON.stringify(await getVersion('katex')),
     'process.env.WEBFONTLOADER_VERSION': JSON.stringify(await getVersion('webfontloader')),
   };
@@ -67,8 +68,31 @@ export default async () => {
     },
     {
       input: 'src/index.ts',
+      external,
+      plugins: getRollupPlugins({
+        esm: true,
+        extensions: [
+          '.browser.ts',
+          ...defaultOptions.extensions,
+        ],
+        babelConfig: {
+          rootMode: 'upward',
+        },
+        replaceValues,
+      }),
+      output: {
+        format: 'esm',
+        file: `${DIST}/browser/index.mjs`,
+        name: 'markmap',
+        ...bundleOptions,
+      },
+    },
+    {
+      input: 'src/index.ts',
       external: [
         'katex',
+        'highlight.js',
+        'markmap-common',
       ],
       plugins: getRollupPlugins({
         esm: true,
@@ -87,32 +111,8 @@ export default async () => {
         name: 'markmap',
         globals: {
           katex: 'window.katex',
-        },
-        ...bundleOptions,
-      },
-    },
-    {
-      input: 'src/index.ts',
-      external: [
-        'katex',
-      ],
-      plugins: getRollupPlugins({
-        esm: true,
-        extensions: [
-          '.browser.ts',
-          ...defaultOptions.extensions,
-        ],
-        babelConfig: {
-          rootMode: 'upward',
-        },
-        replaceValues,
-      }),
-      output: {
-        format: 'esm',
-        file: `${DIST}/browser/index.mjs`,
-        name: 'markmap',
-        globals: {
-          katex: 'window.katex',
+          'highlight.js': 'window.hljs',
+          'markmap-common': 'markmap',
         },
         ...bundleOptions,
       },

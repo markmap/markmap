@@ -1,5 +1,7 @@
 import { buildJSItem, buildCSSItem } from 'markmap-common';
 
+export const name = 'prism';
+
 export function getConfig() {
   const preloadScripts = [
     `prismjs@${process.env.PRISM_VERSION}/components/prism-core.min.js`,

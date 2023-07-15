@@ -1,9 +1,21 @@
-import type { Remarkable } from 'remarkable';
-import remarkableKatex from 'remarkable-katex';
-import { noop, wrapFunction } from 'markmap-common';
+import hljs from 'highlight.js';
+import { buildCSSItem, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
-import { getConfig, name } from './katex.config';
 import { definePlugin } from './base';
+
+const name = 'hljs';
+
+function getConfig() {
+  const styles = [
+    `highlight.js@${process.env.HLJS_VERSION}/styles/default.css`,
+  ].map((path) => buildCSSItem(path));
+  return {
+    versions: {
+      hljs: process.env.HLJS_VERSION || '',
+    },
+    styles,
+  };
+}
 
 export default definePlugin(() => {
   const plugin = {
@@ -12,14 +24,13 @@ export default definePlugin(() => {
     transform(transformHooks: ITransformHooks) {
       let enableFeature = noop;
       transformHooks.parser.tap((md) => {
-        md.use(remarkableKatex);
-        md.renderer.rules.katex = wrapFunction(
-          md.renderer.rules.katex as Remarkable.Rule<Remarkable.ContentToken>,
-          (render, ...args) => {
+        md.set({
+          highlight: (str: string, language?: string) => {
             enableFeature();
-            return render(...args);
-          }
-        );
+            return hljs.highlightAuto(str, language ? [language] : undefined)
+              .value;
+          },
+        });
       });
       transformHooks.beforeParse.tap((_, context) => {
         enableFeature = () => {
@@ -28,7 +39,6 @@ export default definePlugin(() => {
       });
       return {
         styles: plugin.config.styles,
-        scripts: plugin.config.scripts,
       };
     },
   };
