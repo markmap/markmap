@@ -135,8 +135,8 @@ function startServer(paddingBottom: number) {
       .then((res) => res.json())
       .then((res) => {
         if (res.ts && res.ts > ts && res.result) {
-          const { root, frontmatter, contentLineOffset } = res.result;
-          offset = contentLineOffset;
+          let frontmatter: any;
+          ({ root, frontmatter, contentLineOffset: offset } = res.result);
           mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
           mm.setData(root);
           if (!ts) mm.fit();

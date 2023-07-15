@@ -113,13 +113,13 @@ export class Transformer {
     const stack = [root];
     let depth = 0;
     for (const token of tokens) {
+      const payload: IPureNode['payload'] = {};
+      if (token.lines) {
+        payload.lines = token.lines;
+      }
       let current = stack[stack.length - 1];
       if (token.type.endsWith('_open')) {
         const type = token.type.slice(0, -5);
-        const payload: IPureNode['payload'] = {};
-        if (token.lines) {
-          payload.lines = token.lines;
-        }
         if (type === 'heading') {
           depth = (token as Remarkable.HeadingOpenToken).hLevel;
           while (current?.depth >= depth) {
@@ -177,6 +177,7 @@ export class Transformer {
           depth: depth + 1,
           content: result,
           children: [],
+          payload,
         });
       } else {
         // ignore other nodes

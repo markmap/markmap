@@ -52,9 +52,19 @@ export function addToolbar(assets: IAssets): IAssets {
   };
 }
 
+function removeVersionString(part: string) {
+  return part.replace(/@.+$/, '');
+}
+
 export function localProvider(path: string) {
   const parts = path.split('/');
-  parts[0] = parts[0].replace(/@[\d.]+$/, '');
+  // xxx@0.0.0-alpha.0+aaaaaa
+  // @scope/xxx@0.0.0-alpha.0+aaaaaa
+  if (parts[0].startsWith('@')) {
+    parts[1] = removeVersionString(parts[1]);
+  } else {
+    parts[0] = removeVersionString(parts[0]);
+  }
   path = parts.join('/');
   return `/node_modules/${path}`;
 }
