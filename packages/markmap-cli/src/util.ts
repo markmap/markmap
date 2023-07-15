@@ -1,5 +1,8 @@
+import { join } from 'path';
+import { createRequire } from 'module';
+import { packageDirectory } from 'pkg-dir';
 import { buildCSSItem, buildJSItem, JSItem } from 'markmap-common';
-import { IAssets } from 'markmap-lib';
+import { IAssets, ITransformer } from 'markmap-lib';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
@@ -30,15 +33,22 @@ export interface IDevelopOptions {
   offline: boolean;
 }
 
-export function addToolbar(assets: IAssets): IAssets {
+export function addToolbar(
+  transformer: ITransformer,
+  assets: IAssets
+): IAssets {
   return {
     styles: [
       ...(assets.styles || []),
-      ...[TOOLBAR_CSS].map((path) => buildCSSItem(path)),
+      ...[TOOLBAR_CSS]
+        .map((path) => transformer.urlBuilder.getFullUrl(path))
+        .map((path) => buildCSSItem(path)),
     ],
     scripts: [
       ...(assets.scripts || []),
-      ...[TOOLBAR_JS].map((path) => buildJSItem(path)),
+      ...[TOOLBAR_JS]
+        .map((path) => transformer.urlBuilder.getFullUrl(path))
+        .map((path) => buildJSItem(path)),
       {
         type: 'iife',
         data: {
@@ -67,4 +77,27 @@ export function localProvider(path: string) {
   }
   path = parts.join('/');
   return `/node_modules/${path}`;
+}
+
+const require = createRequire(import.meta.url);
+
+async function doResolveFile(relpath: string) {
+  const parts = relpath.split('/');
+  const nameOffset = parts[0].startsWith('@') ? 2 : 1;
+  const name = parts.slice(0, nameOffset).join('/');
+  const filepath = parts.slice(nameOffset).join('/');
+  const mainPath = require.resolve(name);
+  const pkgDir = await packageDirectory({
+    cwd: mainPath,
+  });
+  if (!pkgDir) throw new Error(`File not found: ${relpath}`);
+  const realpath = join(pkgDir, filepath);
+  return realpath;
+}
+
+const cache: Record<string, Promise<string>> = {};
+
+export function resolveFile(relpath: string) {
+  cache[relpath] ||= doResolveFile(relpath);
+  return cache[relpath];
 }

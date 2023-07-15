@@ -1,5 +1,5 @@
 export * from './types';
-export * from './template';
+export * from './constants';
 export * from './transform';
 
 export const transformerVersions = {

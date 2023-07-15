@@ -1,4 +1,11 @@
-import { buildJSItem, buildCSSItem, loadCSS, loadJS } from 'markmap-common';
+import {
+  urlBuilder,
+  buildJSItem,
+  buildCSSItem,
+  loadCSS,
+  loadJS,
+} from 'markmap-common';
+import type { Transformer } from 'markmap-lib';
 import type { AutoLoaderOptions } from './types';
 
 const enabled: Record<string, boolean> = {};
@@ -16,30 +23,35 @@ const autoLoaderOptions: AutoLoaderOptions = {
   ...window.markmap?.autoLoader,
 };
 
-export const ready = Promise.all([
-  loadJS(
-    autoLoaderOptions.baseJs.map((item) =>
-      typeof item === 'string' ? buildJSItem(item) : item
-    )
-  ),
-  loadCSS(
-    autoLoaderOptions.baseCss.map((item) =>
-      typeof item === 'string' ? buildCSSItem(item) : item
-    )
-  ),
-]).then(() => {
+async function initialize() {
+  await urlBuilder.findFastestProvider();
+  await Promise.all([
+    loadJS(
+      autoLoaderOptions.baseJs.map((item) =>
+        typeof item === 'string'
+          ? buildJSItem(urlBuilder.getFullUrl(item))
+          : item
+      )
+    ),
+    loadCSS(
+      autoLoaderOptions.baseCss.map((item) =>
+        typeof item === 'string'
+          ? buildCSSItem(urlBuilder.getFullUrl(item))
+          : item
+      )
+    ),
+  ]);
   const { markmap } = window;
   const style = document.createElement('style');
   style.textContent = markmap.globalCSS;
   // Insert global CSS to body so it has higher priority than prism.css, etc.
   document.body.prepend(style);
   autoLoaderOptions.onReady?.();
-});
+}
 
-function transform(
-  transformer: import('markmap-lib').Transformer,
-  content: string
-) {
+export const ready = initialize();
+
+function transform(transformer: Transformer, content: string) {
   const result = transformer.transform(content);
   const keys = Object.keys(result.features).filter((key) => !enabled[key]);
   keys.forEach((key) => {

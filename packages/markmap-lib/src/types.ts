@@ -1,5 +1,6 @@
 import type { Remarkable } from 'remarkable';
 import {
+  UrlBuilder,
   CSSItem,
   JSItem,
   IPureNode,
@@ -11,6 +12,7 @@ import {
 type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
 
 export interface ITransformHooks {
+  transformer: ITransformer;
   /**
    * Tapped once when the parser is created.
    */
@@ -52,6 +54,10 @@ export interface IMarkmapCreateOptions {
 
 export interface IFeatures {
   [key: string]: boolean;
+}
+
+export interface ITransformer {
+  urlBuilder: UrlBuilder;
 }
 
 export interface ITransformContext {

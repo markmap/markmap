@@ -1,5 +1,4 @@
 import { hm } from '@gera2ld/jsx-dom';
-import { cdnUrl, getFastestProvider, providers } from 'npm2url';
 import { JSItem, JSScriptItem, CSSItem, CSSStylesheetItem } from './types';
 import { memoize } from './util';
 
@@ -79,46 +78,20 @@ export function loadCSS(items: CSSItem[]): void {
   }
 }
 
-let provider = 'jsdelivr';
-
-export async function findFastestProvider() {
-  provider = await getFastestProvider();
-  return provider;
-}
-
-export function setProvider(name: string, factory?: (path: string) => string) {
-  if (factory) {
-    providers[name] = factory;
-  }
-  provider = name;
-  return provider;
-}
-
-export function getFullUrl(path: string, overrideProvider = provider) {
-  if (path.includes('://')) return path;
-  return cdnUrl(overrideProvider, path);
-}
-
-export function buildJSItem(
-  path: string,
-  overrideProvider?: string
-): JSScriptItem {
+export function buildJSItem(path: string): JSScriptItem {
   return {
     type: 'script',
     data: {
-      src: getFullUrl(path, overrideProvider),
+      src: path,
     },
   };
 }
 
-export function buildCSSItem(
-  path: string,
-  overrideProvider?: string
-): CSSStylesheetItem {
+export function buildCSSItem(path: string): CSSStylesheetItem {
   return {
     type: 'stylesheet',
     data: {
-      href: getFullUrl(path, overrideProvider),
+      href: path,
     },
   };
 }

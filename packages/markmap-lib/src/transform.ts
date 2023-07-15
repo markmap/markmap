@@ -1,5 +1,16 @@
 import { Remarkable } from 'remarkable';
-import { IPureNode, CSSItem, JSItem, wrapFunction } from 'markmap-common';
+import {
+  UrlBuilder,
+  JSItem,
+  CSSItem,
+  IMarkmapOptions,
+  IMarkmapJSONOptions,
+  persistJS,
+  persistCSS,
+  buildJSItem,
+  IPureNode,
+  wrapFunction,
+} from 'markmap-common';
 import {
   ITransformResult,
   ITransformPlugin,
@@ -7,8 +18,11 @@ import {
   ITransformHooks,
   IFeatures,
   ITransformContext,
+  ITransformer,
 } from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
+import { template, baseJsPaths } from './constants';
+import { patchCSSItem, patchJSItem } from './plugins/util';
 
 export { builtInPlugins };
 
@@ -61,19 +75,21 @@ function resetDepth(node: IPureNode, depth = 0) {
   });
 }
 
-export class Transformer {
+export class Transformer implements ITransformer {
   hooks: ITransformHooks;
 
   md: Remarkable;
 
   assetsMap: Record<string, IAssets> = {};
 
+  urlBuilder = new UrlBuilder();
+
   plugins: ITransformPlugin[];
 
   constructor(
     plugins: Array<ITransformPlugin | (() => ITransformPlugin)> = builtInPlugins
   ) {
-    this.hooks = createTransformHooks();
+    this.hooks = createTransformHooks(this);
     this.plugins = plugins.map((plugin) =>
       typeof plugin === 'function' ? plugin() : plugin
     );
@@ -212,7 +228,10 @@ export class Transformer {
         if (assets.scripts) scripts.push(...assets.scripts);
       }
     }
-    return { styles, scripts };
+    return {
+      styles: styles.map((item) => patchCSSItem(this, item)),
+      scripts: scripts.map((item) => patchJSItem(this, item)),
+    };
   }
 
   /**
@@ -223,5 +242,66 @@ export class Transformer {
       .map((plugin) => plugin.name)
       .filter((name) => features[name]);
     return this.getAssets(keys);
+  }
+
+  fillTemplate(
+    root: IPureNode | null,
+    assets: IAssets,
+    extra?: {
+      baseJs?: JSItem[];
+      jsonOptions?: IMarkmapJSONOptions;
+      getOptions?: (
+        jsonOptions: IMarkmapJSONOptions
+      ) => Partial<IMarkmapOptions>;
+    }
+  ): string {
+    extra = {
+      ...extra,
+    };
+    extra.baseJs ??= baseJsPaths
+      .map((path) => this.urlBuilder.getFullUrl(path))
+      .map((path) => buildJSItem(path));
+    const { scripts, styles } = assets;
+    const cssList = [...(styles ? persistCSS(styles) : [])];
+    const context = {
+      getMarkmap: () => window.markmap,
+      getOptions: extra.getOptions,
+      jsonOptions: extra.jsonOptions,
+      root,
+    };
+    const jsList = [
+      ...persistJS(
+        [
+          ...extra.baseJs,
+          ...(scripts || []),
+          {
+            type: 'iife',
+            data: {
+              fn: (
+                getMarkmap: (typeof context)['getMarkmap'],
+                getOptions: (typeof context)['getOptions'],
+                root: (typeof context)['root'],
+                jsonOptions: IMarkmapJSONOptions
+              ) => {
+                const markmap = getMarkmap();
+                window.mm = markmap.Markmap.create(
+                  'svg#mindmap',
+                  (getOptions || markmap.deriveOptions)(jsonOptions),
+                  root
+                );
+              },
+              getParams: ({ getMarkmap, getOptions, root, jsonOptions }) => {
+                return [getMarkmap, getOptions, root, jsonOptions];
+              },
+            },
+          } as JSItem,
+        ],
+        context
+      ),
+    ];
+    const html = template
+      .replace('<!--CSS-->', () => cssList.join(''))
+      .replace('<!--JS-->', () => jsList.join(''));
+    return html;
   }
 }

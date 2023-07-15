@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-const updateNotifier = require('update-notifier');
-const { main } = require('..');
-const pkg = require('../package.json');
+import { main } from '../dist/index.js';
 
-const notifier = updateNotifier({ pkg });
-notifier.notify();
-main(pkg.version);
+main().catch(err => {
+  console.error(err);
+  process.exitCode = 1;
+});

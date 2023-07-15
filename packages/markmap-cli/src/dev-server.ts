@@ -1,4 +1,5 @@
-import { promises as fs, createReadStream } from 'fs';
+import { createReadStream } from 'fs';
+import { readFile } from 'fs/promises';
 import { extname } from 'path';
 import { EventEmitter } from 'events';
 import { AddressInfo } from 'net';
@@ -6,9 +7,14 @@ import http from 'http';
 import Koa from 'koa';
 import open from 'open';
 import chokidar from 'chokidar';
-import { Transformer, fillTemplate } from 'markmap-lib';
-import { INode, setProvider, defer, IDeferred } from 'markmap-common';
-import { IDevelopOptions, addToolbar, localProvider } from './util';
+import { Transformer } from 'markmap-lib';
+import { INode, defer, IDeferred } from 'markmap-common';
+import {
+  IDevelopOptions,
+  addToolbar,
+  localProvider,
+  resolveFile,
+} from './util';
 
 interface IFileUpdate {
   ts?: number;
@@ -113,7 +119,7 @@ class FileSystemProvider
   }
 
   private async update() {
-    const content = await fs.readFile(this.fileName, 'utf8');
+    const content = await readFile(this.fileName, 'utf8');
     this.setContent(content);
   }
 
@@ -176,8 +182,8 @@ function setUpServer(
   options: IDevelopOptions
 ) {
   let assets = transformer.getAssets();
-  if (options.toolbar) assets = addToolbar(assets);
-  const html = `${fillTemplate(
+  if (options.toolbar) assets = addToolbar(transformer, assets);
+  const html = `${transformer.fillTemplate(
     null,
     assets
   )}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
@@ -197,12 +203,12 @@ function setUpServer(
       if (ctx.path.startsWith('/node_modules/')) {
         const relpath = ctx.path.slice(14);
         try {
-          const realpath = require.resolve(relpath);
+          const realpath = await resolveFile(relpath);
           ctx.type = extname(relpath);
           ctx.body = createReadStream(realpath);
           return;
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error(err);
         }
       }
       await next();
@@ -237,8 +243,9 @@ export async function develop(
   fileName: string | undefined,
   options: IDevelopOptions
 ) {
-  setProvider('local', localProvider);
   const transformer = new Transformer();
+  transformer.urlBuilder.setProvider('local', localProvider);
+  transformer.urlBuilder.provider = 'local';
   const provider = fileName
     ? new FileSystemProvider(fileName)
     : new BufferContentProvider();

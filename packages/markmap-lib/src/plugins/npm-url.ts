@@ -1,4 +1,3 @@
-import { getFullUrl } from 'markmap-common';
 import { definePlugin } from './base';
 import { ITransformHooks } from '../types';
 
@@ -16,7 +15,9 @@ export default definePlugin({
           if (value) {
             markmap[key] = value.map((path) => {
               if (path.startsWith('npm:')) {
-                return getFullUrl(path.slice(4));
+                return transformHooks.transformer.urlBuilder.getFullUrl(
+                  path.slice(4)
+                );
               }
               return path;
             });
