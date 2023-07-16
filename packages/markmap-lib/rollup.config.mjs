@@ -92,7 +92,6 @@ export default async () => {
       external: [
         'katex',
         'highlight.js',
-        'markmap-common',
       ],
       plugins: getRollupPlugins({
         esm: true,
@@ -112,7 +111,6 @@ export default async () => {
         globals: {
           katex: 'window.katex',
           'highlight.js': 'window.hljs',
-          'markmap-common': 'markmap',
         },
         ...bundleOptions,
       },
