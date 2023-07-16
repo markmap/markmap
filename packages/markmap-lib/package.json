@@ -8,7 +8,8 @@
     "dev": "rollup -wc rollup.conf.js",
     "clean": "del-cli dist types",
     "build:types": "tsc",
-    "build:js": "rollup -c"
+    "build:js": "rollup -c",
+    "test": "jest test"
   },
   "publishConfig": {
     "access": "public",
@@ -62,5 +63,15 @@
   },
   "peerDependencies": {
     "markmap-common": "*"
+  },
+  "jest": {
+    "transform": {
+      "\\.ts$": [
+        "babel-jest",
+        {
+          "rootMode": "upward"
+        }
+      ]
+    }
   }
 }
