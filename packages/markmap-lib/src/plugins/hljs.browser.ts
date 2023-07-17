@@ -1,20 +1,37 @@
-import hljs from 'highlight.js';
-import { noop } from 'markmap-common';
+import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
+import { patchJSItem } from './util';
 import { name, config } from './hljs.config';
 
 const plugin = definePlugin({
   name,
   config,
   transform(transformHooks: ITransformHooks) {
+    let loading: Promise<void>;
+    const preloadScripts =
+      plugin.config?.preloadScripts?.map((item) =>
+        patchJSItem(transformHooks.transformer, item)
+      ) || [];
+    const autoload = () => {
+      loading ||= loadJS(preloadScripts);
+      return loading;
+    };
+
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.set({
         highlight: (str: string, language?: string) => {
           enableFeature();
-          return hljs.highlightAuto(str, language ? [language] : undefined)
-            .value;
+          const { hljs } = window;
+          if (hljs) {
+            return hljs.highlightAuto(str, language ? [language] : undefined)
+              .value;
+          }
+          autoload().then(() => {
+            transformHooks.retransform.call();
+          });
+          return str;
         },
       });
     });

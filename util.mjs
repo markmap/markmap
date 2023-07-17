@@ -3,6 +3,9 @@ import { createRequire } from 'module';
 import { readPackageUp } from 'read-pkg-up';
 
 export function versionLoader(source) {
+  /**
+   * @param {string} module must be a resolvable path
+   */
   return async function getVersion(module) {
     const require = createRequire(source);
     const cwd = dirname(require.resolve(module));

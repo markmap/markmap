@@ -219,7 +219,7 @@ exports[`custom url provider 1`] = `
     },
     {
       "data": {
-        "href": "/local/highlight.js@undefined/styles/default.css",
+        "href": "/local/@highlightjs/cdn-assets@undefined/styles/default.min.css",
       },
       "type": "stylesheet",
     },
@@ -254,7 +254,7 @@ exports[`plugins 1`] = `
     },
     {
       "data": {
-        "href": "https://cdn.jsdelivr.net/npm/highlight.js@undefined/styles/default.css",
+        "href": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@undefined/styles/default.min.css",
       },
       "type": "stylesheet",
     },

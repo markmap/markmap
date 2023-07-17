@@ -141,6 +141,9 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1
     devDependencies:
+      '@highlightjs/cdn-assets':
+        specifier: ^11.8.0
+        version: 11.8.0
       '@types/remarkable':
         specifier: ^2.0.3
         version: 2.0.3
@@ -2002,6 +2005,11 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - ts-node
+    dev: true
+
+  /@highlightjs/cdn-assets@11.8.0:
+    resolution: {integrity: sha512-gkfCH4xGBGY9xPaW+t26WpgnfpDhNhB5RtVUDLx3MHkC7ZrmKeIxXsfjzOiuOnEgRk+vydlY6XeOeglh+eVhyg==}
+    engines: {node: '>=12.0.0'}
     dev: true
 
   /@humanwhocodes/config-array@0.11.10:

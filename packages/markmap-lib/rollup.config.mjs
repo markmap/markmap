@@ -18,7 +18,7 @@ export default async () => {
     'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
     'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
     'process.env.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
-    'process.env.HLJS_VERSION': JSON.stringify(await getVersion('highlight.js')),
+    'process.env.HLJS_VERSION': JSON.stringify(await getVersion('@highlightjs/cdn-assets/package.json')),
     'process.env.KATEX_VERSION': JSON.stringify(await getVersion('katex')),
     'process.env.WEBFONTLOADER_VERSION': JSON.stringify(await getVersion('webfontloader')),
   };

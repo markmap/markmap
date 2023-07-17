@@ -47,6 +47,7 @@
     "url": "https://github.com/markmap/markmap/issues"
   },
   "devDependencies": {
+    "@highlightjs/cdn-assets": "^11.8.0",
     "@types/remarkable": "^2.0.3",
     "markmap-common": "workspace:*",
     "markmap-view": "workspace:*",
