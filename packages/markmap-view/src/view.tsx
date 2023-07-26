@@ -209,7 +209,7 @@ export class Markmap {
 
   handleClick = (e: MouseEvent, d: FlextreeNode<INode>) => {
     let recursive = this.options.toggleRecursively;
-    if (e.ctrlKey) recursive = !recursive;
+    if (isMacintosh ? e.metaKey : e.ctrlKey) recursive = !recursive;
     this.toggleNode(d.data, recursive);
   };
 
