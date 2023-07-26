@@ -114,8 +114,8 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
       npm2url:
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.2.1
+        version: 0.2.1
 
   packages/markmap-lib:
     dependencies:
@@ -8419,8 +8419,8 @@ packages:
       path-key: 4.0.0
     dev: false
 
-  /npm2url@0.2.0:
-    resolution: {integrity: sha512-Zi5Bgsf40i6XziCZEbFfraAiQNIa8TqZNjx0GzsHZ0br3e9rxbVllYvAIdUkOs1nPx6DPqFWakTbY6dINUz81w==}
+  /npm2url@0.2.1:
+    resolution: {integrity: sha512-Ls7mMyud1Kk0EisqsTt2TPtM7gLRvgmvDxOg3FPI5zjfhQ+ZFNBXX2K9VT7vo+HqUsz/uCiIxkcO0SvIuneVug==}
     dev: false
 
   /npmlog@6.0.2:

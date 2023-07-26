@@ -73,7 +73,11 @@ export async function createMarkmap(
     transformer.urlBuilder.setProvider('local', localProvider);
     transformer.urlBuilder.provider = 'local';
   } else {
-    await transformer.urlBuilder.findFastestProvider();
+    try {
+      await transformer.urlBuilder.findFastestProvider();
+    } catch {
+      // ignore
+    }
   }
   const { root, features, frontmatter } = transformer.transform(
     options.content || ''

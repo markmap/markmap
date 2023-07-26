@@ -24,7 +24,11 @@ const autoLoaderOptions: AutoLoaderOptions = {
 };
 
 async function initialize() {
-  await urlBuilder.findFastestProvider();
+  try {
+    await urlBuilder.findFastestProvider();
+  } catch {
+    // ignore
+  }
   await Promise.all([
     loadJS(
       autoLoaderOptions.baseJs.map((item) =>
