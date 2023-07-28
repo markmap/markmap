@@ -8,4 +8,5 @@ export interface AutoLoaderOptions {
   baseCss: (string | CSSItem)[];
   manual: boolean;
   toolbar: boolean;
+  provider?: string | ((path: string) => string);
 }

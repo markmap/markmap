@@ -24,10 +24,19 @@ const autoLoaderOptions: AutoLoaderOptions = {
 };
 
 async function initialize() {
-  try {
-    await urlBuilder.findFastestProvider();
-  } catch {
-    // ignore
+  if (typeof autoLoaderOptions.provider === 'function') {
+    urlBuilder.setProvider(
+      (urlBuilder.provider = 'autoLoader'),
+      autoLoaderOptions.provider
+    );
+  } else if (typeof autoLoaderOptions.provider === 'string') {
+    urlBuilder.provider = autoLoaderOptions.provider;
+  } else {
+    try {
+      await urlBuilder.findFastestProvider();
+    } catch {
+      // ignore
+    }
   }
   await Promise.all([
     loadJS(
@@ -81,6 +90,7 @@ export function render(el: HTMLElement) {
     .join('\n')
     .trim();
   const transformer = new Transformer(autoLoaderOptions.transformPlugins);
+  transformer.urlBuilder = urlBuilder;
   el.innerHTML = '<svg></svg>';
   const svg = el.firstChild as SVGElement;
   const mm = Markmap.create(svg, { embedGlobalCSS: false });
