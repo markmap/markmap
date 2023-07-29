@@ -11,8 +11,13 @@
     display: inline-block;
 
     > div {
+      /* first-child for line wrapping, last-child for max-width detection */
       &:last-child {
-        white-space: nowrap;
+        &,
+        /* override base CSS */
+        & * {
+          white-space: nowrap;
+        }
       }
     }
   }
