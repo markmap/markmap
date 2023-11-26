@@ -17,7 +17,7 @@ const plugin = definePlugin({
         (render, ...args) => {
           enableFeature();
           return render(...args);
-        }
+        },
       );
     });
     transformHooks.beforeParse.tap((_, context) => {

@@ -6,11 +6,11 @@ const preloadScripts = [
   `katex@${process.env.KATEX_VERSION}/dist/katex.min.js`,
 ].map((path) => buildJSItem(path));
 const webfontloader = buildJSItem(
-  `webfontloader@${process.env.WEBFONTLOADER_VERSION}/webfontloader.js`
+  `webfontloader@${process.env.WEBFONTLOADER_VERSION}/webfontloader.js`,
 );
 webfontloader.data.defer = true;
 const styles = [`katex@${process.env.KATEX_VERSION}/dist/katex.min.css`].map(
-  (path) => buildCSSItem(path)
+  (path) => buildCSSItem(path),
 );
 export const config = {
   versions: {

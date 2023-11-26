@@ -16,7 +16,7 @@ export default definePlugin({
             markmap[key] = value.map((path) => {
               if (path.startsWith('npm:')) {
                 return transformHooks.transformer.urlBuilder.getFullUrl(
-                  path.slice(4)
+                  path.slice(4),
                 );
               }
               return path;

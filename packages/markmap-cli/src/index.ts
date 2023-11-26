@@ -44,8 +44,8 @@ async function inlineAssets(assets: IAssets): Promise<IAssets> {
                   textContent: await loadFile(item.data.src),
                 },
               }
-            : item
-      )
+            : item,
+      ),
     ),
     Promise.all(
       (assets.styles || []).map(
@@ -55,8 +55,8 @@ async function inlineAssets(assets: IAssets): Promise<IAssets> {
                 type: 'style',
                 data: await loadFile(item.data.href),
               }
-            : item
-      )
+            : item,
+      ),
     ),
   ]);
   return {
@@ -66,7 +66,7 @@ async function inlineAssets(assets: IAssets): Promise<IAssets> {
 }
 
 export async function createMarkmap(
-  options: IMarkmapCreateOptions & IDevelopOptions
+  options: IMarkmapCreateOptions & IDevelopOptions,
 ): Promise<void> {
   const transformer = new Transformer();
   if (options.offline) {
@@ -80,7 +80,7 @@ export async function createMarkmap(
     }
   }
   const { root, features, frontmatter } = transformer.transform(
-    options.content || ''
+    options.content || '',
   );
   let assets = transformer.getUsedAssets(features);
   assets = {
@@ -128,11 +128,11 @@ export async function main() {
     .option('-o, --output <output>', 'specify filename of the output HTML')
     .option(
       '--offline',
-      'Inline all assets to allow the generated HTML to work offline'
+      'Inline all assets to allow the generated HTML to work offline',
     )
     .option(
       '-w, --watch',
-      'watch the input file and update output on the fly, note that this feature is for development only'
+      'watch the input file and update output on the fly, note that this feature is for development only',
     )
     .action(async (input, cmd) => {
       const content = await readFile(input, 'utf8');

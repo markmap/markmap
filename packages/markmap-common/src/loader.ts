@@ -8,7 +8,7 @@ const memoizedPreloadJS = memoize((url: string) => {
       rel: 'preload',
       as: 'script',
       href: url,
-    })
+    }),
   );
 });
 
@@ -26,7 +26,7 @@ async function loadJSItem(item: JSItem, context: unknown): Promise<void> {
             ...item.data,
             onLoad: resolve,
             onError: reject,
-          })
+          }),
         );
         if (!src) {
           // Run inline script synchronously
@@ -56,14 +56,14 @@ function loadCSSItem(item: CSSItem): void {
     document.head.append(
       hm('style', {
         textContent: item.data,
-      })
+      }),
     );
   } else if (item.type === 'stylesheet') {
     document.head.append(
       hm('link', {
         rel: 'stylesheet',
         ...item.data,
-      })
+      }),
     );
   }
 }

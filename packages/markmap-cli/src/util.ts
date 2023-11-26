@@ -35,7 +35,7 @@ export interface IDevelopOptions {
 
 export function addToolbar(
   transformer: ITransformer,
-  assets: IAssets
+  assets: IAssets,
 ): IAssets {
   return {
     styles: [

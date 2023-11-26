@@ -11,7 +11,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item)
+        patchJSItem(transformHooks.transformer, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);
@@ -20,7 +20,7 @@ const plugin = definePlugin({
 
     function loadLanguageAndRefresh(
       lang: string,
-      transformHooks: ITransformHooks
+      transformHooks: ITransformHooks,
     ) {
       autoload().then(() => {
         window.Prism.plugins.autoloader.loadLanguages([lang], () => {

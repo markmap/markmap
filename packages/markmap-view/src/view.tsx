@@ -122,7 +122,7 @@ export class Markmap {
 
   constructor(
     svg: string | SVGElement | ID3SVGElement,
-    opts?: Partial<IMarkmapOptions>
+    opts?: Partial<IMarkmapOptions>,
   ) {
     this.viewHooks = createViewHooks();
     this.svg = (svg as ID3SVGElement).datum
@@ -150,7 +150,7 @@ export class Markmap {
     this.revokers.push(
       refreshHook.tap(() => {
         this.setData();
-      })
+      }),
     );
   }
 
@@ -166,7 +166,7 @@ export class Markmap {
   updateStyle(): void {
     this.svg.attr(
       'class',
-      addClass(this.svg.attr('class'), 'markmap', this.state.id)
+      addClass(this.svg.attr('class'), 'markmap', this.state.id),
     );
     const style = this.getStyleContent();
     this.styleNode.text(style);
@@ -182,7 +182,7 @@ export class Markmap {
     const transform = zoomTransform(this.svg.node()!);
     const newTransform = transform.translate(
       -e.deltaX / transform.k,
-      -e.deltaY / transform.k
+      -e.deltaY / transform.k,
     );
     this.svg.call(this.zoom.transform, newTransform);
   };
@@ -218,10 +218,10 @@ export class Markmap {
     const { color, nodeMinHeight, maxWidth, initialExpandLevel } = this.options;
     const { id } = this.state;
     const container = mountDom(
-      <div className={`markmap-container markmap ${id}-g`}></div>
+      <div className={`markmap-container markmap ${id}-g`}></div>,
     ) as HTMLElement;
     const style = mountDom(
-      <style>{[this.getStyleContent(), containerCSS].join('\n')}</style>
+      <style>{[this.getStyleContent(), containerCSS].join('\n')}</style>,
     ) as HTMLElement;
     document.body.append(container, style);
     const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
@@ -233,7 +233,7 @@ export class Markmap {
       const group = mountDom(
         <div className="markmap-foreign" style={groupStyle}>
           <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
-        </div>
+        </div>,
       );
       container.append(group);
       item.state = {
@@ -260,7 +260,7 @@ export class Markmap {
     });
 
     const nodes = Array.from(container.childNodes).map(
-      (group) => group.firstChild as HTMLElement
+      (group) => group.firstChild as HTMLElement,
     );
     this.viewHooks.transformHtml.call(this, nodes);
     // Clone the rendered HTML and set `white-space: nowrap` to it to detect its max-width.
@@ -356,7 +356,7 @@ export class Markmap {
     // Update the nodes
     const node = this.g
       .selectAll<SVGGElement, FlextreeNode<INode>>(
-        childSelector<SVGGElement>('g')
+        childSelector<SVGGElement>('g'),
       )
       .data(descendants, (d) => d.data.state.key);
     const nodeEnter = node
@@ -369,7 +369,7 @@ export class Markmap {
         (d) =>
           `translate(${y0 + origin.ySize - d.ySize},${
             x0 + origin.xSize / 2 - d.xSize
-          })`
+          })`,
       );
 
     const nodeExit = this.transition(node.exit<FlextreeNode<INode>>());
@@ -384,7 +384,7 @@ export class Markmap {
         (d) =>
           `translate(${origin.y + origin.ySize - d.ySize},${
             origin.x + origin.xSize / 2 - d.xSize
-          })`
+          })`,
       )
       .remove();
 
@@ -393,21 +393,21 @@ export class Markmap {
       .attr('class', (d) =>
         ['markmap-node', d.data.payload?.fold && 'markmap-fold']
           .filter(Boolean)
-          .join(' ')
+          .join(' '),
       );
     this.transition(nodeMerge).attr(
       'transform',
-      (d) => `translate(${d.y},${d.x - d.xSize / 2})`
+      (d) => `translate(${d.y},${d.x - d.xSize / 2})`,
     );
 
     // Update lines under the content
     const line = nodeMerge
       .selectAll<SVGLineElement, FlextreeNode<INode>>(
-        childSelector<SVGLineElement>('line')
+        childSelector<SVGLineElement>('line'),
       )
       .data(
         (d) => [d],
-        (d) => d.data.state.key
+        (d) => d.data.state.key,
       )
       .join(
         (enter) => {
@@ -417,7 +417,7 @@ export class Markmap {
             .attr('x2', (d) => d.ySize - spacingHorizontal);
         },
         (update) => update,
-        (exit) => exit.remove()
+        (exit) => exit.remove(),
       );
     this.transition(line)
       .attr('x1', -1)
@@ -430,11 +430,11 @@ export class Markmap {
     // Circle to link to children of the node
     const circle = nodeMerge
       .selectAll<SVGCircleElement, FlextreeNode<INode>>(
-        childSelector<SVGCircleElement>('circle')
+        childSelector<SVGCircleElement>('circle'),
       )
       .data(
         (d) => (d.data.children?.length ? [d] : []),
-        (d) => d.data.state.key
+        (d) => d.data.state.key,
       )
       .join(
         (enter) => {
@@ -448,7 +448,7 @@ export class Markmap {
             .on('mousedown', stopPropagation);
         },
         (update) => update,
-        (exit) => exit.remove()
+        (exit) => exit.remove(),
       );
     this.transition(circle)
       .attr('r', 6)
@@ -456,16 +456,16 @@ export class Markmap {
       .attr('cy', (d) => d.xSize)
       .attr('stroke', (d) => color(d.data))
       .attr('fill', (d) =>
-        d.data.payload?.fold && d.data.children ? color(d.data) : '#fff'
+        d.data.payload?.fold && d.data.children ? color(d.data) : '#fff',
       );
 
     const foreignObject = nodeMerge
       .selectAll<SVGForeignObjectElement, FlextreeNode<INode>>(
-        childSelector<SVGForeignObjectElement>('foreignObject')
+        childSelector<SVGForeignObjectElement>('foreignObject'),
       )
       .data(
         (d) => [d],
-        (d) => d.data.state.key
+        (d) => d.data.state.key,
       )
       .join(
         (enter) => {
@@ -487,10 +487,10 @@ export class Markmap {
           return fo;
         },
         (update) => update,
-        (exit) => exit.remove()
+        (exit) => exit.remove(),
       )
       .attr('width', (d) =>
-        Math.max(0, d.ySize - spacingHorizontal - paddingX * 2)
+        Math.max(0, d.ySize - spacingHorizontal - paddingX * 2),
       )
       .attr('height', (d) => d.xSize);
     this.transition(foreignObject).style('opacity', 1);
@@ -498,7 +498,7 @@ export class Markmap {
     // Update the links
     const path = this.g
       .selectAll<SVGPathElement, d3.HierarchyLink<INode>>(
-        childSelector<SVGPathElement>('path')
+        childSelector<SVGPathElement>('path'),
       )
       .data(links, (d) => d.target.data.state.key)
       .join(
@@ -523,7 +523,7 @@ export class Markmap {
           return this.transition(exit)
             .attr('d', linkShape({ source, target: source }))
             .remove();
-        }
+        },
       );
     this.transition(path)
       .attr('stroke', (d) => color(d.target.data))
@@ -549,7 +549,7 @@ export class Markmap {
   }
 
   transition<T extends d3.BaseType, U, P extends d3.BaseType, Q>(
-    sel: d3.Selection<T, U, P, Q>
+    sel: d3.Selection<T, U, P, Q>,
   ): d3.Transition<T, U, P, Q> {
     const { duration } = this.options;
     return sel.transition().duration(duration);
@@ -569,12 +569,12 @@ export class Markmap {
     const scale = Math.min(
       (offsetWidth / naturalWidth) * fitRatio,
       (offsetHeight / naturalHeight) * fitRatio,
-      2
+      2,
     );
     const initialZoom = zoomIdentity
       .translate(
         (offsetWidth - naturalWidth * scale) / 2 - minY * scale,
-        (offsetHeight - naturalHeight * scale) / 2 - minX * scale
+        (offsetHeight - naturalHeight * scale) / 2 - minX * scale,
       )
       .scale(scale);
     return this.transition(this.svg)
@@ -588,12 +588,12 @@ export class Markmap {
    */
   async ensureView(
     node: INode,
-    padding: Partial<IPadding> | undefined
+    padding: Partial<IPadding> | undefined,
   ): Promise<void> {
     let itemData: FlextreeNode<INode> | undefined;
     this.g
       .selectAll<SVGGElement, FlextreeNode<INode>>(
-        childSelector<SVGGElement>('g')
+        childSelector<SVGGElement>('g'),
       )
       .each(function walk(d) {
         if (d.data === node) {
@@ -647,7 +647,7 @@ export class Markmap {
     const newTransform = transform
       .translate(
         ((halfWidth - transform.x) * (1 - scale)) / transform.k,
-        ((halfHeight - transform.y) * (1 - scale)) / transform.k
+        ((halfHeight - transform.y) * (1 - scale)) / transform.k,
       )
       .scale(scale);
     return this.transition(this.svg)
@@ -667,7 +667,7 @@ export class Markmap {
   static create(
     svg: string | SVGElement | ID3SVGElement,
     opts?: Partial<IMarkmapOptions>,
-    data: IPureNode | null = null
+    data: IPureNode | null = null,
   ): Markmap {
     const mm = new Markmap(svg, opts);
     if (data) {

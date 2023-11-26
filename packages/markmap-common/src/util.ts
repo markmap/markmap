@@ -13,7 +13,7 @@ export function noop(): void {
 
 export function walkTree<T extends { children?: T[] }>(
   tree: T,
-  callback: (item: T, next: () => void, parent?: T) => void
+  callback: (item: T, next: () => void, parent?: T) => void,
 ): void {
   const walk = (item: T, parent?: T): void =>
     callback(
@@ -23,7 +23,7 @@ export function walkTree<T extends { children?: T[] }>(
           walk(child, item);
         });
       },
-      parent
+      parent,
     );
   walk(tree);
 }
@@ -37,7 +37,7 @@ export function addClass(className: string, ...rest: string[]): string {
 }
 
 export function childSelector<T extends Element>(
-  filter?: string | ((el: T) => boolean)
+  filter?: string | ((el: T) => boolean),
 ): () => T[] {
   if (typeof filter === 'string') {
     const tagName = filter;
@@ -53,7 +53,7 @@ export function childSelector<T extends Element>(
 
 export function wrapFunction<T extends unknown[], U>(
   fn: (...args: T) => U,
-  wrapper: (fn: (...args: T) => U, ...args: T) => U
+  wrapper: (fn: (...args: T) => U, ...args: T) => U,
 ) {
   return (...args: T) => wrapper(fn, ...args);
 }

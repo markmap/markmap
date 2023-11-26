@@ -27,7 +27,7 @@ async function initialize() {
   if (typeof autoLoaderOptions.provider === 'function') {
     urlBuilder.setProvider(
       (urlBuilder.provider = 'autoLoader'),
-      autoLoaderOptions.provider
+      autoLoaderOptions.provider,
     );
   } else if (typeof autoLoaderOptions.provider === 'string') {
     urlBuilder.provider = autoLoaderOptions.provider;
@@ -43,15 +43,15 @@ async function initialize() {
       autoLoaderOptions.baseJs.map((item) =>
         typeof item === 'string'
           ? buildJSItem(urlBuilder.getFullUrl(item))
-          : item
-      )
+          : item,
+      ),
     ),
     loadCSS(
       autoLoaderOptions.baseCss.map((item) =>
         typeof item === 'string'
           ? buildCSSItem(urlBuilder.getFullUrl(item))
-          : item
-      )
+          : item,
+      ),
     ),
   ]);
   const { markmap } = window;

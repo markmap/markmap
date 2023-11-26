@@ -19,7 +19,7 @@ export default definePlugin({
         frontmatter = yaml.load(raw);
         if (frontmatter?.markmap) {
           frontmatter.markmap = normalizeMarkmapJsonOptions(
-            frontmatter.markmap
+            frontmatter.markmap,
           );
         }
       } catch {

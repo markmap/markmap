@@ -100,7 +100,7 @@ export class Toolbar {
       id: 'fit',
       title: 'Fit window size',
       content: Toolbar.icon(
-        'M4 7h2v-2h2v4h-4zM4 13h2v2h2v-4h-4zM16 7h-2v-2h-2v4h4zM16 13h-2v2h-2v-4h4z'
+        'M4 7h2v-2h2v4h-4zM4 13h2v2h2v-4h-4zM16 7h-2v-2h-2v4h4zM16 13h-2v2h-2v-4h4z',
       ),
       onClick: this.getHandler((mm) => mm.fit()),
     });
@@ -110,7 +110,7 @@ export class Toolbar {
       content: Toolbar.icon('M16 4h-12v12h12v-8h-8v4h2v-2h4v4h-8v-8h10z'),
       onClick: (e) => {
         const button = (e.target as HTMLDivElement).closest<HTMLDivElement>(
-          `.${clsToolbarItem}`
+          `.${clsToolbarItem}`,
         );
         const active = button?.classList.toggle(clsActive);
         this.markmap?.setOptions({
@@ -165,8 +165,8 @@ export class Toolbar {
         <>
           {this.showBrand && renderBrand()}
           {items.map(renderItem)}
-        </>
-      )
+        </>,
+      ),
     );
     return this.el;
   }

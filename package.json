@@ -5,14 +5,13 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx": "^7.22.5",
-    "@gera2ld/plaid": "~2.5.9",
-    "@gera2ld/plaid-common-ts": "~2.5.9",
-    "@gera2ld/plaid-rollup": "~2.5.9",
-    "@gera2ld/plaid-test": "~2.5.9",
-    "del-cli": "^5.0.0",
+    "@babel/plugin-transform-react-jsx": "^7.23.4",
+    "@gera2ld/plaid": "~2.6.0",
+    "@gera2ld/plaid-rollup": "~2.6.0",
+    "@gera2ld/plaid-test": "~2.6.0",
+    "del-cli": "^5.1.0",
     "husky": "^8.0.3",
-    "lerna": "^7.1.1",
+    "lerna": "^8.0.0",
     "read-pkg-up": "^10.0.0"
   },
   "scripts": {

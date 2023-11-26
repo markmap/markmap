@@ -16,7 +16,7 @@ export function escapeScript(content: string): string {
 
 export function htmlOpen(
   tagName: string,
-  attrs?: Record<string, string | boolean>
+  attrs?: Record<string, string | boolean>,
 ): string {
   const attrStr = attrs
     ? Object.entries(attrs)
@@ -39,7 +39,7 @@ export function htmlClose(tagName: string): string {
 export function wrapHtml(
   tagName: string,
   content?: string | null,
-  attrs?: Record<string, string | boolean>
+  attrs?: Record<string, string | boolean>,
 ): string {
   if (content == null) return htmlOpen(tagName, attrs);
   return htmlOpen(tagName, attrs) + (content || '') + htmlClose(tagName);
@@ -47,7 +47,7 @@ export function wrapHtml(
 
 export function buildCode<T extends unknown[]>(
   fn: (...args: T) => void,
-  args: T
+  args: T,
 ): string {
   const params = args
     .map((arg) => {
@@ -65,14 +65,14 @@ export function persistJS(items: JSItem[], context?: unknown): string[] {
       return wrapHtml(
         'script',
         textContent || '',
-        rest as Record<string, string | boolean>
+        rest as Record<string, string | boolean>,
       );
     }
     if (item.type === 'iife') {
       const { fn, getParams } = item.data;
       return wrapHtml(
         'script',
-        escapeScript(buildCode(fn, getParams?.(context) || []))
+        escapeScript(buildCode(fn, getParams?.(context) || [])),
       );
     }
     return '';

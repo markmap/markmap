@@ -11,7 +11,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item)
+        patchJSItem(transformHooks.transformer, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);

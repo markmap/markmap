@@ -13,7 +13,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item)
+        patchJSItem(transformHooks.transformer, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);
@@ -38,7 +38,7 @@ const plugin = definePlugin({
       md.use(remarkableKatex);
       md.renderer.rules.katex = (
         tokens: Remarkable.ContentToken[],
-        idx: number
+        idx: number,
       ) => {
         enableFeature();
         const result = renderKatex(tokens[idx].content, !!tokens[idx].block);
@@ -59,7 +59,7 @@ const plugin = definePlugin({
             markmap[key] = addDefaultVersions(
               value,
               name,
-              plugin.config?.versions?.katex || ''
+              plugin.config?.versions?.katex || '',
             );
           }
         });

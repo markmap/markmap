@@ -114,7 +114,7 @@ class FileSystemProvider
     super();
     this.watcher = chokidar.watch(fileName).on(
       'all',
-      sequence(() => this.update())
+      sequence(() => this.update()),
     );
   }
 
@@ -179,13 +179,13 @@ function startServer(paddingBottom: number) {
 function setUpServer(
   transformer: Transformer,
   provider: IContentProvider,
-  options: IDevelopOptions
+  options: IDevelopOptions,
 ) {
   let assets = transformer.getAssets();
   if (options.toolbar) assets = addToolbar(transformer, assets);
   const html = `${transformer.fillTemplate(
     null,
-    assets
+    assets,
   )}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
 
   const app = new Koa();
@@ -231,7 +231,7 @@ function setUpServer(
           server.close((err?: Error) => {
             if (err) reject(err);
             else resolve();
-          })
+          }),
         );
       }
       return closing;
@@ -241,7 +241,7 @@ function setUpServer(
 
 export async function develop(
   fileName: string | undefined,
-  options: IDevelopOptions
+  options: IDevelopOptions,
 ) {
   const transformer = new Transformer();
   transformer.urlBuilder.setProvider('local', localProvider);

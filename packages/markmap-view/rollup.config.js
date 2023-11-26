@@ -12,10 +12,7 @@ export default async () => {
     extend: true,
     esModule: false,
   };
-  let postcssOptions = await import('@gera2ld/plaid/config/postcssrc.js');
-  if (postcssOptions.default) postcssOptions = postcssOptions.default;
-  postcssOptions = {
-    ...postcssOptions,
+  const postcssOptions = {
     inject: false,
     minimize: true,
   };

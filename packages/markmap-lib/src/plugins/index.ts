@@ -1,5 +1,4 @@
 import katex from './katex';
-import prism from './prism';
 import frontmatter from './frontmatter';
 import npmUrl from './npm-url';
 import hljs from './hljs';

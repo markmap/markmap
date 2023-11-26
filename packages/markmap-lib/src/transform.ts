@@ -87,11 +87,13 @@ export class Transformer implements ITransformer {
   plugins: ITransformPlugin[];
 
   constructor(
-    plugins: Array<ITransformPlugin | (() => ITransformPlugin)> = builtInPlugins
+    plugins: Array<
+      ITransformPlugin | (() => ITransformPlugin)
+    > = builtInPlugins,
   ) {
     this.hooks = createTransformHooks(this);
     this.plugins = plugins.map((plugin) =>
-      typeof plugin === 'function' ? plugin() : plugin
+      typeof plugin === 'function' ? plugin() : plugin,
     );
 
     const assetsMap: typeof this.assetsMap = {};
@@ -111,7 +113,7 @@ export class Transformer implements ITransformer {
         const result = render(...args);
         this.hooks.htmltag.call({ args, result });
         return result;
-      }
+      },
     );
     this.md = md;
     this.hooks.parser.call(md);
@@ -251,9 +253,9 @@ export class Transformer implements ITransformer {
       baseJs?: JSItem[];
       jsonOptions?: IMarkmapJSONOptions;
       getOptions?: (
-        jsonOptions: IMarkmapJSONOptions
+        jsonOptions: IMarkmapJSONOptions,
       ) => Partial<IMarkmapOptions>;
-    }
+    },
   ): string {
     extra = {
       ...extra,
@@ -281,13 +283,13 @@ export class Transformer implements ITransformer {
                 getMarkmap: (typeof context)['getMarkmap'],
                 getOptions: (typeof context)['getOptions'],
                 root: (typeof context)['root'],
-                jsonOptions: IMarkmapJSONOptions
+                jsonOptions: IMarkmapJSONOptions,
               ) => {
                 const markmap = getMarkmap();
                 window.mm = markmap.Markmap.create(
                   'svg#mindmap',
                   (getOptions || markmap.deriveOptions)(jsonOptions),
-                  root
+                  root,
                 );
               },
               getParams: ({ getMarkmap, getOptions, root, jsonOptions }) => {
@@ -296,7 +298,7 @@ export class Transformer implements ITransformer {
             },
           } as JSItem,
         ],
-        context
+        context,
       ),
     ];
     const html = template

@@ -2,7 +2,7 @@ import { Hook } from 'markmap-common';
 import { ITransformer, ITransformHooks, ITransformPlugin } from '../types';
 
 export function createTransformHooks(
-  transformer: ITransformer
+  transformer: ITransformer,
 ): ITransformHooks {
   return {
     transformer,
