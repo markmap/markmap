@@ -12,8 +12,8 @@ Visualize your Markdown as mindmaps.
 $ npm install markmap-lib
 ```
 
-See [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli) for command-line usage.
+See [markmap-cli](https://github.com/markmap/markmap/tree/master/packages/markmap-cli) for command-line usage.
 
-See [markmap-view](https://github.com/gera2ld/markmap/tree/master/packages/markmap-view) for rendering in browser.
+See [markmap-view](https://github.com/markmap/markmap/tree/master/packages/markmap-view) for rendering in browser.
 
 👉 [Read the documentation](https://markmap.js.org/docs) for more detail.
