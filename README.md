@@ -17,12 +17,12 @@ This project is heavily inspired by [dundalek's markmap](https://github.com/dund
 
 Common types and utility functions used by markmap packages.
 
-- [markmap-lib](https://github.com/gera2ld/markmap/tree/master/packages/markmap-lib)
+- [markmap-lib](https://github.com/markmap/markmap/tree/master/packages/markmap-lib)
   ![NPM](https://img.shields.io/npm/v/markmap-lib.svg)
 
   Transform Markdown to data used by markmap.
 
-- [markmap-view](https://github.com/gera2ld/markmap/tree/master/packages/markmap-view)
+- [markmap-view](https://github.com/markmap/markmap/tree/master/packages/markmap-view)
   ![NPM](https://img.shields.io/npm/v/markmap-view.svg)
 
   Render markmap in browser.
@@ -37,7 +37,7 @@ Common types and utility functions used by markmap packages.
 
   Extensible toolbar for markmap.
 
-- [markmap-cli](https://github.com/gera2ld/markmap/tree/master/packages/markmap-cli)
+- [markmap-cli](https://github.com/markmap/markmap/tree/master/packages/markmap-cli)
   ![NPM](https://img.shields.io/npm/v/markmap-cli.svg)
 
   Use markmap in command-line.
@@ -49,7 +49,6 @@ Markmap is also available in:
 - [VSCode](https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode) and [Open VSX](https://open-vsx.org/extension/gera2ld/markmap-vscode)
 - Vim / Neovim: [coc-markmap](https://github.com/gera2ld/coc-markmap) ![NPM](https://img.shields.io/npm/v/coc-markmap.svg) - powered by [coc.nvim](https://github.com/neoclide/coc.nvim)
 - Emacs: [eaf-markmap](https://github.com/emacs-eaf/eaf-markmap) -- powered by [EAF](https://github.com/emacs-eaf/emacs-application-framework)
-
 
 ## Usage
 
