@@ -62,7 +62,7 @@ export interface INodeState {
 
 export type JSScriptItem = {
   type: 'script';
-  loaded?: Promise<void> | boolean;
+  loaded?: Promise<void>;
   data: {
     src?: string;
     textContent?: string;
@@ -72,7 +72,7 @@ export type JSScriptItem = {
 };
 export type JSIIFEItem = {
   type: 'iife';
-  loaded?: Promise<void> | boolean;
+  loaded?: Promise<void>;
   data: {
     fn: (...args: unknown[]) => void;
     getParams?: (context: unknown) => void | unknown[];
@@ -81,12 +81,12 @@ export type JSIIFEItem = {
 export type JSItem = JSScriptItem | JSIIFEItem;
 export type CSSStyleItem = {
   type: 'style';
-  loaded?: boolean;
+  loaded?: Promise<void>;
   data: string;
 };
 export type CSSStylesheetItem = {
   type: 'stylesheet';
-  loaded?: boolean;
+  loaded?: Promise<void>;
   data: {
     href: string;
   };
