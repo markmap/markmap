@@ -5,18 +5,16 @@
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
-    "clean": "del-cli dist types",
+    "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js"
+    "build:js": "vite build && TARGET=es vite build --emptyOutDir=false"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "unpkg": "dist/index.js",
   "jsdelivr": "dist/index.js",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "publishConfig": {
     "access": "public",
@@ -30,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
   },
-  "typings": "types/index.d.ts",
+  "typings": "dist/index.d.ts",
   "peerDependencies": {
     "markmap-common": "*"
   },

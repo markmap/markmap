@@ -25,10 +25,9 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "dev": "rollup -wc",
-    "clean": "del-cli dist types",
+    "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "rollup -c"
+    "build:js": "vite build"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
@@ -38,17 +37,13 @@
   "module": "dist/index.js",
   "files": [
     "bin",
-    "dist",
-    "types"
+    "dist"
   ],
-  "typings": "types/index.d.ts",
+  "typings": "dist/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.22.6",
     "chokidar": "^3.5.3",
     "commander": "^11.0.0",
-    "d3": "^7.8.5",
-    "highlight.js": "^11.8.0",
-    "katex": "^0.16.8",
     "koa": "^2.14.2",
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
@@ -58,7 +53,6 @@
     "pkg-dir": "^7.0.0",
     "prismjs": "^1.29.0",
     "read-pkg-up": "^10.0.0",
-    "update-notifier": "^6.0.2",
-    "webfontloader": "^1.6.28"
+    "update-notifier": "^6.0.2"
   }
 }

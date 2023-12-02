@@ -5,10 +5,9 @@
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
-    "clean": "del-cli dist types",
+    "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "rollup -c",
+    "build:js": "vite build && TARGET=browserEs vite build --emptyOutDir=false && TARGET=browserJs vite build --emptyOutDir=false",
     "test": "jest test"
   },
   "publishConfig": {
@@ -17,21 +16,20 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
-  "unpkg": "dist/browser/index.js",
-  "jsdelivr": "dist/browser/index.js",
+  "unpkg": "dist/browser/index.iife.js",
+  "jsdelivr": "dist/browser/index.iife.js",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "browser": "./dist/browser/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
     },
     "./package.json": "./package.json"
   },
-  "types": "types/index.d.ts",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "keywords": [
     "markdown",

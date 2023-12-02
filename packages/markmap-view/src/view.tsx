@@ -26,8 +26,8 @@ import {
   noop,
 } from 'markmap-common';
 import { IMarkmapState } from './types';
-import css from './style.css';
-import containerCSS from './container.css';
+import css from './style.css?inline';
+import containerCSS from './container.css?inline';
 
 export const globalCSS = css;
 

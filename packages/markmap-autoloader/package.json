@@ -19,10 +19,9 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "dev": "rollup -wc",
-    "clean": "del-cli dist types",
+    "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "rollup -c"
+    "build:js": "vite build"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
@@ -31,8 +30,7 @@
   "unpkg": "dist/index.js",
   "jsdelivr": "dist/index.js",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "peerDependencies": {
     "markmap-common": "*"

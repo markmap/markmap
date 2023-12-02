@@ -5,16 +5,14 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "dev": "rollup -wc rollup.conf.js",
-    "clean": "del-cli dist types",
+    "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "rollup -c rollup.conf.js"
+    "build:js": "vite build"
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "publishConfig": {
     "access": "public",
@@ -28,7 +26,7 @@
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
   },
-  "typings": "types/index.d.ts",
+  "typings": "dist/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.22.6",
     "@gera2ld/jsx-dom": "^2.2.2",

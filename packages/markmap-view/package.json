@@ -19,10 +19,9 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "dev": "rollup -wc",
-    "clean": "del-cli dist types",
-    "build:js": "rollup -c",
-    "build:types": "tsc"
+    "clean": "del-cli dist",
+    "build:types": "tsc",
+    "build:js": "vite build && TARGET=es vite build --emptyOutDir=false"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
@@ -33,10 +32,9 @@
   "unpkg": "dist/browser/index.js",
   "jsdelivr": "dist/browser/index.js",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
-  "typings": "types/index.d.ts",
+  "typings": "dist/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.22.6",
     "@gera2ld/jsx-dom": "^2.2.2",

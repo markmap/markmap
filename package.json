@@ -7,12 +7,12 @@
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.23.4",
     "@gera2ld/plaid": "~2.6.0",
-    "@gera2ld/plaid-rollup": "~2.6.0",
     "@gera2ld/plaid-test": "~2.6.0",
     "del-cli": "^5.1.0",
     "husky": "^8.0.3",
     "lerna": "^8.0.0",
-    "read-pkg-up": "^10.0.0"
+    "read-pkg-up": "^10.0.0",
+    "vite": "^5.0.4"
   },
   "scripts": {
     "prepare": "husky install",
@@ -22,7 +22,7 @@
     "test": "pnpm -r test",
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
-    "build:js": "pnpm -r build:js",
+    "build:js": "KEEP_DIST=1 pnpm -r build:js",
     "prepublishOnly": "pnpm build"
   }
 }

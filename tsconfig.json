@@ -8,7 +8,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "@gera2ld/jsx-dom"
+    "jsxImportSource": "@gera2ld/jsx-dom",
+    "declaration": true,
+    "emitDeclarationOnly": true
   },
   "include": [
     "packages/*/src/**/*",
