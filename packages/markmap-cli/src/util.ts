@@ -1,12 +1,13 @@
-import { join } from 'path';
-import { createRequire } from 'module';
+import { resolve } from 'path';
 import { packageDirectory } from 'pkg-dir';
-import { buildCSSItem, buildJSItem, JSItem } from 'markmap-common';
-import { IAssets, ITransformer } from 'markmap-lib';
+import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
+import { IAssets } from 'markmap-lib';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
 const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.js`;
+
+export const ASSETS_PREFIX = '/assets/';
 
 const renderToolbar = () => {
   const { markmap, mm } = window;
@@ -33,21 +34,18 @@ export interface IDevelopOptions {
   offline: boolean;
 }
 
-export function addToolbar(
-  transformer: ITransformer,
-  assets: IAssets,
-): IAssets {
+export function addToolbar(urlBuilder: UrlBuilder, assets: IAssets): IAssets {
   return {
     styles: [
       ...(assets.styles || []),
       ...[TOOLBAR_CSS]
-        .map((path) => transformer.urlBuilder.getFullUrl(path))
+        .map((path) => urlBuilder.getFullUrl(path))
         .map((path) => buildCSSItem(path)),
     ],
     scripts: [
       ...(assets.scripts || []),
       ...[TOOLBAR_JS]
-        .map((path) => transformer.urlBuilder.getFullUrl(path))
+        .map((path) => urlBuilder.getFullUrl(path))
         .map((path) => buildJSItem(path)),
       {
         type: 'iife',
@@ -62,42 +60,15 @@ export function addToolbar(
   };
 }
 
-function removeVersionString(part: string) {
-  return part.replace(/@.+$/, '');
-}
-
 export function localProvider(path: string) {
-  const parts = path.split('/');
-  // xxx@0.0.0-alpha.0+aaaaaa
-  // @scope/xxx@0.0.0-alpha.0+aaaaaa
-  if (parts[0].startsWith('@')) {
-    parts[1] = removeVersionString(parts[1]);
-  } else {
-    parts[0] = removeVersionString(parts[0]);
-  }
-  path = parts.join('/');
-  return `/node_modules/${path}`;
+  return `${ASSETS_PREFIX}${path}`;
 }
 
-const require = createRequire(import.meta.url);
+export const rootDirPromise = packageDirectory({
+  cwd: new URL(import.meta.url).pathname,
+});
 
-async function doResolveFile(relpath: string) {
-  const parts = relpath.split('/');
-  const nameOffset = parts[0].startsWith('@') ? 2 : 1;
-  const name = parts.slice(0, nameOffset).join('/');
-  const filepath = parts.slice(nameOffset).join('/');
-  const mainPath = require.resolve(name);
-  const pkgDir = await packageDirectory({
-    cwd: mainPath,
-  });
-  if (!pkgDir) throw new Error(`File not found: ${relpath}`);
-  const realpath = join(pkgDir, filepath);
-  return realpath;
-}
-
-const cache: Record<string, Promise<string>> = {};
-
-export function resolveFile(relpath: string) {
-  cache[relpath] ||= doResolveFile(relpath);
-  return cache[relpath];
-}
+export const assetsDirPromise = rootDirPromise.then((rootDir) => {
+  if (!rootDir) throw new Error('Could not find root dir');
+  return resolve(rootDir, `.${ASSETS_PREFIX}`);
+});

@@ -8,7 +8,7 @@
     "markmap": "bin/cli.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "keywords": [
     "markmap",
@@ -27,7 +27,8 @@
   "scripts": {
     "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "vite build"
+    "build:js": "vite build",
+    "postinstall": "node -e \"import('./dist/index.js').then(({ fetchAssets }) => fetchAssets()).catch(() => {})\""
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
@@ -48,10 +49,8 @@
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
     "markmap-toolbar": "workspace:*",
-    "markmap-view": "workspace:*",
     "open": "^9.1.0",
     "pkg-dir": "^7.0.0",
-    "prismjs": "^1.29.0",
     "read-pkg-up": "^10.0.0",
     "update-notifier": "^6.0.2"
   }

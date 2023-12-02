@@ -1,6 +1,6 @@
 import { createReadStream } from 'fs';
 import { readFile } from 'fs/promises';
-import { extname } from 'path';
+import { extname, resolve } from 'path';
 import { EventEmitter } from 'events';
 import { AddressInfo } from 'net';
 import http from 'http';
@@ -11,9 +11,10 @@ import { Transformer } from 'markmap-lib';
 import { INode, defer, IDeferred } from 'markmap-common';
 import {
   IDevelopOptions,
+  ASSETS_PREFIX,
   addToolbar,
   localProvider,
-  resolveFile,
+  assetsDirPromise,
 } from './util';
 
 interface IFileUpdate {
@@ -182,7 +183,7 @@ function setUpServer(
   options: IDevelopOptions,
 ) {
   let assets = transformer.getAssets();
-  if (options.toolbar) assets = addToolbar(transformer, assets);
+  if (options.toolbar) assets = addToolbar(transformer.urlBuilder, assets);
   const html = `${transformer.fillTemplate(
     null,
     assets,
@@ -200,10 +201,11 @@ function setUpServer(
           : transformer.transform(update.content || '');
       ctx.body = { ts: update.ts, result, line: update.line };
     } else {
-      if (ctx.path.startsWith('/node_modules/')) {
-        const relpath = ctx.path.slice(14);
+      if (ctx.path.startsWith(ASSETS_PREFIX)) {
+        const relpath = ctx.path.slice(ASSETS_PREFIX.length);
+        const assetsDir = await assetsDirPromise;
         try {
-          const realpath = await resolveFile(relpath);
+          const realpath = resolve(assetsDir, relpath);
           ctx.type = extname(relpath);
           ctx.body = createReadStream(realpath);
           return;

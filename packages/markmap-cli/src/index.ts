@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { Command } from 'commander';
 import open from 'open';
@@ -12,20 +13,23 @@ import {
   type IAssets,
 } from 'markmap-lib';
 import {
+  ASSETS_PREFIX,
   IDevelopOptions,
   addToolbar,
+  assetsDirPromise,
   localProvider,
-  resolveFile,
 } from './util';
 import { develop } from './dev-server';
+import { fetchAssets } from './fetch-assets';
 
 export * from 'markmap-lib';
-export { develop };
+export { develop, fetchAssets };
 
 async function loadFile(path: string) {
-  if (path.startsWith('/node_modules/')) {
-    const relpath = path.slice(14);
-    return readFile(await resolveFile(relpath), 'utf8');
+  if (path.startsWith(ASSETS_PREFIX)) {
+    const relpath = path.slice(ASSETS_PREFIX.length);
+    const assetsDir = await assetsDirPromise;
+    return readFile(resolve(assetsDir, relpath), 'utf8');
   }
   const res = await fetch(path);
   if (!res.ok) throw res;
@@ -93,7 +97,7 @@ export async function createMarkmap(
     ],
   };
   if (options.toolbar) {
-    assets = addToolbar(transformer, assets);
+    assets = addToolbar(transformer.urlBuilder, assets);
   }
   if (options.offline) {
     assets = await inlineAssets(assets);
@@ -135,13 +139,16 @@ export async function main() {
       'watch the input file and update output on the fly, note that this feature is for development only',
     )
     .action(async (input, cmd) => {
+      let { offline } = cmd;
+      if (cmd.watch) offline = true;
+      if (offline) await fetchAssets();
       const content = await readFile(input, 'utf8');
       const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
       if (cmd.watch) {
         await develop(input, {
           open: cmd.open,
           toolbar: cmd.toolbar,
-          offline: true,
+          offline,
         });
       } else {
         await createMarkmap({
@@ -149,7 +156,7 @@ export async function main() {
           output,
           open: cmd.open,
           toolbar: cmd.toolbar,
-          offline: cmd.offline,
+          offline,
         });
       }
     });

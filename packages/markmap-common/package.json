@@ -30,6 +30,6 @@
   "dependencies": {
     "@babel/runtime": "^7.22.6",
     "@gera2ld/jsx-dom": "^2.2.2",
-    "npm2url": "^0.2.1"
+    "npm2url": "^0.2.4"
   }
 }

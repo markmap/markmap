@@ -71,18 +71,12 @@ importers:
       markmap-toolbar:
         specifier: workspace:*
         version: link:../markmap-toolbar
-      markmap-view:
-        specifier: workspace:*
-        version: link:../markmap-view
       open:
         specifier: ^9.1.0
         version: 9.1.0
       pkg-dir:
         specifier: ^7.0.0
         version: 7.0.0
-      prismjs:
-        specifier: ^1.29.0
-        version: 1.29.0
       read-pkg-up:
         specifier: ^10.0.0
         version: 10.0.0
@@ -99,8 +93,8 @@ importers:
         specifier: ^2.2.2
         version: 2.2.2
       npm2url:
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.4
+        version: 0.2.4
 
   packages/markmap-lib:
     dependencies:
@@ -8081,8 +8075,8 @@ packages:
     dependencies:
       path-key: 4.0.0
 
-  /npm2url@0.2.1:
-    resolution: {integrity: sha512-Ls7mMyud1Kk0EisqsTt2TPtM7gLRvgmvDxOg3FPI5zjfhQ+ZFNBXX2K9VT7vo+HqUsz/uCiIxkcO0SvIuneVug==}
+  /npm2url@0.2.4:
+    resolution: {integrity: sha512-arzGp/hQz0Ey+ZGhF64XVH7Xqwd+1Q/po5uGiBbzph8ebX6T0uvt3N7c1nBHQNsQVykQgHhqoRTX7JFcHecGuw==}
     dev: false
 
   /npmlog@6.0.2:
