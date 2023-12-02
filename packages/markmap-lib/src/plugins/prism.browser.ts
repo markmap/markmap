@@ -2,7 +2,7 @@ import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
 import { config, name } from './prism.config';
-import { patchJSItem } from './util';
+import { patchJSItem } from '../util';
 
 const plugin = definePlugin({
   name,
@@ -11,7 +11,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item),
+        patchJSItem(transformHooks.transformer.urlBuilder, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);

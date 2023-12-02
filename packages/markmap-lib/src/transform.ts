@@ -22,7 +22,7 @@ import {
 } from './types';
 import { createTransformHooks, plugins as builtInPlugins } from './plugins';
 import { template, baseJsPaths } from './constants';
-import { patchCSSItem, patchJSItem } from './plugins/util';
+import { patchCSSItem, patchJSItem } from './util';
 
 export { builtInPlugins };
 
@@ -231,8 +231,8 @@ export class Transformer implements ITransformer {
       }
     }
     return {
-      styles: styles.map((item) => patchCSSItem(this, item)),
-      scripts: scripts.map((item) => patchJSItem(this, item)),
+      styles: styles.map((item) => patchCSSItem(this.urlBuilder, item)),
+      scripts: scripts.map((item) => patchJSItem(this.urlBuilder, item)),
     };
   }
 

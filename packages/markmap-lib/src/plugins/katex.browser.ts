@@ -3,7 +3,8 @@ import remarkableKatex from 'remarkable-katex';
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { config, name } from './katex.config';
-import { addDefaultVersions, patchJSItem } from './util';
+import { addDefaultVersions } from './util';
+import { patchJSItem } from '../util';
 import { definePlugin } from './base';
 
 const plugin = definePlugin({
@@ -13,7 +14,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item),
+        patchJSItem(transformHooks.transformer.urlBuilder, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);

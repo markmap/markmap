@@ -1,7 +1,7 @@
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../types';
 import { definePlugin } from './base';
-import { patchJSItem } from './util';
+import { patchJSItem } from '../util';
 import { name, config } from './hljs.config';
 
 const plugin = definePlugin({
@@ -11,7 +11,7 @@ const plugin = definePlugin({
     let loading: Promise<void>;
     const preloadScripts =
       plugin.config?.preloadScripts?.map((item) =>
-        patchJSItem(transformHooks.transformer, item),
+        patchJSItem(transformHooks.transformer.urlBuilder, item),
       ) || [];
     const autoload = () => {
       loading ||= loadJS(preloadScripts);
