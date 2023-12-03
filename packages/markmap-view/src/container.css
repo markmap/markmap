@@ -15,8 +15,11 @@
       &:last-child {
         &,
         /* override base CSS */
-        & * {
+        :not(pre) {
           white-space: nowrap;
+        }
+        code {
+          white-space: inherit;
         }
       }
     }
