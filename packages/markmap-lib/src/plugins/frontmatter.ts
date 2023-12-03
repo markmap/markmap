@@ -10,10 +10,10 @@ export default definePlugin({
   transform(transformHooks: ITransformHooks) {
     transformHooks.beforeParse.tap((md, context) => {
       const { content } = context;
-      if (!content.startsWith('---\n')) return;
-      const endOffset = content.indexOf('\n---\n');
-      if (endOffset < 0) return;
-      const raw = content.slice(4, endOffset);
+      if (!/^---\r?\n/.test(content)) return;
+      const match = /\n---\r?\n/.exec(content);
+      if (!match) return;
+      const raw = content.slice(4, match.index);
       let frontmatter: typeof context.frontmatter;
       try {
         frontmatter = yaml.load(raw);
@@ -26,9 +26,9 @@ export default definePlugin({
         return;
       }
       context.frontmatter = frontmatter;
-      context.content = content.slice(endOffset + 5);
+      context.content = content.slice(match.index + match[0].length);
       context.contentLineOffset =
-        content.slice(0, endOffset).split('\n').length + 1;
+        content.slice(0, match.index).split('\n').length + 1;
     });
     return {};
   },

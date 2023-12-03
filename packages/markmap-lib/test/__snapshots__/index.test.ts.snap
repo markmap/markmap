@@ -70,6 +70,76 @@ exports[`content with frontmatter 1`] = `
 }
 `;
 
+exports[`content with line endings of CRLF 1`] = `
+{
+  "content": "
+- l1
+  - l1.1
+  - l1.2
+    - l1.2.1
+",
+  "contentLineOffset": 4,
+  "features": {},
+  "frontmatter": {
+    "markmap": {
+      "color": [
+        "blue",
+      ],
+    },
+  },
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "l1.1",
+        "depth": 1,
+        "payload": {
+          "lines": [
+            2,
+            3,
+          ],
+        },
+        "type": "list_item",
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "content": "l1.2.1",
+            "depth": 2,
+            "payload": {
+              "lines": [
+                4,
+                5,
+              ],
+            },
+            "type": "list_item",
+          },
+        ],
+        "content": "l1.2",
+        "depth": 1,
+        "payload": {
+          "lines": [
+            3,
+            4,
+          ],
+        },
+        "type": "list_item",
+      },
+    ],
+    "content": "l1",
+    "depth": 0,
+    "payload": {
+      "lines": [
+        1,
+        2,
+      ],
+    },
+    "type": "list_item",
+  },
+}
+`;
+
 exports[`content with only katex enabled 1`] = `
 {
   "content": "

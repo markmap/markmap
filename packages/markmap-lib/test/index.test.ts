@@ -47,6 +47,22 @@ markmap:
   expect(result).toMatchSnapshot();
 });
 
+test('content with line endings of CRLF', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+---
+markmap:
+  color: blue
+---
+
+- l1
+  - l1.1
+  - l1.2
+    - l1.2.1
+`.replace(/\n/g, '\r\n'));
+  expect(result).toMatchSnapshot();
+});
+
 test('content with only katex enabled', () => {
   const transformer = new Transformer();
   const result = transformer.transform(`\
