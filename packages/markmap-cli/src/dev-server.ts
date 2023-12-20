@@ -1,10 +1,10 @@
 import { createReadStream } from 'fs';
-import { readFile } from 'fs/promises';
-import { extname, resolve } from 'path';
+import { readFile, stat } from 'fs/promises';
+import { join } from 'path';
 import { EventEmitter } from 'events';
-import { AddressInfo } from 'net';
-import http from 'http';
-import Koa from 'koa';
+import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
+import { getMimeType } from 'hono/utils/mime';
 import open from 'open';
 import chokidar from 'chokidar';
 import { Transformer } from 'markmap-lib';
@@ -15,6 +15,7 @@ import {
   addToolbar,
   localProvider,
   assetsDirPromise,
+  createStreamBody,
 } from './util';
 
 interface IFileUpdate {
@@ -138,7 +139,7 @@ function startServer(paddingBottom: number) {
   const { mm, markmap } = window;
   refresh();
   function refresh() {
-    fetch(`/data?ts=${ts}`)
+    fetch(`/~data?ts=${ts}`)
       .then((res) => res.json())
       .then((res) => {
         if (res.ts && res.ts > ts && res.result) {
@@ -177,7 +178,7 @@ function startServer(paddingBottom: number) {
   }
 }
 
-function setUpServer(
+async function setUpServer(
   transformer: Transformer,
   provider: IContentProvider,
   options: IDevelopOptions,
@@ -189,41 +190,49 @@ function setUpServer(
     assets,
   )}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
 
-  const app = new Koa();
-  app.use(async (ctx, next) => {
-    if (ctx.path === '/') {
-      ctx.body = html;
-    } else if (ctx.path === '/data') {
-      const update = await provider.getUpdate(ctx.query.ts);
-      const result =
-        update.content == null
-          ? null
-          : transformer.transform(update.content || '');
-      ctx.body = { ts: update.ts, result, line: update.line };
-    } else {
-      if (ctx.path.startsWith(ASSETS_PREFIX)) {
-        const relpath = ctx.path.slice(ASSETS_PREFIX.length);
-        const assetsDir = await assetsDirPromise;
-        try {
-          const realpath = resolve(assetsDir, relpath);
-          ctx.type = extname(relpath);
-          ctx.body = createReadStream(realpath);
-          return;
-        } catch (err) {
-          console.error(err);
-        }
-      }
-      await next();
+  const app = new Hono();
+  app.get('/', (c) => c.html(html));
+  app.get('/~data', async (c) => {
+    const update = await provider.getUpdate(+(c.req.query('ts') || 0));
+    const result =
+      update.content == null
+        ? null
+        : transformer.transform(update.content || '');
+    return c.json({ ts: update.ts, result, line: update.line });
+  });
+  app.post('/~api', async (c) => {
+    const { cmd, args } = await c.req.json();
+    await provider[cmd]?.(...args);
+    return c.body(null, 204);
+  });
+  const assetsDir = await assetsDirPromise;
+  app.get(`${ASSETS_PREFIX}*`, async (c) => {
+    const relpath = c.req.path.slice(ASSETS_PREFIX.length);
+    const realpath = join(assetsDir, relpath);
+    try {
+      const result = await stat(realpath);
+      if (!result.isFile()) throw new Error('File not found');
+    } catch {
+      return c.body('File not found', 404);
     }
+    const stream = createReadStream(realpath);
+    const type = getMimeType(relpath);
+    if (type) c.header('content-type', type);
+    return c.body(createStreamBody(stream));
   });
 
-  const handle = app.callback() as http.RequestListener;
-  const server = http.createServer(handle);
-  server.listen(() => {
-    const { port } = server.address() as AddressInfo;
-    console.info(`Listening at http://localhost:${port}`);
-    if (options.open) open(`http://localhost:${port}`);
-  });
+  const server = serve(
+    {
+      fetch: app.fetch,
+      port: options.port,
+    },
+    (info) => {
+      const { port } = info;
+      console.info(`Listening at http://localhost:${port}`);
+      if (options.open) open(`http://localhost:${port}`);
+    },
+  );
+
   let closing: Promise<void>;
   return {
     provider,

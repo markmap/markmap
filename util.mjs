@@ -1,6 +1,6 @@
 import { dirname } from 'path';
 import { createRequire } from 'module';
-import { readPackageUp } from 'read-pkg-up';
+import { readPackageUp } from 'read-package-up';
 
 export function versionLoader(source) {
   /**

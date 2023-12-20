@@ -18,6 +18,7 @@ const configJs = defineConfig({
   build: {
     emptyOutDir: !process.env.KEEP_DIST,
     outDir: 'dist/browser',
+    minify: false,
     lib: {
       entry: 'src/index.ts',
       formats: ['iife'],

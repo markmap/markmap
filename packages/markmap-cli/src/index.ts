@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { Command } from 'commander';
 import open from 'open';
 import updateNotifier from 'update-notifier';
-import { readPackageUp } from 'read-pkg-up';
+import { readPackageUp } from 'read-package-up';
 import { CSSItem, JSItem, buildJSItem } from 'markmap-common';
 import {
   Transformer,

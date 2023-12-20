@@ -1,3 +1,4 @@
+import type { ReadStream } from 'fs';
 import { resolve } from 'path';
 import { packageDirectory } from 'pkg-dir';
 import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
@@ -32,6 +33,8 @@ export interface IDevelopOptions {
    * Ignored in watching mode.
    */
   offline: boolean;
+  /** Port number for the devServer to listen. */
+  port?: number;
 }
 
 export function addToolbar(urlBuilder: UrlBuilder, assets: IAssets): IAssets {
@@ -72,3 +75,21 @@ export const assetsDirPromise = rootDirPromise.then((rootDir) => {
   if (!rootDir) throw new Error('Could not find root dir');
   return resolve(rootDir, `.${ASSETS_PREFIX}`);
 });
+
+export function createStreamBody(stream: ReadStream) {
+  const body = new ReadableStream({
+    start(controller) {
+      stream.on('data', (chunk) => {
+        controller.enqueue(chunk);
+      });
+      stream.on('end', () => {
+        controller.close();
+      });
+    },
+
+    cancel() {
+      stream.destroy();
+    },
+  });
+  return body;
+}

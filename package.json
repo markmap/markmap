@@ -6,13 +6,13 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.23.4",
-    "@gera2ld/plaid": "~2.6.0",
+    "@gera2ld/plaid": "~2.7.0",
     "@gera2ld/plaid-test": "~2.6.0",
     "del-cli": "^5.1.0",
     "husky": "^8.0.3",
-    "lerna": "^8.0.0",
-    "read-pkg-up": "^10.0.0",
-    "vite": "^5.0.4"
+    "lerna": "^8.0.1",
+    "read-package-up": "^11.0.0",
+    "vite": "^5.0.10"
   },
   "scripts": {
     "prepare": "husky install",
