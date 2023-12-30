@@ -196,7 +196,7 @@ export class Markmap {
       <style>{[this.getStyleContent(), containerCSS].join('\n')}</style>,
     ) as HTMLElement;
     document.body.append(container, style);
-    const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
+    const groupStyle = maxWidth ? `--markmap-max-width: ${maxWidth}px` : '';
 
     let foldRecursively = 0;
     let depth = 0;

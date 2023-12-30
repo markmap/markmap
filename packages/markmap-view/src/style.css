@@ -1,4 +1,5 @@
 .markmap {
+  --markmap-max-width: none;
   --markmap-a-color: #0097e6;
   --markmap-a-hover-color: #00a8ff;
   --markmap-code-bg: #f0f0f0;
@@ -73,8 +74,10 @@
   }
 
   &-foreign-testing-max {
+    max-width: var(--markmap-max-width);
+
     img {
-      max-width: none;
+      max-width: var(--markmap-max-width);
       max-height: none;
     }
   }
