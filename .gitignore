@@ -5,3 +5,6 @@ packages/*/dist
 .nyc_output/
 packages/*/coverage
 packages/*/types
+
+# for test files created by users
+test.*
