@@ -11,21 +11,17 @@ export function noop(): void {
   // noop
 }
 
-export function walkTree<T extends { children?: T[] }>(
+export function walkTree<T extends { children?: T[] }, U = void>(
   tree: T,
-  callback: (item: T, next: () => void, parent?: T) => void,
-): void {
-  const walk = (item: T, parent?: T): void =>
+  callback: (item: T, next: () => U[] | undefined, parent?: T) => U,
+): U {
+  const walk = (item: T, parent?: T): U =>
     callback(
       item,
-      () => {
-        item.children?.forEach((child: T) => {
-          walk(child, item);
-        });
-      },
+      () => item.children?.map((child: T) => walk(child, item)),
       parent,
     );
-  walk(tree);
+  return walk(tree);
 }
 
 export function addClass(className: string, ...rest: string[]): string {
@@ -79,5 +75,34 @@ export function memoize<T extends unknown[], U>(fn: (...args: T) => U) {
       cache[key] = data;
     }
     return data.value;
+  };
+}
+
+export function debounce<T extends unknown[], U>(
+  fn: (...args: T) => U,
+  time: number,
+) {
+  const state: {
+    timer: number;
+    result?: U;
+    args?: T;
+  } = {
+    timer: 0,
+  };
+  function reset() {
+    if (state.timer) {
+      window.clearTimeout(state.timer);
+      state.timer = 0;
+    }
+  }
+  function run() {
+    reset();
+    if (state.args) state.result = fn(...state.args);
+  }
+  return function debounced(...args: T) {
+    reset();
+    state.args = args;
+    state.timer = window.setTimeout(run, time);
+    return state.result;
   };
 }

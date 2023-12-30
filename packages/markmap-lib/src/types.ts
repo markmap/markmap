@@ -1,13 +1,14 @@
-import type { Remarkable } from 'remarkable';
 import {
-  UrlBuilder,
   CSSItem,
-  JSItem,
+  Hook,
   IPureNode,
   IWrapContext,
-  Hook,
-  IMarkmapJSONOptions,
+  JSItem,
+  UrlBuilder,
 } from 'markmap-common';
+import { IHtmlParserOptions } from 'markmap-html-parser';
+import { IMarkmapJSONOptions as IMarkmapJSONOptionsForView } from 'markmap-view';
+import type { Remarkable } from 'remarkable';
 
 type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
 
@@ -58,6 +59,10 @@ export interface IFeatures {
 
 export interface ITransformer {
   urlBuilder: UrlBuilder;
+}
+
+export interface IMarkmapJSONOptions extends IMarkmapJSONOptionsForView {
+  htmlParser?: Partial<IHtmlParserOptions>;
 }
 
 export interface ITransformContext {

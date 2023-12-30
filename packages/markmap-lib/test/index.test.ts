@@ -49,7 +49,8 @@ markmap:
 
 test('content with line endings of CRLF', () => {
   const transformer = new Transformer();
-  const result = transformer.transform(`\
+  const result = transformer.transform(
+    `\
 ---
 markmap:
   color: blue
@@ -59,7 +60,8 @@ markmap:
   - l1.1
   - l1.2
     - l1.2.1
-`.replace(/\n/g, '\r\n'));
+`.replace(/\n/g, '\r\n'),
+  );
   expect(result).toMatchSnapshot();
 });
 
@@ -75,4 +77,25 @@ markmap:
 `);
   expect(result).toMatchSnapshot();
   expect(transformer.getUsedAssets(result.features)).toMatchSnapshot();
+});
+
+test('tables', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+| products | price |
+|-|-|
+| apple | 10 |
+| banana | 12 |
+`);
+  expect(result).toMatchSnapshot();
+});
+
+test('images', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+![](image1.png)
+
+![](image2.png)
+`);
+  expect(result).toMatchSnapshot();
 });

@@ -1,33 +1,32 @@
+import { mountDom } from '@gera2ld/jsx-dom';
 import type * as d3 from 'd3';
 import {
+  linkHorizontal,
+  max,
+  min,
   minIndex,
-  scaleOrdinal,
-  schemeCategory10,
   select,
   zoom,
-  zoomTransform,
   zoomIdentity,
-  linkHorizontal,
-  min,
-  max,
+  zoomTransform,
 } from 'd3';
-import { flextree, FlextreeNode } from 'd3-flextree';
-import { mountDom } from '@gera2ld/jsx-dom';
+import { FlextreeNode, flextree } from 'd3-flextree';
 import {
   Hook,
+  IMarkmapOptions,
   INode,
   IPureNode,
-  IMarkmapOptions,
-  IMarkmapJSONOptions,
-  getId,
-  walkTree,
   addClass,
   childSelector,
+  debounce,
+  getId,
   noop,
+  walkTree,
 } from 'markmap-common';
-import { IMarkmapState } from './types';
-import css from './style.css?inline';
+import { defaultOptions, isMacintosh } from './constants';
 import containerCSS from './container.css?inline';
+import css from './style.css?inline';
+import { IMarkmapState } from './types';
 
 export const globalCSS = css;
 
@@ -40,7 +39,7 @@ interface IPadding {
 
 function linkWidth(nodeData: d3.HierarchyNode<INode>): number {
   const data: INode = nodeData.data;
-  return Math.max(4 - 2 * data.depth, 1.5);
+  return Math.max(4 - 2 * data.state.depth, 1.5);
 }
 
 function minBy(numbers: number[], by: (v: number) => number): number {
@@ -59,42 +58,13 @@ type ID3SVGElement = d3.Selection<
   FlextreeNode<INode>
 >;
 
-function createViewHooks() {
-  return {
-    transformHtml: new Hook<[mm: Markmap, nodes: HTMLElement[]]>(),
-  };
-}
-
 /**
  * A global hook to refresh all markmaps when called.
  */
 export const refreshHook = new Hook<[]>();
 
-export const defaultColorFn = scaleOrdinal(schemeCategory10);
-
-const isMacintosh =
-  typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
-
 export class Markmap {
-  static defaultOptions: IMarkmapOptions = {
-    autoFit: false,
-    color: (node: INode): string => defaultColorFn(`${node.state?.path || ''}`),
-    duration: 500,
-    embedGlobalCSS: true,
-    fitRatio: 0.95,
-    maxWidth: 0,
-    nodeMinHeight: 16,
-    paddingX: 8,
-    scrollForPan: isMacintosh,
-    spacingHorizontal: 80,
-    spacingVertical: 5,
-    initialExpandLevel: -1,
-    zoom: true,
-    pan: true,
-    toggleRecursively: false,
-  };
-
-  options = Markmap.defaultOptions;
+  options = defaultOptions;
 
   state: IMarkmapState;
 
@@ -116,15 +86,16 @@ export class Markmap {
 
   zoom: d3.ZoomBehavior<SVGElement, FlextreeNode<INode>>;
 
-  viewHooks: ReturnType<typeof createViewHooks>;
-
   revokers: (() => void)[] = [];
+
+  private imgCache: Record<string, [number, number]> = {};
+
+  private debouncedRefresh: () => void;
 
   constructor(
     svg: string | SVGElement | ID3SVGElement,
     opts?: Partial<IMarkmapOptions>,
   ) {
-    this.viewHooks = createViewHooks();
     this.svg = (svg as ID3SVGElement).datum
       ? (svg as ID3SVGElement)
       : select(svg as string);
@@ -147,6 +118,7 @@ export class Markmap {
       maxY: 0,
     };
     this.g = this.svg.append('g');
+    this.debouncedRefresh = debounce(() => this.setData(), 200);
     this.revokers.push(
       refreshHook.tap(() => {
         this.setData();
@@ -227,17 +199,23 @@ export class Markmap {
     const groupStyle = maxWidth ? `max-width: ${maxWidth}px` : '';
 
     let foldRecursively = 0;
+    let depth = 0;
     walkTree(node, (item, next, parent) => {
+      depth += 1;
       item.children = item.children?.map((child) => ({ ...child }));
       nodeId += 1;
       const group = mountDom(
-        <div className="markmap-foreign" style={groupStyle}>
+        <div
+          className="markmap-foreign markmap-foreign-testing-max"
+          style={groupStyle}
+        >
           <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
         </div>,
       );
       container.append(group);
       item.state = {
         ...item.state,
+        depth,
         id: nodeId,
         el: group.firstChild as HTMLElement,
       };
@@ -251,18 +229,21 @@ export class Markmap {
         foldRecursively += 1;
       } else if (
         foldRecursively ||
-        (initialExpandLevel >= 0 && item.depth >= initialExpandLevel)
+        (initialExpandLevel >= 0 && item.state.depth >= initialExpandLevel)
       ) {
         item.payload = { ...item.payload, fold: 1 };
       }
       next();
       if (isFoldRecursively) foldRecursively -= 1;
+      depth -= 1;
     });
 
     const nodes = Array.from(container.childNodes).map(
       (group) => group.firstChild as HTMLElement,
     );
-    this.viewHooks.transformHtml.call(this, nodes);
+
+    this._checkImages(container);
+
     // Clone the rendered HTML and set `white-space: nowrap` to it to detect its max-width.
     // The parent node will have a width of the max-width and the original content without
     // `white-space: nowrap` gets re-layouted, then we will get the expected layout, with
@@ -286,6 +267,28 @@ export class Markmap {
     });
     container.remove();
     style.remove();
+  }
+
+  private _checkImages(container: HTMLElement) {
+    container.querySelectorAll('img').forEach((img) => {
+      if (img.width) return;
+      const size = this.imgCache[img.src];
+      if (size?.[0]) {
+        [img.width, img.height] = size;
+      } else if (!size) {
+        this._loadImage(img.src);
+      }
+    });
+  }
+
+  private _loadImage(src: string) {
+    this.imgCache[src] = [0, 0];
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      this.imgCache[src] = [img.naturalWidth, img.naturalHeight];
+      this.debouncedRefresh();
+    };
   }
 
   setOptions(opts?: Partial<IMarkmapOptions>): void {
@@ -362,7 +365,7 @@ export class Markmap {
     const nodeEnter = node
       .enter()
       .append('g')
-      .attr('data-depth', (d) => d.data.depth)
+      .attr('data-depth', (d) => d.data.state.depth)
       .attr('data-path', (d) => d.data.state.path)
       .attr(
         'transform',
@@ -510,7 +513,7 @@ export class Markmap {
           return enter
             .insert('path', 'g')
             .attr('class', 'markmap-link')
-            .attr('data-depth', (d) => d.target.data.depth)
+            .attr('data-depth', (d) => d.target.data.state.depth)
             .attr('data-path', (d) => d.target.data.state.path)
             .attr('d', linkShape({ source, target: source }));
         },
@@ -676,45 +679,4 @@ export class Markmap {
     }
     return mm;
   }
-}
-
-export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
-  const derivedOptions: Partial<IMarkmapOptions> = {};
-  const options = { ...jsonOptions };
-
-  const { color, colorFreezeLevel } = options;
-  if (color?.length === 1) {
-    const solidColor = color[0];
-    derivedOptions.color = () => solidColor;
-  } else if (color?.length) {
-    const colorFn = scaleOrdinal(color);
-    derivedOptions.color = (node: INode) => colorFn(`${node.state.path}`);
-  }
-  if (colorFreezeLevel) {
-    const color = derivedOptions.color || Markmap.defaultOptions.color;
-    derivedOptions.color = (node: INode) => {
-      node = {
-        ...node,
-        state: {
-          ...node.state,
-          path: node.state.path.split('.').slice(0, colorFreezeLevel).join('.'),
-        },
-      };
-      return color(node);
-    };
-  }
-
-  const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;
-  numberKeys.forEach((key) => {
-    const value = options[key];
-    if (typeof value === 'number') derivedOptions[key] = value;
-  });
-
-  const booleanKeys = ['zoom', 'pan'] as const;
-  booleanKeys.forEach((key) => {
-    const value = options[key];
-    if (value != null) derivedOptions[key] = !!value;
-  });
-
-  return derivedOptions;
 }

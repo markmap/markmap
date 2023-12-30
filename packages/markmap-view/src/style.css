@@ -1,5 +1,13 @@
 .markmap {
-  font: 300 16px/20px sans-serif;
+  --markmap-a-color: #0097e6;
+  --markmap-a-hover-color: #00a8ff;
+  --markmap-code-bg: #f0f0f0;
+  --markmap-code-color: #555;
+  --markmap-highlight-bg: #ffeaa7;
+  --markmap-table-border: 1px solid currentColor;
+  --markmap-font: 300 16px/20px sans-serif;
+
+  font: var(--markmap-font);
 
   &-link {
     fill: none;
@@ -15,17 +23,17 @@
     display: inline-block;
 
     a {
-      color: #0097e6;
+      color: var(--markmap-a-color);
       &:hover {
-        color: #00a8ff;
+        color: var(--markmap-a-hover-color);
       }
     }
 
     code {
       padding: 0.25em;
       font-size: calc(1em - 2px);
-      color: #555;
-      background-color: #f0f0f0;
+      color: var(--markmap-code-color);
+      background-color: var(--markmap-code-bg);
       border-radius: 2px;
     }
 
@@ -49,7 +57,25 @@
     }
 
     mark {
-      background: #ffeaa7;
+      background: var(--markmap-highlight-bg);
+    }
+
+    table,
+    th,
+    td {
+      border-collapse: collapse;
+      border: var(--markmap-table-border);
+    }
+
+    img {
+      display: inline-block;
+    }
+  }
+
+  &-foreign-testing-max {
+    img {
+      max-width: none;
+      max-height: none;
     }
   }
 }

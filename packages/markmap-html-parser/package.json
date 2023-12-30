@@ -1,13 +1,13 @@
 {
-  "name": "markmap-lib",
+  "name": "markmap-html-parser",
   "version": "0.15.8",
-  "description": "Visualize your Markdown as mindmaps with Markmap",
+  "description": "Parse HTML into markmap data structure",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
     "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "vite build && TARGET=browserEs vite build --emptyOutDir=false && TARGET=browserJs vite build --emptyOutDir=false",
+    "build:js": "vite build && TARGET=browserJs vite build --emptyOutDir=false",
     "test": "jest test"
   },
   "publishConfig": {
@@ -16,18 +16,14 @@
   },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
-  "unpkg": "dist/browser/index.iife.js",
-  "jsdelivr": "dist/browser/index.iife.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "browser": "./dist/browser/index.mjs",
-      "require": "./dist/index.js",
-      "default": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -36,7 +32,7 @@
     "markmap",
     "mindmap"
   ],
-  "homepage": "https://github.com/markmap/markmap/packages/markmap-lib#readme",
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-html-parser#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/markmap/markmap.git"
@@ -45,21 +41,11 @@
     "url": "https://github.com/markmap/markmap/issues"
   },
   "devDependencies": {
-    "@highlightjs/cdn-assets": "^11.8.0",
-    "@types/remarkable": "^2.0.3",
-    "markmap-common": "workspace:*",
-    "markmap-view": "workspace:*",
-    "webfontloader": "^1.6.28"
+    "markmap-common": "workspace:*"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.6",
-    "highlight.js": "^11.8.0",
-    "js-yaml": "^4.1.0",
-    "katex": "^0.16.8",
-    "markmap-html-parser": "workspace:*",
-    "prismjs": "^1.29.0",
-    "remarkable": "^2.0.1",
-    "remarkable-katex": "^1.2.1"
+    "cheerio": "1.0.0-rc.12"
   },
   "peerDependencies": {
     "markmap-common": "*"

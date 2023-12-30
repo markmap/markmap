@@ -1,0 +1,162 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parseHtml 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [],
+                  "childrenLevel": 0,
+                  "html": "<p>item 1</p>",
+                  "id": 7,
+                  "level": 9,
+                  "parent": 6,
+                  "tag": "li",
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "children": [],
+                          "childrenLevel": 0,
+                          "html": "item 3",
+                          "id": 10,
+                          "level": 9,
+                          "parent": 9,
+                          "tag": "li",
+                        },
+                        {
+                          "children": [],
+                          "childrenLevel": 0,
+                          "html": "item 4",
+                          "id": 11,
+                          "level": 9,
+                          "parent": 9,
+                          "tag": "li",
+                        },
+                      ],
+                      "childrenLevel": 9,
+                      "html": "",
+                      "id": 9,
+                      "level": 8,
+                      "parent": 8,
+                      "tag": "ul",
+                    },
+                  ],
+                  "childrenLevel": 8,
+                  "html": "<p>item 2</p>",
+                  "id": 8,
+                  "level": 9,
+                  "parent": 6,
+                  "tag": "li",
+                },
+              ],
+              "childrenLevel": 9,
+              "html": "",
+              "id": 6,
+              "level": 8,
+              "parent": 5,
+              "tag": "ul",
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "childrenLevel": 0,
+                  "html": "item 5",
+                  "id": 13,
+                  "level": 9,
+                  "parent": 12,
+                  "tag": "li",
+                },
+                {
+                  "children": [],
+                  "childrenLevel": 0,
+                  "html": "item 6",
+                  "id": 14,
+                  "level": 9,
+                  "parent": 12,
+                  "tag": "li",
+                },
+              ],
+              "childrenLevel": 9,
+              "html": "",
+              "id": 12,
+              "level": 8,
+              "parent": 5,
+              "tag": "ol",
+            },
+          ],
+          "childrenLevel": 8,
+          "html": "heading 2",
+          "id": 5,
+          "level": 2,
+          "parent": 1,
+          "tag": "h2",
+        },
+        {
+          "children": [
+            {
+              "children": undefined,
+              "childrenLevel": 0,
+              "html": "<table>
+<tbody><tr>
+<td>
+<ul><li>this list is ignored</li></ul>
+</td>
+</tr>
+</tbody></table>",
+              "id": 16,
+              "level": 7,
+              "parent": 15,
+              "tag": "table",
+            },
+            {
+              "children": [],
+              "childrenLevel": 0,
+              "html": "<img src="image1.png">",
+              "id": 19,
+              "level": 7,
+              "parent": 15,
+              "tag": "img",
+            },
+            {
+              "children": [],
+              "childrenLevel": 0,
+              "html": "<img src="image2.png">",
+              "id": 20,
+              "level": 7,
+              "parent": 15,
+              "tag": "img",
+            },
+          ],
+          "childrenLevel": 7,
+          "html": "A table",
+          "id": 15,
+          "level": 2,
+          "parent": 1,
+          "tag": "h2",
+        },
+      ],
+      "childrenLevel": 2,
+      "html": "heading 1",
+      "id": 1,
+      "level": 1,
+      "parent": 0,
+      "tag": "h1",
+    },
+  ],
+  "childrenLevel": 1,
+  "html": "",
+  "id": 0,
+  "level": 0,
+  "parent": 0,
+  "tag": "",
+}
+`;

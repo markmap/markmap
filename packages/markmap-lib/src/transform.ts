@@ -1,78 +1,46 @@
-import { Remarkable } from 'remarkable';
 import {
-  UrlBuilder,
-  JSItem,
   CSSItem,
   IMarkmapOptions,
-  IMarkmapJSONOptions,
-  persistJS,
-  persistCSS,
-  buildJSItem,
   IPureNode,
+  JSItem,
+  UrlBuilder,
+  buildJSItem,
+  persistCSS,
+  persistJS,
   wrapFunction,
 } from 'markmap-common';
+import { IHtmlParserOptions, buildTree } from 'markmap-html-parser';
+import { Remarkable } from 'remarkable';
+import { baseJsPaths, template } from './constants';
+import { plugins as builtInPlugins, createTransformHooks } from './plugins';
 import {
-  ITransformResult,
-  ITransformPlugin,
   IAssets,
-  ITransformHooks,
   IFeatures,
   ITransformContext,
+  ITransformHooks,
+  ITransformPlugin,
+  ITransformResult,
   ITransformer,
+  IMarkmapJSONOptions,
 } from './types';
-import { createTransformHooks, plugins as builtInPlugins } from './plugins';
-import { template, baseJsPaths } from './constants';
 import { patchCSSItem, patchJSItem } from './util';
 
 export { builtInPlugins };
 
-function cleanNode(node: IPureNode): void {
-  if (node.type === 'heading') {
-    // drop all paragraphs
-    node.children = node.children.filter((item) => item.type !== 'paragraph');
-  } else if (node.type === 'list_item') {
-    // keep first paragraph as content of list_item, drop others
-    node.children = node.children.filter((item) => {
-      if (['paragraph', 'fence'].includes(item.type)) {
-        if (!node.content) {
-          node.content = item.content;
-          node.payload = {
-            ...node.payload,
-            ...item.payload,
-          };
-        }
-        return false;
-      }
-      return true;
-    });
-    if (node.payload?.index != null) {
-      node.content = `${node.payload.index}. ${node.content}`;
-    }
-  } else if (node.type === 'ordered_list') {
-    let index = node.payload?.startIndex ?? 1;
-    node.children.forEach((item) => {
-      if (item.type === 'list_item') {
-        item.payload = {
-          ...item.payload,
-          index,
-        };
-        index += 1;
-      }
-    });
+function cleanNode(node: IPureNode): IPureNode {
+  while (!node.content && node.children.length === 1) {
+    node = node.children[0];
   }
-  if (node.children.length > 0) {
-    node.children.forEach((child) => cleanNode(child));
-    if (node.children.length === 1 && !node.children[0].content) {
-      node.children = node.children[0].children;
-    }
+  while (node.children.length === 1 && !node.children[0].content) {
+    node = {
+      ...node,
+      children: node.children[0].children,
+    };
   }
-}
-
-function resetDepth(node: IPureNode, depth = 0) {
-  node.depth = depth;
-  node.children.forEach((child) => {
-    resetDepth(child, depth + 1);
-  });
+  return {
+    ...node,
+    children: node.children.map(cleanNode),
+  };
 }
 
 export class Transformer implements ITransformer {
@@ -119,101 +87,24 @@ export class Transformer implements ITransformer {
     this.hooks.parser.call(md);
   }
 
-  buildTree(tokens: Remarkable.Token[]): IPureNode {
-    const { md } = this;
-    const root: IPureNode = {
-      type: 'root',
-      depth: 0,
-      content: '',
-      children: [],
-      payload: {},
-    };
-    const stack = [root];
-    let depth = 0;
-    for (const token of tokens) {
-      const payload: IPureNode['payload'] = {};
-      if (token.lines) {
-        payload.lines = token.lines;
-      }
-      let current = stack[stack.length - 1];
-      if (token.type.endsWith('_open')) {
-        const type = token.type.slice(0, -5);
-        if (type === 'heading') {
-          depth = (token as Remarkable.HeadingOpenToken).hLevel;
-          while (current?.depth >= depth) {
-            stack.pop();
-            current = stack[stack.length - 1];
-          }
-        } else {
-          depth = Math.max(depth, current?.depth || 0) + 1;
-          if (type === 'ordered_list') {
-            payload.startIndex = (
-              token as Remarkable.OrderedListOpenToken
-            ).order;
-          }
-        }
-        const item: IPureNode = {
-          type,
-          depth,
-          payload,
-          content: '',
-          children: [],
-        };
-        current.children.push(item);
-        stack.push(item);
-      } else if (!current) {
-        continue;
-      } else if (token.type === `${current.type}_close`) {
-        if (current.type === 'heading') {
-          depth = current.depth;
-        } else {
-          stack.pop();
-          depth = 0;
-        }
-      } else if (token.type === 'inline') {
-        const revoke = this.hooks.htmltag.tap((ctx) => {
-          const comment = ctx.result?.match(/^<!--([\s\S]*?)-->$/);
-          const data = comment?.[1].trim().split(' ');
-          if (data?.[0] === 'fold') {
-            current.payload = {
-              ...current.payload,
-              fold: ['all', 'recursively'].includes(data[1]) ? 2 : 1,
-            };
-            ctx.result = '';
-          }
-        });
-        const text = md.renderer.render([token], (md as any).options, {});
-        revoke();
-        current.content = `${current.content || ''}${text}`;
-      } else if (token.type === 'fence') {
-        const result = md.renderer.render([token], (md as any).options, {});
-        current.children.push({
-          type: token.type,
-          depth: depth + 1,
-          content: result,
-          children: [],
-          payload,
-        });
-      } else {
-        // ignore other nodes
-      }
-    }
-    return root;
-  }
-
-  transform(content: string): ITransformResult {
+  transform(
+    content: string,
+    opts?: Partial<IHtmlParserOptions>,
+  ): ITransformResult {
     const context: ITransformContext = {
       content,
       features: {},
       contentLineOffset: 0,
     };
     this.hooks.beforeParse.call(this.md, context);
-    const tokens = this.md.parse(context.content, {});
+    const html = this.md.render(context.content, {});
     this.hooks.afterParse.call(this.md, context);
-    let root = this.buildTree(tokens);
-    cleanNode(root);
-    if (root.children?.length === 1) root = root.children[0];
-    resetDepth(root);
+    const root = cleanNode(
+      buildTree(html, {
+        ...context.frontmatter?.markmap?.htmlParser,
+        ...opts,
+      }),
+    );
     return { ...context, root };
   }
 

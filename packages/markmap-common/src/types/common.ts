@@ -1,6 +1,4 @@
 export interface IPureNode {
-  type: string;
-  depth: number;
   /**
    * HTML of the node content.
    */
@@ -17,14 +15,6 @@ export interface IPureNode {
      * 2 - folded along with all its child nodes
      */
     fold?: number;
-    /**
-     * Index of list items.
-     */
-    index?: number;
-    /**
-     * Start index of an ordered list.
-     */
-    startIndex?: number;
     /**
      * First and last lines of the source generating the node.
      */
@@ -54,6 +44,7 @@ export interface INodeState {
    * The unique identifier of a node, supposed to be based on content.
    */
   key: string;
+  depth: number;
   el: HTMLElement;
   x0: number;
   y0: number;
@@ -102,18 +93,6 @@ export interface IDeferred<T> {
   promise: Promise<T>;
   resolve: (value: T) => void;
   reject: (error?: unknown) => void;
-}
-
-export interface IMarkmapJSONOptions {
-  color?: string[];
-  colorFreezeLevel?: number;
-  duration?: number;
-  maxWidth?: number;
-  initialExpandLevel?: number;
-  extraJs?: string[];
-  extraCss?: string[];
-  zoom?: boolean;
-  pan?: boolean;
 }
 
 export interface IMarkmapOptions {
