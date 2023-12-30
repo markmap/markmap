@@ -21,6 +21,7 @@ import {
 } from './util';
 import { develop } from './dev-server';
 import { fetchAssets } from './fetch-assets';
+import nodeHtmlToImage from 'node-html-to-image';
 
 export * from 'markmap-lib';
 export { develop, fetchAssets };
@@ -107,6 +108,11 @@ export async function createMarkmap(
     jsonOptions: (frontmatter as any)?.markmap,
   });
   const output = options.output || 'markmap.html';
+  // here we read html file to image
+  nodeHtmlToImage({
+    output: options.outputImage,
+    html: html,
+  });
   await writeFile(output, html, 'utf8');
   if (options.open) open(output);
 }
@@ -131,6 +137,10 @@ export async function main() {
     .option('--no-toolbar', 'do not show toolbar')
     .option('-o, --output <output>', 'specify filename of the output HTML')
     .option(
+      '-O, --output-image <output>',
+      'specify filename of the output image',
+    )
+    .option(
       '--offline',
       'Inline all assets to allow the generated HTML to work offline',
     )
@@ -144,6 +154,8 @@ export async function main() {
       if (offline) await fetchAssets();
       const content = await readFile(input, 'utf8');
       const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
+      const outputImage =
+        cmd.outputImage || `${input.replace(/\.\w*$/, '')}.png`;
       if (cmd.watch) {
         await develop(input, {
           open: cmd.open,
@@ -154,6 +166,7 @@ export async function main() {
         await createMarkmap({
           content,
           output,
+          outputImage,
           open: cmd.open,
           toolbar: cmd.toolbar,
           offline,

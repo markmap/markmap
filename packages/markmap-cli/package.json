@@ -50,6 +50,7 @@
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
     "markmap-toolbar": "workspace:*",
+    "node-html-to-image": "^4.0.0",
     "open": "^10.0.0",
     "pkg-dir": "^8.0.0",
     "read-package-up": "^11.0.0",

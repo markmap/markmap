@@ -51,6 +51,10 @@ export interface IMarkmapCreateOptions {
    * If not provided, the same basename as the Markdown input file will be used.
    */
   output?: string;
+  /**
+   * same as last but for images .png or .jpeg
+   */
+  outputImage?: string;
 }
 
 export interface IFeatures {
