@@ -25,9 +25,16 @@ import {
 } from './types';
 import { patchCSSItem, patchJSItem } from './util';
 
+import { svg_marked, svg_unmarked } from './constants';
+
 export { builtInPlugins };
 
 function cleanNode(node: IPureNode): IPureNode {
+  if (node.content.startsWith('[ ]')) {
+    node.content = `${svg_unmarked} ${node.content.slice(3)}`;
+  } else if (node.content.startsWith('[x]')) {
+    node.content = `${svg_marked} ${node.content.slice(3)}`;
+  }
   while (!node.content && node.children.length === 1) {
     node = node.children[0];
   }
