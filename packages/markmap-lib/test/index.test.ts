@@ -7,6 +7,7 @@ test('plugins', () => {
     'katex',
     'hljs',
     'npmUrl',
+    'checkbox',
   ]);
   const assets = transformer.getAssets();
   expect(assets).toMatchSnapshot();
@@ -96,6 +97,38 @@ test('images', () => {
 ![](image1.png)
 
 ![](image2.png)
+`);
+  expect(result).toMatchSnapshot();
+});
+
+test('checkboxes', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+# Housework
+
+## Main
+
+- [x] Dishes
+- [ ] Cleaning the bathroom
+- [x] Change the light bulbs
+- [ ] something else
+
+## [x] should it works on titles?
+
+## [x] idk if it should!
+
+### [ ] test
+
+### [x] test
+
+- [x] test
+- [x] test
+
+
+## [x] only works on list items is better
+\`\`\`
+[ ] this is not a checkbox either
+\`\`\`
 `);
   expect(result).toMatchSnapshot();
 });
