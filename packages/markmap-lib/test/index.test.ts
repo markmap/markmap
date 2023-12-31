@@ -132,3 +132,18 @@ test('checkboxes', () => {
 `);
   expect(result).toMatchSnapshot();
 });
+
+test('magic comments', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+## heading 1 <!-- markmap: fold -->
+
+- 1 <!-- markmap: foldAll -->
+  - 1.1
+  - 1.2
+- 2
+  - 2.1
+  - 2.2
+`);
+  expect(result).toMatchSnapshot();
+});

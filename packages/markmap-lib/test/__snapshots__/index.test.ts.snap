@@ -314,6 +314,59 @@ exports[`images 1`] = `
 }
 `;
 
+exports[`magic comments 1`] = `
+{
+  "content": "## heading 1 <!-- markmap: fold -->
+
+- 1 <!-- markmap: foldAll -->
+  - 1.1
+  - 1.2
+- 2
+  - 2.1
+  - 2.2
+",
+  "contentLineOffset": 0,
+  "features": {},
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [],
+            "content": "1.1",
+          },
+          {
+            "children": [],
+            "content": "1.2",
+          },
+        ],
+        "content": "1",
+        "payload": {
+          "fold": 2,
+        },
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "content": "2.1",
+          },
+          {
+            "children": [],
+            "content": "2.2",
+          },
+        ],
+        "content": "2",
+      },
+    ],
+    "content": "heading 1",
+    "payload": {
+      "fold": 1,
+    },
+  },
+}
+`;
+
 exports[`plugins 1`] = `
 {
   "scripts": [

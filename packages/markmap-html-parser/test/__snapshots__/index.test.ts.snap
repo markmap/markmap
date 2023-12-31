@@ -94,6 +94,9 @@ exports[`parseHtml 1`] = `
             },
           ],
           "childrenLevel": 8,
+          "comments": [
+            "foldAll",
+          ],
           "html": "heading 2",
           "id": 5,
           "level": 2,
@@ -118,19 +121,19 @@ exports[`parseHtml 1`] = `
               "tag": "table",
             },
             {
-              "children": [],
+              "children": undefined,
               "childrenLevel": 0,
               "html": "<img src="image1.png">",
-              "id": 19,
+              "id": 17,
               "level": 7,
               "parent": 15,
               "tag": "img",
             },
             {
-              "children": [],
+              "children": undefined,
               "childrenLevel": 0,
               "html": "<img src="image2.png">",
-              "id": 20,
+              "id": 18,
               "level": 7,
               "parent": 15,
               "tag": "img",
@@ -158,5 +161,89 @@ exports[`parseHtml 1`] = `
   "level": 0,
   "parent": 0,
   "tag": "",
+}
+`;
+
+exports[`parseHtml 2`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [],
+                  "content": "<p>item 1</p>",
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "children": [],
+                          "content": "item 3",
+                        },
+                        {
+                          "children": [],
+                          "content": "item 4",
+                        },
+                      ],
+                      "content": "",
+                    },
+                  ],
+                  "content": "<p>item 2</p>",
+                },
+              ],
+              "content": "",
+            },
+            {
+              "children": [
+                {
+                  "children": [],
+                  "content": "item 5",
+                },
+                {
+                  "children": [],
+                  "content": "item 6",
+                },
+              ],
+              "content": "",
+            },
+          ],
+          "content": "heading 2",
+          "payload": {
+            "fold": 2,
+          },
+        },
+        {
+          "children": [
+            {
+              "children": [],
+              "content": "<table>
+<tbody><tr>
+<td>
+<ul><li>this list is ignored</li></ul>
+</td>
+</tr>
+</tbody></table>",
+            },
+            {
+              "children": [],
+              "content": "<img src="image1.png">",
+            },
+            {
+              "children": [],
+              "content": "<img src="image2.png">",
+            },
+          ],
+          "content": "A table",
+        },
+      ],
+      "content": "heading 1",
+    },
+  ],
+  "content": "",
 }
 `;

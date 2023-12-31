@@ -1,4 +1,4 @@
-import { parseHtml } from '../src/index';
+import { parseHtml, convertNode } from '../src/index';
 
 test('parseHtml', () => {
   const root = parseHtml(`
@@ -10,7 +10,7 @@ test('parseHtml', () => {
 <li>this list</li>
 <li>is ignored</li>
 </ul>
-<h2>heading 2</h2>
+<h2>heading 2 <!-- markmap: foldAll --></h2>
 <p>text also ignored</p>
 <ul>
 <li><p>item 1</p></li>
@@ -39,4 +39,5 @@ test('parseHtml', () => {
 </body>
 `);
   expect(root).toMatchSnapshot();
+  expect(convertNode(root)).toMatchSnapshot();
 });
