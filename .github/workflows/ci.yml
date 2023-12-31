@@ -2,14 +2,16 @@ name: CI
 
 on:
   - pull_request
-  
+
 jobs:
   block:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install deps
-        run: yarn
-      - name: Lint
-        run: yarn lint
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm build
