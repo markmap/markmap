@@ -586,6 +586,28 @@ export class Markmap {
       .catch(noop);
   }
 
+  findElement(node: INode) {
+    let result:
+      | {
+          data: FlextreeNode<INode>;
+          g: SVGGElement;
+        }
+      | undefined;
+    this.g
+      .selectAll<SVGGElement, FlextreeNode<INode>>(
+        childSelector<SVGGElement>('g'),
+      )
+      .each(function walk(d) {
+        if (d.data === node) {
+          result = {
+            data: d,
+            g: this,
+          };
+        }
+      });
+    return result;
+  }
+
   /**
    * Pan the content to make the provided node visible in the viewport.
    */
@@ -593,16 +615,7 @@ export class Markmap {
     node: INode,
     padding: Partial<IPadding> | undefined,
   ): Promise<void> {
-    let itemData: FlextreeNode<INode> | undefined;
-    this.g
-      .selectAll<SVGGElement, FlextreeNode<INode>>(
-        childSelector<SVGGElement>('g'),
-      )
-      .each(function walk(d) {
-        if (d.data === node) {
-          itemData = d;
-        }
-      });
+    const itemData = this.findElement(node)?.data;
     if (!itemData) return;
     const svgNode = this.svg.node()!;
     const { spacingHorizontal } = this.options;

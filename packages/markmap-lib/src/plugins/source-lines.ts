@@ -11,10 +11,10 @@ const plugin = definePlugin({
     transformHooks.parser.tap((md) => {
       Object.entries(md.renderer.rules).forEach(([key, value]) => {
         if (typeof value === 'function') {
-          md.renderer.rules[key] = patchRule(value);
+          md.renderer.rules[key] = patchRule(value, key);
         } else {
           Object.entries(value).forEach(([k, v]) => {
-            value[k] = patchRule(v);
+            value[k] = patchRule(v, k);
           });
         }
       });
@@ -23,7 +23,7 @@ const plugin = definePlugin({
   },
 });
 
-function patchRule(rule: Remarkable.Rule) {
+function patchRule(rule: Remarkable.Rule, _key: string) {
   return wrapFunction(rule, (render, tokens, idx, ...rest) => {
     let html = render(tokens, idx, ...rest);
     const { lines } = tokens[idx];

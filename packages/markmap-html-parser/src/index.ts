@@ -43,7 +43,7 @@ const SELECTOR_LIST = /^[uo]l$/;
 const SELECTOR_LIST_ITEM = /^li$/;
 
 export const defaultOptions: IHtmlParserOptions = {
-  selector: 'h1,h2,h3,h4,h5,h6,ul,ol,li,table,pre,p>img:first-child:last-child',
+  selector: 'h1,h2,h3,h4,h5,h6,ul,ol,li,table,pre,p>img:only-child',
   selectorWrapper: 'div,p',
   selectorNesting: 'ul,ol,li',
   selectorPreserveTag: 'table,pre,img',
