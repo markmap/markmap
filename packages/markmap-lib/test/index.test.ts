@@ -8,6 +8,7 @@ test('plugins', () => {
     'hljs',
     'npmUrl',
     'checkbox',
+    'sourceLines',
   ]);
   const assets = transformer.getAssets();
   expect(assets).toMatchSnapshot();

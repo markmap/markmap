@@ -4,13 +4,13 @@ test('parseHtml', () => {
   const root = parseHtml(`
 <body>
 <div class="container">
-<h1>heading 1</h1>
+<h1 data-id="h1">heading 1</h1>
 <p>text here will be ignored.</p>
 <ul>
 <li>this list</li>
 <li>is ignored</li>
 </ul>
-<h2>heading 2 <!-- markmap: foldAll --></h2>
+<h2 data-id="h2">heading 2 <!-- markmap: foldAll --></h2>
 <p>text also ignored</p>
 <ul>
 <li><p>item 1</p></li>

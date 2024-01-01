@@ -97,6 +97,9 @@ exports[`parseHtml 1`] = `
           "comments": [
             "foldAll",
           ],
+          "data": {
+            "id": "h2",
+          },
           "html": "heading 2",
           "id": 5,
           "level": 2,
@@ -148,6 +151,9 @@ exports[`parseHtml 1`] = `
         },
       ],
       "childrenLevel": 2,
+      "data": {
+        "id": "h1",
+      },
       "html": "heading 1",
       "id": 1,
       "level": 1,
@@ -215,6 +221,7 @@ exports[`parseHtml 2`] = `
           "content": "heading 2",
           "payload": {
             "fold": 2,
+            "id": "h2",
           },
         },
         {
@@ -242,6 +249,9 @@ exports[`parseHtml 2`] = `
         },
       ],
       "content": "heading 1",
+      "payload": {
+        "id": "h1",
+      },
     },
   ],
   "content": "",

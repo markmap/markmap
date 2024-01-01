@@ -1,21 +1,21 @@
+import { serve } from '@hono/node-server';
+import chokidar from 'chokidar';
+import { EventEmitter } from 'events';
 import { createReadStream } from 'fs';
 import { readFile, stat } from 'fs/promises';
-import { join } from 'path';
-import { EventEmitter } from 'events';
-import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { getMimeType } from 'hono/utils/mime';
-import open from 'open';
-import chokidar from 'chokidar';
+import { IDeferred, INode, defer } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
-import { INode, defer, IDeferred } from 'markmap-common';
+import open from 'open';
+import { join } from 'path';
 import {
-  IDevelopOptions,
   ASSETS_PREFIX,
+  IDevelopOptions,
   addToolbar,
-  localProvider,
   assetsDirPromise,
   createStreamBody,
+  localProvider,
 } from './util';
 
 interface IFileUpdate {
@@ -165,11 +165,14 @@ function startServer(paddingBottom: number) {
     dfs(root);
     return best;
     function dfs(node: INode) {
-      const lines = node.payload?.lines;
+      const [start, end] =
+        (node.payload?.lines as string | undefined)
+          ?.split(',')
+          .map((s) => +s) || [];
       if (
-        lines &&
-        lines[0] <= lineWithoutFrontmatter &&
-        lineWithoutFrontmatter < lines[1]
+        start >= 0 &&
+        start <= lineWithoutFrontmatter &&
+        lineWithoutFrontmatter < end
       ) {
         best = node;
       }

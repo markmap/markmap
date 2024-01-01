@@ -7,6 +7,7 @@ export interface IPureNode {
    * Additional data created on transformation.
    */
   payload?: {
+    [key: string]: unknown;
     /**
      * The folding status of this node.
      *
@@ -15,10 +16,6 @@ export interface IPureNode {
      * 2 - folded along with all its child nodes
      */
     fold?: number;
-    /**
-     * First and last lines of the source generating the node.
-     */
-    lines?: [startLine: number, endLine: number];
   };
   children: IPureNode[];
 }

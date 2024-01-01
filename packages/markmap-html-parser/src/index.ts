@@ -23,6 +23,7 @@ export interface IHtmlNode {
   childrenLevel: Levels;
   children?: IHtmlNode[];
   comments?: string[];
+  data?: Record<string, unknown>;
 }
 
 export interface IHtmlParserOptions {
@@ -94,6 +95,11 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
         }
       }
     });
+    // Extract data attributes
+    const data = $el.data();
+    if (data && Object.keys(data).length) {
+      node.data = data;
+    }
     node.html = (
       ($el.is(options.selectorPreserveTag) ? $.html($el) : $el.html()) || ''
     ).trimEnd();
@@ -187,11 +193,16 @@ export function convertNode(htmlRoot: IHtmlNode) {
       content: htmlNode.html,
       children: next() || [],
     };
+    if (htmlNode.data) {
+      node.payload = {
+        ...htmlNode.data,
+      };
+    }
     if (htmlNode.comments) {
       if (htmlNode.comments.includes('foldAll')) {
-        node.payload = { fold: 2 };
+        node.payload = { ...node.payload, fold: 2 };
       } else if (htmlNode.comments.includes('fold')) {
-        node.payload = { fold: 1 };
+        node.payload = { ...node.payload, fold: 1 };
       }
     }
     return node;
