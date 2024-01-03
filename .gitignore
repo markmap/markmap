@@ -1,6 +1,7 @@
 node_modules
 *.log
 /.idea
+/api
 packages/*/dist
 .nyc_output/
 packages/*/coverage

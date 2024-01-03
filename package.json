@@ -12,6 +12,7 @@
     "husky": "^8.0.3",
     "lerna": "^8.0.1",
     "read-package-up": "^11.0.0",
+    "typedoc": "^0.25.6",
     "vite": "^5.0.10"
   },
   "scripts": {
@@ -23,6 +24,7 @@
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
     "build:js": "pnpm -r build:js",
-    "prepublishOnly": "pnpm build"
+    "build:docs": "typedoc --out api --titleLink / packages/markmap-common/src/index.ts packages/markmap-html-parser/src/index.ts packages/markmap-lib/src/index.ts packages/markmap-toolbar/src/index.ts packages/markmap-view/src/index.ts",
+    "prepublishOnly": "run-s build"
   }
 }
