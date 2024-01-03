@@ -22,7 +22,7 @@
     "test": "pnpm -r test",
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
-    "build:js": "KEEP_DIST=1 pnpm -r build:js",
+    "build:js": "pnpm -r build:js",
     "prepublishOnly": "pnpm build"
   }
 }

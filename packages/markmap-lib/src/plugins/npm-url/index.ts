@@ -1,5 +1,5 @@
-import { definePlugin } from './base';
-import { ITransformHooks } from '../types';
+import { definePlugin } from '../base';
+import { ITransformHooks } from '../../types';
 
 const name = 'npmUrl';
 

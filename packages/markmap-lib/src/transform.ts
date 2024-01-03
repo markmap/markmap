@@ -12,7 +12,7 @@ import {
 import { IHtmlParserOptions, buildTree } from 'markmap-html-parser';
 import { Remarkable } from 'remarkable';
 import { baseJsPaths, template } from './constants';
-import { plugins as builtInPlugins, createTransformHooks } from './plugins';
+import { plugins as availablePlugins, createTransformHooks } from './plugins';
 import {
   IAssets,
   IFeatures,
@@ -25,7 +25,7 @@ import {
 } from './types';
 import { patchCSSItem, patchJSItem } from './util';
 
-export { builtInPlugins };
+export const builtInPlugins = process.env.NO_PLUGINS ? [] : availablePlugins;
 
 function cleanNode(node: IPureNode): IPureNode {
   while (!node.content && node.children.length === 1) {

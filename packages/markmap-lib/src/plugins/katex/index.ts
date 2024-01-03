@@ -1,9 +1,9 @@
 import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
 import { noop, wrapFunction } from 'markmap-common';
-import { ITransformHooks } from '../types';
-import { config, name } from './katex.config';
-import { definePlugin } from './base';
+import { ITransformHooks } from '../../types';
+import { config, name } from './config';
+import { definePlugin } from '../base';
 
 const plugin = definePlugin({
   name,

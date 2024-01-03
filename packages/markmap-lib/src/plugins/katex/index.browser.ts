@@ -1,11 +1,11 @@
 import type { Remarkable } from 'remarkable';
 import remarkableKatex from 'remarkable-katex';
 import { loadJS, noop } from 'markmap-common';
-import { ITransformHooks } from '../types';
-import { config, name } from './katex.config';
-import { addDefaultVersions } from './util';
-import { patchJSItem } from '../util';
-import { definePlugin } from './base';
+import { ITransformHooks } from '../../types';
+import { config, name } from './config';
+import { addDefaultVersions } from '../util';
+import { patchJSItem } from '../../util';
+import { definePlugin } from '../base';
 
 const plugin = definePlugin({
   name,

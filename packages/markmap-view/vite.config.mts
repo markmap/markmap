@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 const configEs = defineConfig({
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     lib: {
       entry: 'src/index.ts',
       formats: ['es'],
@@ -16,7 +16,7 @@ const configEs = defineConfig({
 
 const configJs = defineConfig({
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     outDir: 'dist/browser',
     minify: false,
     lib: {

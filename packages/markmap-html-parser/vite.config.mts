@@ -18,7 +18,7 @@ const define = {
 const configNode = defineConfig({
   define,
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     minify: false,
     lib: {
       entry: 'src/index.ts',
@@ -34,7 +34,7 @@ const configNode = defineConfig({
 const configBrowserJs = defineConfig({
   define,
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     minify: false,
     outDir: 'dist',
     lib: {

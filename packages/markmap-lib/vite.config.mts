@@ -19,19 +19,47 @@ const define = {
   'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
   'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
   'process.env.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
-  'process.env.HLJS_VERSION': JSON.stringify(await getVersion('@highlightjs/cdn-assets/package.json')),
+  'process.env.HLJS_VERSION': JSON.stringify(
+    await getVersion('@highlightjs/cdn-assets/package.json'),
+  ),
   'process.env.KATEX_VERSION': JSON.stringify(await getVersion('katex')),
-  'process.env.WEBFONTLOADER_VERSION': JSON.stringify(await getVersion('webfontloader')),
+  'process.env.WEBFONTLOADER_VERSION': JSON.stringify(
+    await getVersion('webfontloader'),
+  ),
+  'process.env.NO_PLUGINS': 'false',
 };
 
 const configNode = defineConfig({
   define,
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
+    minify: false,
+    lib: {
+      entry: {
+        index: 'src/index.ts',
+        plugins: 'src/plugins/index.ts',
+      },
+      fileName: '[name]',
+      formats: ['cjs', 'es'],
+    },
+    rollupOptions: {
+      external,
+    },
+  },
+});
+
+// Without any built-in plugins
+const configNodeLight = defineConfig({
+  define: {
+    ...define,
+    'process.env.NO_PLUGINS': 'true',
+  },
+  build: {
+    emptyOutDir: false,
     minify: false,
     lib: {
       entry: 'src/index.ts',
-      fileName: 'index',
+      fileName: 'index.no-plugins',
       formats: ['cjs', 'es'],
     },
     rollupOptions: {
@@ -43,7 +71,7 @@ const configNode = defineConfig({
 const configBrowserEs = defineConfig({
   define,
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     minify: false,
     outDir: 'dist/browser',
     lib: {
@@ -63,7 +91,7 @@ const configBrowserEs = defineConfig({
 const configBrowserJs = defineConfig({
   define,
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     minify: false,
     outDir: 'dist/browser',
     lib: {
@@ -73,10 +101,7 @@ const configBrowserJs = defineConfig({
       name: 'markmap',
     },
     rollupOptions: {
-      external: [
-        'katex',
-        'highlight.js',
-      ],
+      external: ['katex', 'highlight.js'],
       output: {
         extend: true,
         globals: {
@@ -93,6 +118,7 @@ const configBrowserJs = defineConfig({
 
 const configMap = {
   node: configNode,
+  nodeLight: configNodeLight,
   browserEs: configBrowserEs,
   browserJs: configBrowserJs,
 };

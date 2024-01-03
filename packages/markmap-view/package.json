@@ -21,7 +21,8 @@
   "scripts": {
     "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "vite build && TARGET=es vite build --emptyOutDir=false"
+    "build:js": "vite build && TARGET=es vite build",
+    "build": "run-s clean build:*"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"

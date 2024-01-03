@@ -7,13 +7,15 @@
   "scripts": {
     "clean": "del-cli dist",
     "build:types": "tsc",
-    "build:js": "vite build && TARGET=browserEs vite build --emptyOutDir=false && TARGET=browserJs vite build --emptyOutDir=false",
+    "build:js": "vite build && TARGET=nodeLight vite build && TARGET=browserEs vite build && TARGET=browserJs vite build",
+    "build": "run-s clean build:*",
     "test": "jest test"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "sideEffects": false,
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "unpkg": "dist/browser/index.iife.js",
@@ -24,6 +26,16 @@
       "browser": "./dist/browser/index.mjs",
       "require": "./dist/index.js",
       "default": "./dist/index.mjs"
+    },
+    "./plugins": {
+      "types": "./dist/plugins/index.d.ts",
+      "require": "./dist/plugins.js",
+      "default": "./dist/plugins.mjs"
+    },
+    "./no-plugins": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.no-plugins.js",
+      "default": "./dist/index.no-plugins.mjs"
     },
     "./package.json": "./package.json"
   },

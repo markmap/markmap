@@ -1,7 +1,7 @@
 import { wrapFunction } from 'markmap-common';
 import type { Remarkable } from 'remarkable';
-import { ITransformHooks } from '../types';
-import { definePlugin } from './base';
+import { ITransformHooks } from '../../types';
+import { definePlugin } from '../base';
 
 const name = 'sourceLines';
 

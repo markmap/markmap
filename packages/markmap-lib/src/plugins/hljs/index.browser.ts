@@ -1,8 +1,8 @@
 import { loadJS, noop } from 'markmap-common';
-import { ITransformHooks } from '../types';
-import { definePlugin } from './base';
-import { config, name } from './prism.config';
-import { patchJSItem } from '../util';
+import { ITransformHooks } from '../../types';
+import { definePlugin } from '../base';
+import { patchJSItem } from '../../util';
+import { name, config } from './config';
 
 const plugin = definePlugin({
   name,
@@ -18,29 +18,20 @@ const plugin = definePlugin({
       return loading;
     };
 
-    function loadLanguageAndRefresh(
-      lang: string,
-      transformHooks: ITransformHooks,
-    ) {
-      autoload().then(() => {
-        window.Prism.plugins.autoloader.loadLanguages([lang], () => {
-          transformHooks.retransform.call();
-        });
-      });
-    }
-
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.set({
-        highlight: (str, lang) => {
+        highlight: (str: string, language?: string) => {
           enableFeature();
-          const { Prism } = window;
-          const grammar = Prism?.languages?.[lang];
-          if (!grammar) {
-            loadLanguageAndRefresh(lang, transformHooks);
-            return '';
+          const { hljs } = window;
+          if (hljs) {
+            return hljs.highlightAuto(str, language ? [language] : undefined)
+              .value;
           }
-          return Prism.highlight(str, grammar, lang);
+          autoload().then(() => {
+            transformHooks.retransform.call();
+          });
+          return str;
         },
       });
     });

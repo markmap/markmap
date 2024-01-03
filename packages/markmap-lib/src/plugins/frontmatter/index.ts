@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
-import { ITransformHooks, IMarkmapJSONOptions } from '../types';
-import { definePlugin } from './base';
+import { ITransformHooks, IMarkmapJSONOptions } from '../../types';
+import { definePlugin } from '../base';
 
 const name = 'frontmatter';
 

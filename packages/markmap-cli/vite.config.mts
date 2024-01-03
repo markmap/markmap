@@ -16,7 +16,7 @@ export default defineConfig({
     'process.env.TOOLBAR_VERSION': JSON.stringify(await getVersion('markmap-toolbar')),
   },
   build: {
-    emptyOutDir: !process.env.KEEP_DIST,
+    emptyOutDir: false,
     minify: false,
     lib: {
       entry: 'src/index.ts',
