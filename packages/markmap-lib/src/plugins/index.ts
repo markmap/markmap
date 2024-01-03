@@ -1,16 +1,26 @@
-import checkbox from './checkbox';
-import frontmatter from './frontmatter';
-import hljs from './hljs';
-import katex from './katex';
-import npmUrl from './npm-url';
-import sourceLines from './source-lines';
+import pluginCheckbox from './checkbox';
+import pluginFrontmatter from './frontmatter';
+import pluginHljs from './hljs';
+import pluginKatex from './katex';
+import pluginNpmUrl from './npm-url';
+import pluginSourceLines from './source-lines';
 
 export * from './base';
+
+export {
+  pluginCheckbox,
+  pluginFrontmatter,
+  pluginHljs,
+  pluginKatex,
+  pluginNpmUrl,
+  pluginSourceLines,
+};
+
 export const plugins = [
-  frontmatter,
-  katex,
-  hljs,
-  npmUrl,
-  checkbox,
-  sourceLines,
+  pluginFrontmatter,
+  pluginKatex,
+  pluginHljs,
+  pluginNpmUrl,
+  pluginCheckbox,
+  pluginSourceLines,
 ];
