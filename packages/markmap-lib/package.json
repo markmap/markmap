@@ -83,7 +83,11 @@
         {
           "rootMode": "upward"
         }
-      ]
+      ],
+      "\\.svg$": "<rootDir>/scripts/file-transform.js"
+    },
+    "moduleNameMapper": {
+      "^(.*\\.svg)\\?raw$": "$1"
     }
   }
 }
