@@ -29,9 +29,8 @@ const plugin = definePlugin({
                 (prevType === 'paragraph_open' &&
                   prevPrevType === 'list_item_open')
               ) {
-                token.content = token.content.replace(
-                  /^\[(.)\] /,
-                  (m, g) => images[g] ? `${images[g]} ` : m,
+                token.content = token.content.replace(/^\[(.)\] /, (m, g) =>
+                  images[g] ? `${images[g]} ` : m,
                 );
               }
             }

@@ -74,6 +74,9 @@ importers:
       markmap-lib:
         specifier: workspace:*
         version: link:../markmap-lib
+      markmap-render:
+        specifier: workspace:*
+        version: link:../markmap-render
       markmap-toolbar:
         specifier: workspace:*
         version: link:../markmap-toolbar
@@ -157,6 +160,19 @@ importers:
       webfontloader:
         specifier: ^1.6.28
         version: 1.6.28
+
+  packages/markmap-render:
+    dependencies:
+      '@babel/runtime':
+        specifier: ^7.22.6
+        version: 7.23.6
+    devDependencies:
+      markmap-common:
+        specifier: workspace:*
+        version: link:../markmap-common
+      markmap-view:
+        specifier: workspace:*
+        version: link:../markmap-view
 
   packages/markmap-toolbar:
     dependencies:

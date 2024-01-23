@@ -111,3 +111,8 @@ export interface IMarkmapOptions {
   toggleRecursively: boolean;
   style?: (id: string) => string;
 }
+
+export interface IAssets {
+  styles?: CSSItem[];
+  scripts?: JSItem[];
+}

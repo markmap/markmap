@@ -1,0 +1,56 @@
+{
+  "name": "markmap-render",
+  "version": "0.15.8",
+  "description": "Visualize your Markdown as mindmaps with Markmap",
+  "author": "Gerald <gera2ld@live.com>",
+  "license": "MIT",
+  "scripts": {
+    "clean": "del-cli dist",
+    "build:types": "tsc",
+    "build:js": "vite build",
+    "build": "run-s clean build:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "markdown",
+    "markmap",
+    "mindmap"
+  ],
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-render#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/markmap/markmap/issues"
+  },
+  "devDependencies": {
+    "markmap-common": "workspace:*",
+    "markmap-view": "workspace:*"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.22.6"
+  },
+  "peerDependencies": {
+    "markmap-common": "*",
+    "markmap-view": "*"
+  }
+}

@@ -1,17 +1,12 @@
 import {
   CSSItem,
-  IMarkmapOptions,
   IPureNode,
   JSItem,
   UrlBuilder,
-  buildJSItem,
-  persistCSS,
-  persistJS,
   wrapFunction,
 } from 'markmap-common';
 import { IHtmlParserOptions, buildTree } from 'markmap-html-parser';
 import { Remarkable } from 'remarkable';
-import { baseJsPaths, template } from './constants';
 import { plugins as availablePlugins, createTransformHooks } from './plugins';
 import {
   IAssets,
@@ -21,7 +16,6 @@ import {
   ITransformPlugin,
   ITransformResult,
   ITransformer,
-  IMarkmapJSONOptions,
 } from './types';
 import { patchCSSItem, patchJSItem } from './util';
 
@@ -135,66 +129,5 @@ export class Transformer implements ITransformer {
       .map((plugin) => plugin.name)
       .filter((name) => features[name]);
     return this.getAssets(keys);
-  }
-
-  fillTemplate(
-    root: IPureNode | null,
-    assets: IAssets,
-    extra?: {
-      baseJs?: JSItem[];
-      jsonOptions?: IMarkmapJSONOptions;
-      getOptions?: (
-        jsonOptions: IMarkmapJSONOptions,
-      ) => Partial<IMarkmapOptions>;
-    },
-  ): string {
-    extra = {
-      ...extra,
-    };
-    extra.baseJs ??= baseJsPaths
-      .map((path) => this.urlBuilder.getFullUrl(path))
-      .map((path) => buildJSItem(path));
-    const { scripts, styles } = assets;
-    const cssList = [...(styles ? persistCSS(styles) : [])];
-    const context = {
-      getMarkmap: () => window.markmap,
-      getOptions: extra.getOptions,
-      jsonOptions: extra.jsonOptions,
-      root,
-    };
-    const jsList = [
-      ...persistJS(
-        [
-          ...extra.baseJs,
-          ...(scripts || []),
-          {
-            type: 'iife',
-            data: {
-              fn: (
-                getMarkmap: (typeof context)['getMarkmap'],
-                getOptions: (typeof context)['getOptions'],
-                root: (typeof context)['root'],
-                jsonOptions: IMarkmapJSONOptions,
-              ) => {
-                const markmap = getMarkmap();
-                window.mm = markmap.Markmap.create(
-                  'svg#mindmap',
-                  (getOptions || markmap.deriveOptions)(jsonOptions),
-                  root,
-                );
-              },
-              getParams: ({ getMarkmap, getOptions, root, jsonOptions }) => {
-                return [getMarkmap, getOptions, root, jsonOptions];
-              },
-            },
-          } as JSItem,
-        ],
-        context,
-      ),
-    ];
-    const html = template
-      .replace('<!--CSS-->', () => cssList.join(''))
-      .replace('<!--JS-->', () => jsList.join(''));
-    return html;
   }
 }

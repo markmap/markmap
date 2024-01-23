@@ -50,6 +50,7 @@
     "hono": "^3.11.8",
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
+    "markmap-render": "workspace:*",
     "markmap-toolbar": "workspace:*",
     "open": "^10.0.0",
     "pkg-dir": "^8.0.0",

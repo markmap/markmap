@@ -12,6 +12,7 @@ import {
   type IMarkmapCreateOptions,
   type IAssets,
 } from 'markmap-lib';
+import { fillTemplate } from 'markmap-render';
 import {
   ASSETS_PREFIX,
   IDevelopOptions,
@@ -101,9 +102,10 @@ export async function createMarkmap(
   if (options.offline) {
     assets = await inlineAssets(assets);
   }
-  const html = transformer.fillTemplate(root, assets, {
+  const html = fillTemplate(root, assets, {
     baseJs: [],
     jsonOptions: (frontmatter as any)?.markmap,
+    urlBuilder: transformer.urlBuilder,
   });
   const output = options.output || 'markmap.html';
   await writeFile(output, html, 'utf8');

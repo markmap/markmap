@@ -7,6 +7,7 @@ import { Hono } from 'hono';
 import { getMimeType } from 'hono/utils/mime';
 import { IDeferred, INode, defer } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
+import { fillTemplate } from 'markmap-render';
 import open from 'open';
 import { join } from 'path';
 import {
@@ -188,10 +189,9 @@ async function setUpServer(
 ) {
   let assets = transformer.getAssets();
   if (options.toolbar) assets = addToolbar(transformer.urlBuilder, assets);
-  const html = `${transformer.fillTemplate(
-    null,
-    assets,
-  )}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
+  const html = `${fillTemplate(null, assets, {
+    urlBuilder: transformer.urlBuilder,
+  })}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
 
   const app = new Hono();
   app.get('/', (c) => c.html(html));
