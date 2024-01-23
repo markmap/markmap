@@ -5,16 +5,11 @@ import { Readable } from 'stream';
 import { ReadableStream } from 'stream/web';
 import { finished } from 'stream/promises';
 import { Transformer, baseJsPaths } from 'markmap-lib';
-import {
-  ASSETS_PREFIX,
-  addToolbar,
-  assetsDirPromise,
-  localProvider,
-} from './util';
+import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
 
 const providerName = 'local-hook';
 
-export async function fetchAssets() {
+export async function fetchAssets(assetsDir = config.assetsDir) {
   const transformer = new Transformer();
   const { provider } = transformer.urlBuilder;
   transformer.urlBuilder.setProvider(providerName, localProvider);
@@ -34,7 +29,6 @@ export async function fetchAssets() {
     .filter((url) => url.startsWith(ASSETS_PREFIX))
     .map((url) => url.slice(ASSETS_PREFIX.length));
   const paths = [...baseJsPaths, ...pluginPaths];
-  const assetsDir = await assetsDirPromise;
   const fastest = await transformer.urlBuilder.getFastestProvider();
   await Promise.all(
     paths.map((path) =>

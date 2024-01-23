@@ -1,6 +1,4 @@
 import type { ReadStream } from 'fs';
-import { resolve } from 'path';
-import { packageDirectory } from 'pkg-dir';
 import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
 
@@ -67,15 +65,6 @@ export function localProvider(path: string) {
   return `${ASSETS_PREFIX}${path}`;
 }
 
-export const rootDirPromise = packageDirectory({
-  cwd: new URL(import.meta.url).pathname,
-});
-
-export const assetsDirPromise = rootDirPromise.then((rootDir) => {
-  if (!rootDir) throw new Error('Could not find root dir');
-  return resolve(rootDir, `.${ASSETS_PREFIX}`);
-});
-
 export function createStreamBody(stream: ReadStream) {
   const body = new ReadableStream({
     start(controller) {
@@ -93,3 +82,7 @@ export function createStreamBody(stream: ReadStream) {
   });
   return body;
 }
+
+export const config = {
+  assetsDir: new URL(`../.${ASSETS_PREFIX}`, import.meta.url).pathname,
+};

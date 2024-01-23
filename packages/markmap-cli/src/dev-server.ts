@@ -13,7 +13,7 @@ import {
   ASSETS_PREFIX,
   IDevelopOptions,
   addToolbar,
-  assetsDirPromise,
+  config,
   createStreamBody,
   localProvider,
 } from './util';
@@ -208,7 +208,7 @@ async function setUpServer(
     await provider[cmd]?.(...args);
     return c.body(null, 204);
   });
-  const assetsDir = await assetsDirPromise;
+  const { assetsDir } = config;
   app.get(`${ASSETS_PREFIX}*`, async (c) => {
     const relpath = c.req.path.slice(ASSETS_PREFIX.length);
     const realpath = join(assetsDir, relpath);

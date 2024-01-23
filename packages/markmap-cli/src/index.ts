@@ -16,20 +16,19 @@ import {
   ASSETS_PREFIX,
   IDevelopOptions,
   addToolbar,
-  assetsDirPromise,
+  config,
   localProvider,
 } from './util';
 import { develop } from './dev-server';
 import { fetchAssets } from './fetch-assets';
 
 export * from 'markmap-lib';
-export { develop, fetchAssets };
+export { config, develop, fetchAssets };
 
 async function loadFile(path: string) {
   if (path.startsWith(ASSETS_PREFIX)) {
     const relpath = path.slice(ASSETS_PREFIX.length);
-    const assetsDir = await assetsDirPromise;
-    return readFile(resolve(assetsDir, relpath), 'utf8');
+    return readFile(resolve(config.assetsDir, relpath), 'utf8');
   }
   const res = await fetch(path);
   if (!res.ok) throw res;
