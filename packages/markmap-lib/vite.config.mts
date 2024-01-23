@@ -13,7 +13,6 @@ const external = [
 
 const define = {
   'process.env.LIB_VERSION': JSON.stringify(pkg.version),
-  'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
   'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
   'process.env.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
   'process.env.HLJS_VERSION': JSON.stringify(

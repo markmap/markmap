@@ -43,14 +43,13 @@
     "url": "https://github.com/markmap/markmap/issues"
   },
   "devDependencies": {
-    "markmap-common": "workspace:*",
-    "markmap-view": "workspace:*"
+    "markmap-common": "workspace:*"
   },
   "dependencies": {
-    "@babel/runtime": "^7.22.6"
+    "@babel/runtime": "^7.22.6",
+    "markmap-view": "workspace:*"
   },
   "peerDependencies": {
-    "markmap-common": "*",
-    "markmap-view": "*"
+    "markmap-common": "*"
   }
 }

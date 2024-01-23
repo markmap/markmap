@@ -60,7 +60,6 @@
     "@highlightjs/cdn-assets": "^11.8.0",
     "@types/remarkable": "^2.0.3",
     "markmap-common": "workspace:*",
-    "markmap-view": "workspace:*",
     "webfontloader": "^1.6.28"
   },
   "dependencies": {
@@ -69,6 +68,7 @@
     "js-yaml": "^4.1.0",
     "katex": "^0.16.8",
     "markmap-html-parser": "workspace:*",
+    "markmap-view": "workspace:*",
     "prismjs": "^1.29.0",
     "remarkable": "^2.0.1",
     "remarkable-katex": "^1.2.1"

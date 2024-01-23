@@ -4,7 +4,8 @@ import { dirname, resolve } from 'path';
 import { Readable } from 'stream';
 import { ReadableStream } from 'stream/web';
 import { finished } from 'stream/promises';
-import { Transformer, baseJsPaths } from 'markmap-lib';
+import { Transformer } from 'markmap-lib';
+import { baseJsPaths } from 'markmap-render';
 import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
 
 const providerName = 'local-hook';

@@ -8,11 +8,10 @@ import { readPackageUp } from 'read-package-up';
 import { CSSItem, JSItem, buildJSItem } from 'markmap-common';
 import {
   Transformer,
-  baseJsPaths,
   type IMarkmapCreateOptions,
   type IAssets,
 } from 'markmap-lib';
-import { fillTemplate } from 'markmap-render';
+import { baseJsPaths, fillTemplate } from 'markmap-render';
 import {
   ASSETS_PREFIX,
   IDevelopOptions,

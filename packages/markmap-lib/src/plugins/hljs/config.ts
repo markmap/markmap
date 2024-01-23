@@ -7,7 +7,6 @@ const preloadScripts = [
 ].map((path) => buildJSItem(path));
 const styles = [
   `@highlightjs/cdn-assets@${process.env.HLJS_VERSION}/styles/default.min.css`,
-  // `highlight.js@${process.env.HLJS_VERSION}/styles/default.css`,
 ].map((path) => buildCSSItem(path));
 export const config = {
   versions: {
