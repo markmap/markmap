@@ -24,7 +24,7 @@
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
     "build:js": "pnpm -r build:js",
-    "build:docs": "typedoc --out api --titleLink / packages/markmap-common/src/index.ts packages/markmap-html-parser/src/index.ts packages/markmap-lib/src/index.ts packages/markmap-toolbar/src/index.ts packages/markmap-view/src/index.ts",
+    "build:docs": "./scripts/build-docs.sh",
     "prepublishOnly": "run-s build"
   }
 }
