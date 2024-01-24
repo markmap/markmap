@@ -1,4 +1,5 @@
 import type { ReadStream } from 'fs';
+import { fileURLToPath } from 'url';
 import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
 
@@ -84,5 +85,5 @@ export function createStreamBody(stream: ReadStream) {
 }
 
 export const config = {
-  assetsDir: new URL(`../.${ASSETS_PREFIX}`, import.meta.url).pathname,
+  assetsDir: fileURLToPath(new URL(`../.${ASSETS_PREFIX}`, import.meta.url)),
 };
