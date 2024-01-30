@@ -1,0 +1,7 @@
+{
+  "includeVersion": false,
+  "excludeExternals": true,
+  "externalPattern": [
+    "**/node_modules/**"
+  ]
+}

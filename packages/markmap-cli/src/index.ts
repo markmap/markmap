@@ -12,17 +12,13 @@ import {
   type IAssets,
 } from 'markmap-lib';
 import { baseJsPaths, fillTemplate } from 'markmap-render';
-import {
-  ASSETS_PREFIX,
-  IDevelopOptions,
-  addToolbar,
-  config,
-  localProvider,
-} from './util';
+import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
+import { IDevelopOptions } from './types';
 import { develop } from './dev-server';
 import { fetchAssets } from './fetch-assets';
 
 export * from 'markmap-lib';
+export * from './types';
 export { config, develop, fetchAssets };
 
 async function loadFile(path: string) {

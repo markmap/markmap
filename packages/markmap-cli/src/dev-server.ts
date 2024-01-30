@@ -12,25 +12,12 @@ import open from 'open';
 import { join } from 'path';
 import {
   ASSETS_PREFIX,
-  IDevelopOptions,
   addToolbar,
   config,
   createStreamBody,
   localProvider,
 } from './util';
-
-interface IFileUpdate {
-  ts?: number;
-  content?: string;
-  line?: number;
-}
-
-interface IContentProvider {
-  getUpdate: (ts: number, timeout?: number) => Promise<IFileUpdate>;
-  setContent: (content: string) => void;
-  setCursor: (line: number) => void;
-  dispose: () => void;
-}
+import { IDevelopOptions, IContentProvider, IFileUpdate } from './types';
 
 function sequence(fn: () => Promise<void>) {
   let promise: Promise<void> | undefined;

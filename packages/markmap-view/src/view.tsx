@@ -26,16 +26,9 @@ import {
 import { defaultOptions, isMacintosh } from './constants';
 import containerCSS from './container.css?inline';
 import css from './style.css?inline';
-import { IMarkmapState } from './types';
+import { IMarkmapState, IPadding, ID3SVGElement } from './types';
 
 export const globalCSS = css;
-
-interface IPadding {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-}
 
 function linkWidth(nodeData: d3.HierarchyNode<INode>): number {
   const data: INode = nodeData.data;
@@ -50,13 +43,6 @@ function minBy(numbers: number[], by: (v: number) => number): number {
 function stopPropagation(e: Event) {
   e.stopPropagation();
 }
-
-type ID3SVGElement = d3.Selection<
-  SVGElement,
-  FlextreeNode<INode>,
-  HTMLElement,
-  FlextreeNode<INode>
->;
 
 /**
  * A global hook to refresh all markmaps when called.
