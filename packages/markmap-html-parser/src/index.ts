@@ -1,4 +1,4 @@
-import { Cheerio, Element, load } from 'cheerio';
+import { AnyNode, Cheerio, CheerioAPI, Element, load } from 'cheerio';
 import { IPureNode, walkTree } from 'markmap-common';
 
 export enum Levels {
@@ -26,28 +26,74 @@ export interface IHtmlNode {
   data?: Record<string, unknown>;
 }
 
-export interface IHtmlParserOptions {
-  /** Matches nodes to be displayed on markmap. */
-  selector: string;
-  /** Matches wrapper elements that should be ignored. */
-  selectorWrapper: string;
-  /** Matches elements that can be nested, such as `li`. */
-  selectorNesting: string;
-  /** Matches elements whose tag name should be preserved, such as `<pre>`, `<img>`. */
-  selectorPreserveTag: string;
+export interface IHtmlParserContext {
+  $node: Cheerio<Element>;
+  $: CheerioAPI;
+  getContent(
+    $node: Cheerio<AnyNode>,
+    preserveTag?: boolean,
+  ): { html?: string; comments?: string[] };
 }
+
+export interface IHtmlParserResult {
+  html?: string | null;
+  comments?: string[];
+  queue?: Cheerio<Element>;
+  nesting?: boolean;
+}
+
+export type IHtmlParserSelectorRules = Record<
+  string,
+  (context: IHtmlParserContext) => IHtmlParserResult
+>;
+
+export interface IHtmlParserOptions {
+  selector: string;
+  selectorRules: IHtmlParserSelectorRules;
+}
+
+const defaultSelectorRules: IHtmlParserSelectorRules = {
+  'div,p': ({ $node }) => ({
+    queue: $node.children(),
+  }),
+  'h1,h2,h3,h4,h5,h6': ({ $node, getContent }) => ({
+    ...getContent($node.contents()),
+  }),
+  'ul,ol': ({ $node }) => ({
+    queue: $node.children(),
+    nesting: true,
+  }),
+  li: ({ $node, getContent }) => {
+    const queue = $node.children().filter('ul,ol');
+    let content: ReturnType<typeof getContent>;
+    if ($node.contents().first().is('div,p')) {
+      content = getContent($node.children().first());
+    } else {
+      let $contents = $node.contents();
+      const i = $contents.index(queue);
+      if (i >= 0) $contents = $contents.slice(0, i);
+      content = getContent($contents);
+    }
+    return {
+      queue,
+      nesting: true,
+      ...content,
+    };
+  },
+  'table,pre,p>img:only-child': ({ $node, getContent }) => ({
+    ...getContent($node),
+  }),
+};
+
+export const defaultOptions: IHtmlParserOptions = {
+  selector: 'h1,h2,h3,h4,h5,h6,ul,ol,li,table,pre,p>img:only-child',
+  selectorRules: defaultSelectorRules,
+};
 
 const MARKMAP_COMMENT_PREFIX = 'markmap: ';
 const SELECTOR_HEADING = /^h[1-6]$/;
 const SELECTOR_LIST = /^[uo]l$/;
 const SELECTOR_LIST_ITEM = /^li$/;
-
-export const defaultOptions: IHtmlParserOptions = {
-  selector: 'h1,h2,h3,h4,h5,h6,ul,ol,li,table,pre,p>img:only-child',
-  selectorWrapper: 'div,p',
-  selectorNesting: 'ul,ol,li',
-  selectorPreserveTag: 'table,pre,img',
-};
 
 function getLevel(tagName: string) {
   if (SELECTOR_HEADING.test(tagName)) return +tagName[1] as Levels;
@@ -73,54 +119,36 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
     childrenLevel: Levels.None,
     children: [],
   };
-  const elMap: Record<number, Cheerio<Element>> = {
-    [id]: $<Element, string>('<div>'),
-  };
-
   const headingStack: IHtmlNode[] = [];
   let skippingHeading = Levels.None;
-  checkNode($root);
-
-  walkTree(rootNode, (node, next) => {
-    next();
-    const $el = elMap[node.id];
-    // Extract magic comments
-    $el.contents().each((_, child) => {
-      if (child.type === 'comment') {
-        const data = child.data.trim();
-        if (data.startsWith(MARKMAP_COMMENT_PREFIX)) {
-          node.comments ||= [];
-          node.comments.push(data.slice(MARKMAP_COMMENT_PREFIX.length).trim());
-          $(child).remove();
-        }
-      }
-    });
-    // Extract data attributes
-    const data = $el.data();
-    if (data && Object.keys(data).length) {
-      node.data = data;
-    }
-    node.html = (
-      ($el.is(options.selectorPreserveTag) ? $.html($el) : $el.html()) || ''
-    ).trimEnd();
-  });
+  checkNodes($root.children());
   return rootNode;
 
-  function addChild(
-    $child: Cheerio<Element>,
-    parent: IHtmlNode,
-    nesting: boolean,
-  ) {
-    const child = $child[0];
+  function addChild(props: {
+    parent: IHtmlNode;
+    nesting: boolean;
+    tagName: string;
+    level: Levels;
+    html: string;
+    comments?: string[];
+    data?: Record<string, unknown>;
+  }) {
+    const { parent } = props;
     const node: IHtmlNode = {
       id: ++id,
-      tag: child.tagName,
-      html: '',
-      level: getLevel(child.tagName),
+      tag: props.tagName,
+      level: props.level,
+      html: props.html,
       childrenLevel: Levels.None,
-      children: nesting ? [] : undefined,
+      children: props.nesting ? [] : undefined,
       parent: parent.id,
     };
+    if (props.comments?.length) {
+      node.comments = props.comments;
+    }
+    if (Object.keys(props.data || {}).length) {
+      node.data = props.data;
+    }
     if (parent.children) {
       if (
         parent.childrenLevel === Levels.None ||
@@ -133,7 +161,6 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
         parent.children.push(node);
       }
     }
-    elMap[node.id] = $child;
     return node;
   }
 
@@ -145,44 +172,61 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
     return heading || rootNode;
   }
 
-  function checkNode($el: Cheerio<Element>, node?: IHtmlNode) {
-    $el.children().each((_, child) => {
+  function getContent($node: Cheerio<AnyNode>) {
+    const result = extractMagicComments($node);
+    const html = $.html(result.$node)?.trimEnd();
+    return { comments: result.comments, html };
+  }
+
+  function extractMagicComments($node: Cheerio<AnyNode>) {
+    const comments: string[] = [];
+    $node = $node.filter((_, child) => {
+      if (child.type === 'comment') {
+        const data = child.data.trim();
+        if (data.startsWith(MARKMAP_COMMENT_PREFIX)) {
+          comments.push(data.slice(MARKMAP_COMMENT_PREFIX.length).trim());
+          return false;
+        }
+      }
+      return true;
+    });
+    return { $node, comments };
+  }
+
+  function checkNodes($els: Cheerio<Element>, node?: IHtmlNode) {
+    $els.each((_, child) => {
       const $child = $(child);
-      if ($child.is(options.selectorWrapper)) {
-        checkNode($child);
+      const rule = Object.entries(options.selectorRules).find(([selector]) =>
+        $child.is(selector),
+      )?.[1];
+      const result = rule?.({ $node: $child, $, getContent });
+      // Wrapper
+      if (result?.queue && !result.nesting) {
+        checkNodes(result.queue, node);
         return;
       }
-      if (!$child.is(options.selector)) {
-        const level = getLevel(child.tagName);
+      const level = getLevel(child.tagName);
+      if (!result) {
         if (level <= Levels.H6) {
           skippingHeading = level;
         }
         return;
       }
-      const level = getLevel(child.tagName);
-      if (skippingHeading > Levels.None && level > skippingHeading) {
-        return;
-      }
+      if (skippingHeading > Levels.None && level > skippingHeading) return;
+      if (!$child.is(options.selector)) return;
       skippingHeading = Levels.None;
-      if ($child.is(options.selectorNesting)) {
-        const childNode = addChild(
-          $child,
-          node || getCurrentHeading(level),
-          true,
-        );
-        if (childNode) {
-          checkNode($child, childNode);
-          $child.remove();
-        }
-        return;
-      }
       const isHeading = level <= Levels.H6;
-      const childNode = addChild(
-        $child,
-        node || getCurrentHeading(level),
-        isHeading,
-      );
+      const childNode = addChild({
+        parent: node || getCurrentHeading(level),
+        nesting: !!result.queue || isHeading,
+        tagName: child.tagName,
+        level,
+        html: result.html || '',
+        comments: result.comments,
+        data: $child.data(),
+      });
       if (isHeading) headingStack.push(childNode);
+      if (result.queue) checkNodes(result.queue, childNode);
     });
   }
 }
