@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		
+		<link href="../_app/immutable/assets/0.y9chhnhh.css" rel="stylesheet">
+		<link href="../_app/immutable/assets/4.o0fc0O25.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.EdCAg8AC.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/scheduler.cCrXIg5T.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/singletons.hLZS8F4T.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.dtPNb2ZB.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.BHOsafEo.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/preload-helper.0HuHagjb.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.Pg1sp_Ik.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.SN33qwID.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/stores.ujtmGWrn.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/ga.ABs2yZEO.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/toast.s0rEaOD7.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/4.cZ0gMUVI.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/globals.0cDDIVm6.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/footer.en5grMva.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/common.SZNCVa_X.js"><title>JSON Options - markmap docs</title><!-- HEAD_svelte-1uneprz_START --><meta name="Description" content="The documentation of markmap packages."><!-- HEAD_svelte-1uneprz_END -->
+	</head>
+	<body>
+		<div>   <nav><ul class="flex"><li><a href="/">home</a> </li><li><a href="/repl">try it out</a> </li><li><a aria-current="page" href="/docs">docs</a> </li> <li class="flex-1"></li> <li class="items-center hidden md:flex"></li> <li data-svelte-h="svelte-76dvj5"><a href="/api/" rel="external">API</a></li> <li data-svelte-h="svelte-z99vu4"><a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a></li> <li data-svelte-h="svelte-28lxup"><a href="https://gera2ld.space/donate/" target="_blank" rel="noreferrer noopener">donate</a></li></ul></nav>   <main class="relative flex md:fs"><aside id="markmap/sidebar" style="width:240px"><a href="#" rel="external" class="backdrop" data-svelte-h="svelte-2cccdd">Close</a> <a href="#markmap/sidebar" rel="external" class="toggle" data-svelte-h="svelte-1i8d3n7">|||</a> <ul class="toc h-full overflow-auto"><li class="toc-item"><a href="markmap">markmap</a></li> <li class="toc-item"><a href="json-options" class="active">JSON Options</a></li> <li class="toc-item"><a href="magic-comments">Magic Comments</a></li> <li class="toc-item"><a href="faq">faq</a></li> <li class="toc-sep">Packages </li><li class="toc-item"><a href="packages--markmap-lib">markmap-lib</a></li> <li class="toc-item"><a href="packages--markmap-render">markmap-render</a></li> <li class="toc-item"><a href="packages--markmap-view">markmap-view</a></li> <li class="toc-item"><a href="packages--markmap-cli">markmap-cli</a></li> <li class="toc-item"><a href="packages--markmap-toolbar">markmap-toolbar</a></li> <li class="toc-item"><a href="packages--coc-markmap">coc-markmap</a></li> </ul></aside> <div class="markdown flex-1 min-w-0 p-4 lg:pr-12 overflow-auto"><h1>JSON Options</h1> <!-- HTML_TAG_START --><p>JSON options are a group of options that can be serialized as JSON and embedded in Markdown.</p>
+<h2 id="usage">Usage</h2>
+<h3 id="markdown-frontmatter">Markdown Frontmatter</h3>
+<p>JSON options can be added to the frontmatter of your Markdown file as the value of <code>markmap</code>.</p>
+<p>For example:</p>
+<pre><code class="language-md">---
+markmap:
+  color:
+    - blue
+  # other options
+---
+
+Markdown content here
+</code></pre>
+<h3 id="markmap-for-vscode">Markmap for VSCode</h3>
+<p>JSON options can be set as <em>Default Options</em> in <a href="https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode">gera2ld.markmap-vscode</a>, so you don&#39;t have to modify frontmatter of each file.</p>
+<p>For example:</p>
+<pre><code class="language-json">{
+    &quot;color&quot;: [&quot;blue&quot;]
+}
+</code></pre>
+<h2 id="option-list">Option List</h2>
+<h3 id="color">color</h3>
+<p>Type: <code>string | string[]</code>, default: <a href="https://github.com/d3/d3-scale-chromatic#schemeCategory10">d3.schemeCategory10</a></p>
+<p>A list of colors to use as the branch and circle colors for each node.</p>
+<p>If none is provided, <a href="https://github.com/d3/d3-scale-chromatic#schemeCategory10">d3.schemeCategory10</a> will be used.</p>
+<h3 id="colorfreezelevel">colorFreezeLevel</h3>
+<p>Type: <code>number</code>, default: <code>0</code></p>
+<p>Freeze color at the specified level of branches, i.e. all child branches will use the color of their ancestor node at the freeze level.</p>
+<p><code>0</code> for no freezing at all.</p>
+<h3 id="duration">duration</h3>
+<p>Type: <code>number</code>, default: <code>500</code></p>
+<p>The animation duration when folding/unfolding a node.</p>
+<h3 id="maxwidth">maxWidth</h3>
+<p>Type: <code>number</code>, default: <code>0</code></p>
+<p>The max width of each node content. <code>0</code> for no limit.</p>
+<h3 id="initialexpandlevel">initialExpandLevel</h3>
+<p>Type: <code>number</code>, default: <code>-1</code></p>
+<p>The maximum level of nodes to expand on initial render.</p>
+<p><code>-1</code> for expanding all levels.</p>
+<h3 id="extrajs">extraJs</h3>
+<p>Type: <code>string[]</code>, default: none</p>
+<p>A list of JavaScript URLs. This is useful to add more features like Katex plugins.</p>
+<h3 id="extracss">extraCss</h3>
+<p>Type: <code>string[]</code>, default: none</p>
+<p>A list of CSS URLs. This is useful to add more features like Katex plugins.</p>
+<h3 id="zoom">zoom</h3>
+<p>Type: <code>boolean</code>, default: <code>true</code></p>
+<p>Whether to allow zooming the markmap.</p>
+<h3 id="pan">pan</h3>
+<p>Type: <code>boolean</code>, default: <code>true</code></p>
+<p>Whether to allow panning the markmap.</p>
+<h3 id="htmlparser">htmlParser</h3>
+<p>Type: <code>object</code></p>
+<p>Pass options to the internal HTML parser, for example to override the default selectors for elements to display.</p>
+<h2 id="why">Why?</h2>
+<p>If you are not a developer, you may skip this part.</p>
+<p>Markmap has its own options which can either be passed on create or afterwards.</p>
+<pre><code class="language-ts">Markmap.create(svg, markmapOptions, data);
+</code></pre>
+<p>However, <code>markmapOptions</code> is a low-level object including complicated logic that can hardly be serialized, so it is not portable.</p>
+<p><code>jsonOptions</code> is introduced for portability but as a tradeoff it can only stand for a subset of <code>markmapOptions</code>.</p>
+<p><code>jsonOptions</code> can be converted to <code>markmapOptions</code> with a single function call:</p>
+<pre><code class="language-ts">import { deriveOptions } from &#39;markmap-view&#39;;
+
+const markmapOptions = deriveOptions(jsonOptions);
+</code></pre>
+<!-- HTML_TAG_END --> <footer data-svelte-h="svelte-1lh3k54">Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer></div></main> <div class="toast-wrapper"></div>  
+			
+			<script>
+				{
+					__sveltekit_76y3gb = {
+						base: new URL("..", location).pathname.slice(0, -1),
+						env: null
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("../_app/immutable/entry/start.EdCAg8AC.js"),
+						import("../_app/immutable/entry/app.BHOsafEo.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data,
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						addEventListener('load', function () {
+							navigator.serviceWorker.register('../service-worker.js');
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

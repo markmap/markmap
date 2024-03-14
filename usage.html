@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		
+		<link href="./_app/immutable/assets/0.y9chhnhh.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.EdCAg8AC.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.cCrXIg5T.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.hLZS8F4T.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.dtPNb2ZB.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.BHOsafEo.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/preload-helper.0HuHagjb.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.Pg1sp_Ik.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.SN33qwID.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/stores.ujtmGWrn.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/ga.ABs2yZEO.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/toast.s0rEaOD7.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/8.ryD3tzOt.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/navigation.VtX9azIU.js">
+	</head>
+	<body>
+		<div>   <nav><ul class="flex"><li><a aria-current="page" href="/">home</a> </li><li><a href="/repl">try it out</a> </li><li><a href="/docs">docs</a> </li> <li class="flex-1"></li> <li class="items-center hidden md:flex"></li> <li data-svelte-h="svelte-76dvj5"><a href="/api/" rel="external">API</a></li> <li data-svelte-h="svelte-z99vu4"><a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a></li> <li data-svelte-h="svelte-28lxup"><a href="https://gera2ld.space/donate/" target="_blank" rel="noreferrer noopener">donate</a></li></ul></nav>   <div class="toast-wrapper"></div>  
+			
+			<script>
+				{
+					__sveltekit_76y3gb = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: null
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("./_app/immutable/entry/start.EdCAg8AC.js"),
+						import("./_app/immutable/entry/app.BHOsafEo.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 8],
+							data,
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						addEventListener('load', function () {
+							navigator.serviceWorker.register('./service-worker.js');
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
