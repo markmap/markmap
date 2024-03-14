@@ -1,4 +1,5 @@
 import type { ReadStream } from 'fs';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
@@ -7,6 +8,7 @@ const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
 const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.js`;
 
+const currentDir = dirname(fileURLToPath(import.meta.url));
 export const ASSETS_PREFIX = '/assets/';
 
 const renderToolbar = () => {
@@ -67,5 +69,5 @@ export function createStreamBody(stream: ReadStream) {
 }
 
 export const config = {
-  assetsDir: fileURLToPath(new URL(`../.${ASSETS_PREFIX}`, import.meta.url)),
+  assetsDir: `${currentDir}${ASSETS_PREFIX}`,
 };

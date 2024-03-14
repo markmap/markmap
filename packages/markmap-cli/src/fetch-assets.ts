@@ -1,11 +1,11 @@
 import { createWriteStream } from 'fs';
 import { mkdir, stat } from 'fs/promises';
-import { dirname, resolve } from 'path';
-import { Readable } from 'stream';
-import { ReadableStream } from 'stream/web';
-import { finished } from 'stream/promises';
 import { Transformer } from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
+import { dirname, resolve } from 'path';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
+import { ReadableStream } from 'stream/web';
 import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
 
 const providerName = 'local-hook';
@@ -30,18 +30,24 @@ export async function fetchAssets(assetsDir = config.assetsDir) {
     .filter((url) => url.startsWith(ASSETS_PREFIX))
     .map((url) => url.slice(ASSETS_PREFIX.length));
   const paths = [...baseJsPaths, ...pluginPaths];
-  const fastest = await transformer.urlBuilder.getFastestProvider();
+  let findingProvider: Promise<string>;
+  const findProvider = () => {
+    findingProvider ||= transformer.urlBuilder.getFastestProvider();
+    return findingProvider;
+  };
   await Promise.all(
     paths.map((path) =>
-      downloadAsset(
-        resolve(assetsDir, path),
-        transformer.urlBuilder.getFullUrl(path, fastest),
+      downloadAsset(resolve(assetsDir, path), async () =>
+        transformer.urlBuilder.getFullUrl(path, await findProvider()),
       ),
     ),
   );
 }
 
-async function downloadAsset(fullPath: string, url: string) {
+async function downloadAsset(
+  fullPath: string,
+  resolveUrl: () => Promise<string>,
+) {
   // console.log(`${url} -> ${fullPath}`);
   try {
     const result = await stat(fullPath);
@@ -50,6 +56,7 @@ async function downloadAsset(fullPath: string, url: string) {
   } catch {
     // ignore
   }
+  const url = await resolveUrl();
   const res = await fetch(url);
   if (!res.ok || !res.body) throw new Error(`Failed to download: ${url}`);
   await mkdir(dirname(fullPath), { recursive: true });
