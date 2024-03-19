@@ -99,6 +99,7 @@ export class Transformer implements ITransformer {
         ...opts,
       }),
     );
+    root.content ||= `${context.frontmatter?.title || ''}`;
     return { ...context, root };
   }
 
