@@ -216,6 +216,13 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
       if (!$child.is(options.selector)) return;
       skippingHeading = Levels.None;
       const isHeading = level <= Levels.H6;
+      let data = $child.data();
+      if ($child.children('code:only-child').length) {
+        data = {
+          ...data,
+          ...$child.children().data(),
+        };
+      }
       const childNode = addChild({
         parent: node || getCurrentHeading(level),
         nesting: !!result.queue || isHeading,
@@ -223,7 +230,7 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
         level,
         html: result.html || '',
         comments: result.comments,
-        data: $child.data(),
+        data,
       });
       if (isHeading) headingStack.push(childNode);
       if (result.queue) checkNodes(result.queue, childNode);

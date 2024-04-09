@@ -1,11 +1,11 @@
-import type { Remarkable } from 'remarkable';
-import remarkableKatex from 'remarkable-katex';
+import katexPlugin from '@iktakahiro/markdown-it-katex';
+import MarkdownIt from 'markdown-it';
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../../types';
-import { config, name } from './config';
-import { addDefaultVersions } from '../util';
 import { patchJSItem } from '../../util';
 import { definePlugin } from '../base';
+import { addDefaultVersions } from '../util';
+import { config, name } from './config';
 
 const plugin = definePlugin({
   name,
@@ -36,15 +36,15 @@ const plugin = definePlugin({
     };
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
-      md.use(remarkableKatex);
-      md.renderer.rules.katex = (
-        tokens: Remarkable.ContentToken[],
-        idx: number,
-      ) => {
-        enableFeature();
-        const result = renderKatex(tokens[idx].content, !!tokens[idx].block);
-        return result;
-      };
+      md.use(katexPlugin);
+      ['math_block', 'math_inline'].forEach((key) => {
+        const fn: MarkdownIt.Renderer.RenderRule = (tokens, idx) => {
+          enableFeature();
+          const result = renderKatex(tokens[idx].content, !!tokens[idx].block);
+          return result;
+        };
+        md.renderer.rules[key] = fn;
+      });
     });
     transformHooks.beforeParse.tap((_, context) => {
       enableFeature = () => {

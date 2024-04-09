@@ -1,9 +1,8 @@
-import type { Remarkable } from 'remarkable';
-import remarkableKatex from 'remarkable-katex';
+import katexPlugin from '@iktakahiro/markdown-it-katex';
 import { noop, wrapFunction } from 'markmap-common';
 import { ITransformHooks } from '../../types';
-import { config, name } from './config';
 import { definePlugin } from '../base';
+import { config, name } from './config';
 
 const plugin = definePlugin({
   name,
@@ -11,14 +10,16 @@ const plugin = definePlugin({
   transform(transformHooks: ITransformHooks) {
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
-      md.use(remarkableKatex);
-      md.renderer.rules.katex = wrapFunction(
-        md.renderer.rules.katex as Remarkable.Rule<Remarkable.ContentToken>,
-        (render, ...args) => {
-          enableFeature();
-          return render(...args);
-        },
-      );
+      md.use(katexPlugin);
+      ['math_block', 'math_inline'].forEach((key) => {
+        const fn = md.renderer.rules[key];
+        if (fn) {
+          md.renderer.rules[key] = wrapFunction(fn, (render, ...args) => {
+            enableFeature();
+            return render(...args);
+          });
+        }
+      });
     });
     transformHooks.beforeParse.tap((_, context) => {
       enableFeature = () => {

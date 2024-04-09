@@ -81,11 +81,6 @@ export type CSSStylesheetItem = {
 };
 export type CSSItem = CSSStyleItem | CSSStylesheetItem;
 
-export interface IWrapContext<T extends unknown[], U> {
-  args: T;
-  result?: U;
-}
-
 export interface IDeferred<T> {
   promise: Promise<T>;
   resolve: (value: T) => void;

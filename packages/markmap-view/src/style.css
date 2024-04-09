@@ -23,6 +23,10 @@
   &-foreign {
     display: inline-block;
 
+    p {
+      margin: 0;
+    }
+
     a {
       color: var(--markmap-a-color);
       &:hover {

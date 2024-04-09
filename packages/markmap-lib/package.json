@@ -58,20 +58,25 @@
   },
   "devDependencies": {
     "@highlightjs/cdn-assets": "^11.8.0",
-    "@types/remarkable": "^2.0.3",
+    "@types/katex": "^0.16.7",
+    "@types/markdown-it": "^14.0.0",
     "markmap-common": "workspace:*",
     "webfontloader": "^1.6.28"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.6",
+    "@iktakahiro/markdown-it-katex": "^4.0.1",
     "highlight.js": "^11.8.0",
     "js-yaml": "^4.1.0",
     "katex": "^0.16.8",
+    "markdown-it": "^14.1.0",
+    "markdown-it-ins": "^4.0.0",
+    "markdown-it-mark": "^4.0.0",
+    "markdown-it-sub": "^2.0.0",
+    "markdown-it-sup": "^2.0.0",
     "markmap-html-parser": "workspace:*",
     "markmap-view": "workspace:*",
-    "prismjs": "^1.29.0",
-    "remarkable": "^2.0.1",
-    "remarkable-katex": "^1.2.1"
+    "prismjs": "^1.29.0"
   },
   "peerDependencies": {
     "markmap-common": "*"

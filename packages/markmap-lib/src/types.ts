@@ -1,35 +1,22 @@
-import {
-  CSSItem,
-  Hook,
-  IPureNode,
-  IWrapContext,
-  JSItem,
-  UrlBuilder,
-} from 'markmap-common';
+import type MarkdownIt from 'markdown-it';
+import { CSSItem, Hook, IPureNode, JSItem, UrlBuilder } from 'markmap-common';
 import { IHtmlParserOptions } from 'markmap-html-parser';
 import { IMarkmapJSONOptions as IMarkmapJSONOptionsForView } from 'markmap-view';
-import type { Remarkable } from 'remarkable';
-
-type Htmltag = Remarkable.Rule<Remarkable.HtmlTagToken, string>;
 
 export interface ITransformHooks {
   transformer: ITransformer;
   /**
    * Tapped once when the parser is created.
    */
-  parser: Hook<[md: Remarkable]>;
+  parser: Hook<[md: MarkdownIt]>;
   /**
    * Tapped every time before Markdown content is parsed.
    */
-  beforeParse: Hook<[md: Remarkable, context: ITransformContext]>;
+  beforeParse: Hook<[md: MarkdownIt, context: ITransformContext]>;
   /**
    * Tapped every time after Markdown content is parsed.
    */
-  afterParse: Hook<[md: Remarkable, context: ITransformContext]>;
-  /**
-   * Tapped when Remarkable renders an HTML tag in Markdown.
-   */
-  htmltag: Hook<[ctx: IWrapContext<Parameters<Htmltag>, ReturnType<Htmltag>>]>;
+  afterParse: Hook<[md: MarkdownIt, context: ITransformContext]>;
   /**
    * Used in autoloader to force rerender when resource is loaded.
    */

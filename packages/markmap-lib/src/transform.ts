@@ -1,12 +1,7 @@
-import {
-  CSSItem,
-  IPureNode,
-  JSItem,
-  UrlBuilder,
-  wrapFunction,
-} from 'markmap-common';
+import type MarkdownIt from 'markdown-it';
+import { CSSItem, IPureNode, JSItem, UrlBuilder } from 'markmap-common';
 import { IHtmlParserOptions, buildTree } from 'markmap-html-parser';
-import { Remarkable } from 'remarkable';
+import { initializeMarkdownIt } from './markdown-it';
 import { plugins as availablePlugins, createTransformHooks } from './plugins';
 import {
   IAssets,
@@ -40,7 +35,7 @@ function cleanNode(node: IPureNode): IPureNode {
 export class Transformer implements ITransformer {
   hooks: ITransformHooks;
 
-  md: Remarkable;
+  md: MarkdownIt;
 
   assetsMap: Record<string, IAssets> = {};
 
@@ -64,19 +59,7 @@ export class Transformer implements ITransformer {
     }
     this.assetsMap = assetsMap;
 
-    const md = new Remarkable('full', {
-      html: true,
-      breaks: true,
-      maxNesting: Infinity,
-    } as Remarkable.Options);
-    md.renderer.rules.htmltag = wrapFunction(
-      md.renderer.rules.htmltag,
-      (render, ...args) => {
-        const result = render(...args);
-        this.hooks.htmltag.call({ args, result });
-        return result;
-      },
-    );
+    const md = initializeMarkdownIt();
     this.md = md;
     this.hooks.parser.call(md);
   }

@@ -9,7 +9,6 @@ export function createTransformHooks(
     parser: new Hook(),
     beforeParse: new Hook(),
     afterParse: new Hook(),
-    htmltag: new Hook(),
     retransform: new Hook(),
   };
 }
