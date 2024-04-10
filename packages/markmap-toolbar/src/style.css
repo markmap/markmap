@@ -1,7 +1,7 @@
 .mm-toolbar {
-  @apply flex items-center rounded bg-white border border-solid border-gray-300 leading-none p-1 select-none;
+  @apply flex items-center rounded bg-white border border-solid border-zinc-300 leading-none p-1 select-none;
   &:hover {
-    @apply border-gray-400;
+    @apply border-zinc-400;
   }
   svg {
     @apply block;
@@ -24,20 +24,36 @@
       @apply ml-1;
     }
     > * {
-      @apply cursor-pointer text-gray-400 text-center text-xs;
+      @apply cursor-pointer text-zinc-400 text-center text-xs;
       min-width: 20px;
       height: 20px;
       line-height: 20px;
     }
     &.active,
     &:hover {
-      @apply bg-gray-200 rounded;
+      @apply bg-zinc-200 rounded;
       > * {
-        @apply text-gray-800;
+        @apply text-zinc-800;
       }
     }
     &.active {
-      @apply bg-gray-300;
+      @apply bg-zinc-300;
+    }
+  }
+}
+
+.markmap-dark .mm-toolbar {
+  @apply bg-zinc-800 border-zinc-600 text-zinc-400;
+
+  &:hover {
+    @apply border-zinc-500;
+  }
+
+  > *:hover {
+    @apply bg-zinc-600;
+
+    > * {
+      @apply text-zinc-200;
     }
   }
 }

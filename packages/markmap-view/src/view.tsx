@@ -26,7 +26,7 @@ import {
 import { defaultOptions, isMacintosh } from './constants';
 import containerCSS from './container.css?inline';
 import css from './style.css?inline';
-import { IMarkmapState, IPadding, ID3SVGElement } from './types';
+import { ID3SVGElement, IMarkmapState, IPadding } from './types';
 
 export const globalCSS = css;
 
@@ -445,7 +445,9 @@ export class Markmap {
       .attr('cy', (d) => d.xSize)
       .attr('stroke', (d) => color(d.data))
       .attr('fill', (d) =>
-        d.data.payload?.fold && d.data.children ? color(d.data) : '#fff',
+        d.data.payload?.fold && d.data.children
+          ? color(d.data)
+          : 'var(--markmap-circle-open-bg)',
       );
 
     const foreignObject = nodeMerge
