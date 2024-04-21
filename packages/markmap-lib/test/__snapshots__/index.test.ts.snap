@@ -395,6 +395,32 @@ exports[`images 1`] = `
 }
 `;
 
+exports[`links - target=_blank 1`] = `
+{
+  "content": "## heading 1
+
+- [Google](https://www.google.com)
+",
+  "contentLineOffset": 0,
+  "features": {},
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "<a href="https://www.google.com" target="_blank">Google</a>",
+        "payload": {
+          "lines": "2,3",
+        },
+      },
+    ],
+    "content": "heading 1",
+    "payload": {
+      "lines": "0,1",
+    },
+  },
+}
+`;
+
 exports[`magic comments 1`] = `
 {
   "content": "## heading 1 <!-- markmap: fold -->

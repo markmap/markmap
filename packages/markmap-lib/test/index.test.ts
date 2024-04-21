@@ -1,4 +1,5 @@
-import { Transformer } from '../src/index';
+import { wrapFunction } from 'markmap-common';
+import { Transformer, builtInPlugins } from '../src/index';
 
 test('plugins', () => {
   const transformer = new Transformer();
@@ -145,6 +146,36 @@ test('magic comments', () => {
 - 2
   - 2.1
   - 2.2
+`);
+  expect(result).toMatchSnapshot();
+});
+
+test('links - target=_blank', () => {
+  const transformer = new Transformer([
+    ...builtInPlugins,
+    {
+      name: 'target-blank',
+      transform(transformHooks) {
+        transformHooks.parser.tap((md) => {
+          md.renderer.renderAttrs = wrapFunction(
+            md.renderer.renderAttrs,
+            (renderAttrs, token) => {
+              let attrs = renderAttrs(token);
+              if (token.type === 'link_open') {
+                attrs += ' target="_blank"';
+              }
+              return attrs;
+            },
+          );
+        });
+        return {};
+      },
+    },
+  ]);
+  const result = transformer.transform(`\
+## heading 1
+
+- [Google](https://www.google.com)
 `);
   expect(result).toMatchSnapshot();
 });
