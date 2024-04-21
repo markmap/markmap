@@ -24,10 +24,7 @@
       @apply ml-1;
     }
     > * {
-      @apply cursor-pointer text-zinc-400 text-center text-xs;
-      min-width: 20px;
-      height: 20px;
-      line-height: 20px;
+      @apply min-w-4 cursor-pointer text-zinc-400 text-center text-xs;
     }
     &.active,
     &:hover {
