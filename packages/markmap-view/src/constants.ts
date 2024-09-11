@@ -12,6 +12,7 @@ export const defaultOptions: IMarkmapOptions = {
   duration: 500,
   embedGlobalCSS: true,
   fitRatio: 0.95,
+  maxInitialScale: 2,
   maxWidth: 0,
   nodeMinHeight: 16,
   paddingX: 8,

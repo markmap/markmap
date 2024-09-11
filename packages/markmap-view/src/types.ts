@@ -16,6 +16,8 @@ export interface IMarkmapJSONOptions {
   duration?: number;
   maxWidth?: number;
   initialExpandLevel?: number;
+  fitRatio?: number;
+  maxInitialScale?: number;
   extraJs?: string[];
   extraCss?: string[];
   zoom?: boolean;

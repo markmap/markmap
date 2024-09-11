@@ -29,7 +29,13 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
     };
   }
 
-  const numberKeys = ['duration', 'maxWidth', 'initialExpandLevel'] as const;
+  const numberKeys = [
+    'duration',
+    'maxWidth',
+    'initialExpandLevel',
+    'fitRatio',
+    'maxInitialScale',
+  ] as const;
   numberKeys.forEach((key) => {
     const value = options[key];
     if (typeof value === 'number') derivedOptions[key] = value;

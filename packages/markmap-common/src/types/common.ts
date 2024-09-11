@@ -94,6 +94,7 @@ export interface IMarkmapOptions {
   duration: number;
   embedGlobalCSS: boolean;
   fitRatio: number;
+  maxInitialScale: number;
   maxWidth: number;
   nodeMinHeight: number;
   paddingX: number;

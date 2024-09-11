@@ -549,7 +549,7 @@ export class Markmap {
   /**
    * Fit the content to the viewport.
    */
-  async fit(): Promise<void> {
+  async fit(maxScale = this.options.maxInitialScale): Promise<void> {
     const svgNode = this.svg.node()!;
     const { width: offsetWidth, height: offsetHeight } =
       svgNode.getBoundingClientRect();
@@ -560,7 +560,7 @@ export class Markmap {
     const scale = Math.min(
       (offsetWidth / naturalWidth) * fitRatio,
       (offsetHeight / naturalHeight) * fitRatio,
-      2,
+      maxScale,
     );
     const initialZoom = zoomIdentity
       .translate(
@@ -676,7 +676,9 @@ export class Markmap {
     const mm = new Markmap(svg, opts);
     if (data) {
       mm.setData(data);
-      mm.fit(); // always fit for the first render
+      requestAnimationFrame(() => {
+        mm.fit(); // always fit for the first render
+      });
     }
     return mm;
   }
