@@ -8,7 +8,8 @@
     "clean": "del-cli dist",
     "build:types": "tsc",
     "build:js": "vite build",
-    "build": "run-s clean build:*"
+    "build": "run-s clean build:*",
+    "prepublishOnly": "run-s build"
   },
   "publishConfig": {
     "access": "public",

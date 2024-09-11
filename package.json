@@ -24,7 +24,6 @@
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
     "build:js": "pnpm -r build:js",
-    "build:docs": "typedoc --out api --titleLink / --name markmap",
-    "prepublishOnly": "run-s build"
+    "build:docs": "typedoc --out api --titleLink / --name markmap"
   }
 }

@@ -9,6 +9,7 @@
     "build:types": "tsc",
     "build:js": "vite build && TARGET=nodeLight vite build && TARGET=browserEs vite build && TARGET=browserJs vite build",
     "build": "run-s clean build:*",
+    "prepublishOnly": "run-s build",
     "test": "jest test"
   },
   "publishConfig": {

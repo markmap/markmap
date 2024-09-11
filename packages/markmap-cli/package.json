@@ -29,6 +29,7 @@
     "build:types": "tsc",
     "build:js": "vite build",
     "build": "run-s clean build:*",
+    "prepublishOnly": "run-s build",
     "postinstall": "node -e \"import('./dist/index.js').then(({ fetchAssets }) => fetchAssets()).catch(() => {})\""
   },
   "bugs": {
