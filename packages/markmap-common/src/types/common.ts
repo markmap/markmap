@@ -88,24 +88,24 @@ export interface IDeferred<T> {
 }
 
 export interface IMarkmapOptions {
-  id?: string;
   autoFit: boolean;
   color: (node: INode) => string;
   duration: number;
   embedGlobalCSS: boolean;
   fitRatio: number;
+  id?: string;
+  initialExpandLevel: number;
   maxInitialScale: number;
   maxWidth: number;
   nodeMinHeight: number;
   paddingX: number;
+  pan: boolean;
   scrollForPan: boolean;
   spacingHorizontal: number;
   spacingVertical: number;
-  initialExpandLevel: number;
-  zoom: boolean;
-  pan: boolean;
-  toggleRecursively: boolean;
   style?: (id: string) => string;
+  toggleRecursively: boolean;
+  zoom: boolean;
 }
 
 export interface IAssets {

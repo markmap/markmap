@@ -31,10 +31,14 @@ export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
 
   const numberKeys = [
     'duration',
-    'maxWidth',
-    'initialExpandLevel',
     'fitRatio',
+    'initialExpandLevel',
     'maxInitialScale',
+    'maxWidth',
+    'nodeMinHeight',
+    'paddingX',
+    'spacingHorizontal',
+    'spacingVertical',
   ] as const;
   numberKeys.forEach((key) => {
     const value = options[key];

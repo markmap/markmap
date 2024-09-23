@@ -4,8 +4,8 @@ import {
   IPureNode,
   JSItem,
   UrlBuilder,
-  urlBuilder as defaultUrlBuilder,
   buildJSItem,
+  urlBuilder as defaultUrlBuilder,
   persistCSS,
   persistJS,
 } from 'markmap-common';

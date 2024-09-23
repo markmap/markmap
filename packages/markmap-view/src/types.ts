@@ -1,5 +1,5 @@
-import { INode } from 'markmap-common';
 import { FlextreeNode } from 'd3-flextree';
+import { INode } from 'markmap-common';
 
 export interface IMarkmapState {
   id: string;
@@ -10,19 +10,23 @@ export interface IMarkmapState {
   maxY: number;
 }
 
-export interface IMarkmapJSONOptions {
-  color?: string[];
-  colorFreezeLevel?: number;
-  duration?: number;
-  maxWidth?: number;
-  initialExpandLevel?: number;
-  fitRatio?: number;
-  maxInitialScale?: number;
-  extraJs?: string[];
-  extraCss?: string[];
-  zoom?: boolean;
-  pan?: boolean;
-}
+export type IMarkmapJSONOptions = Partial<{
+  color: string[];
+  colorFreezeLevel: number;
+  duration: number;
+  extraCss: string[];
+  extraJs: string[];
+  fitRatio: number;
+  initialExpandLevel: number;
+  maxInitialScale: number;
+  maxWidth: number;
+  nodeMinHeight: number;
+  paddingX: number;
+  pan: boolean;
+  spacingHorizontal: number;
+  spacingVertical: number;
+  zoom: boolean;
+}>;
 
 export interface IPadding {
   left: number;
