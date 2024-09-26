@@ -32,6 +32,7 @@ exports[`checkboxes 1`] = `
   "features": {
     "hljs": true,
   },
+  "parserOptions": undefined,
   "root": {
     "children": [
       {
@@ -156,6 +157,7 @@ exports[`content with frontmatter 1`] = `
       ],
     },
   },
+  "parserOptions": {},
   "root": {
     "children": [
       {
@@ -206,6 +208,7 @@ exports[`content with line endings of CRLF 1`] = `
       ],
     },
   },
+  "parserOptions": {},
   "root": {
     "children": [
       {
@@ -255,6 +258,7 @@ exports[`content with only katex enabled 1`] = `
       ],
     },
   },
+  "parserOptions": {},
   "root": {
     "children": [],
     "content": "<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mrow><mo>−</mo><mi>b</mi><mi>p</mi><mi>m</mi><mi>s</mi><mi>q</mi><mi>r</mi><mi>t</mi><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>−</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow><mi>o</mi><mi>v</mi><mi>e</mi><mi>r</mi><mn>2</mn><mi>a</mi></mrow></mrow><annotation encoding="application/x-tex">x = {-b pm sqrt{b^2-4ac} over 2a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.008548em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord">−</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">m</span><span class="mord mathnormal">s</span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">4</span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span></span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord">2</span><span class="mord mathnormal">a</span></span></span></span></span>",
@@ -303,6 +307,7 @@ exports[`content without frontmatter 1`] = `
 ",
   "contentLineOffset": 0,
   "features": {},
+  "parserOptions": undefined,
   "root": {
     "children": [
       {
@@ -379,6 +384,7 @@ exports[`images 1`] = `
 ",
   "contentLineOffset": 0,
   "features": {},
+  "parserOptions": undefined,
   "root": {
     "children": [
       {
@@ -403,6 +409,7 @@ exports[`links - target=_blank 1`] = `
 ",
   "contentLineOffset": 0,
   "features": {},
+  "parserOptions": undefined,
   "root": {
     "children": [
       {
@@ -434,6 +441,7 @@ exports[`magic comments 1`] = `
 ",
   "contentLineOffset": 0,
   "features": {},
+  "parserOptions": undefined,
   "root": {
     "children": [
       {
@@ -535,6 +543,7 @@ exports[`tables 1`] = `
 ",
   "contentLineOffset": 0,
   "features": {},
+  "parserOptions": undefined,
   "root": {
     "children": [],
     "content": "<table data-lines="0,4">

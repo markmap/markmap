@@ -68,7 +68,6 @@
     "@babel/runtime": "^7.22.6",
     "@iktakahiro/markdown-it-katex": "^4.0.1",
     "highlight.js": "^11.8.0",
-    "js-yaml": "^4.1.0",
     "katex": "^0.16.8",
     "markdown-it": "^14.1.0",
     "markdown-it-ins": "^4.0.0",
@@ -77,7 +76,8 @@
     "markdown-it-sup": "^2.0.0",
     "markmap-html-parser": "workspace:*",
     "markmap-view": "workspace:*",
-    "prismjs": "^1.29.0"
+    "prismjs": "^1.29.0",
+    "yaml": "^2.5.1"
   },
   "peerDependencies": {
     "markmap-common": "*"

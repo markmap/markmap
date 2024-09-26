@@ -1,5 +1,5 @@
-import yaml from 'js-yaml';
-import { ITransformHooks, IMarkmapJSONOptions } from '../../types';
+import { parse } from 'yaml';
+import { IMarkmapJSONOptions, ITransformHooks } from '../../types';
 import { definePlugin } from '../base';
 
 const name = 'frontmatter';
@@ -7,15 +7,15 @@ const name = 'frontmatter';
 export default definePlugin({
   name,
   transform(transformHooks: ITransformHooks) {
-    transformHooks.beforeParse.tap((md, context) => {
+    transformHooks.beforeParse.tap((_md, context) => {
       const { content } = context;
       if (!/^---\r?\n/.test(content)) return;
       const match = /\n---\r?\n/.exec(content);
       if (!match) return;
-      const raw = content.slice(4, match.index);
+      const raw = content.slice(4, match.index).trimEnd();
       let frontmatter: typeof context.frontmatter;
       try {
-        frontmatter = yaml.load(raw);
+        frontmatter = parse(raw.replace(/\r?\n|\r/g, '\n'));
         if (frontmatter?.markmap) {
           frontmatter.markmap = normalizeMarkmapJsonOptions(
             frontmatter.markmap,
@@ -25,6 +25,10 @@ export default definePlugin({
         return;
       }
       context.frontmatter = frontmatter;
+      context.parserOptions = {
+        ...context.parserOptions,
+        ...frontmatter?.markmap?.htmlParser,
+      };
       context.content = content.slice(match.index + match[0].length);
       context.contentLineOffset =
         content.slice(0, match.index).split('\n').length + 1;

@@ -13,10 +13,10 @@ importers:
         version: 7.23.4(@babel/core@7.23.6)
       '@gera2ld/plaid':
         specifier: ~2.7.0
-        version: 2.7.0(vite@5.0.10)
+        version: 2.7.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))
       '@gera2ld/plaid-test':
         specifier: ~2.6.0
-        version: 2.6.0(@babel/core@7.23.6)(eslint@8.56.0)(typescript@5.3.3)
+        version: 2.6.0(@babel/core@7.23.6)(@types/node@20.10.5)(@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       del-cli:
         specifier: ^5.1.0
         version: 5.1.0
@@ -25,7 +25,7 @@ importers:
         version: 8.0.3
       lerna:
         specifier: ^8.0.1
-        version: 8.0.1
+        version: 8.0.1(encoding@0.1.13)
       read-package-up:
         specifier: ^11.0.0
         version: 11.0.0
@@ -34,7 +34,7 @@ importers:
         version: 0.25.6(typescript@5.3.3)
       vite:
         specifier: ^5.0.10
-        version: 5.0.10
+        version: 5.0.10(@types/node@20.10.5)
 
   packages/markmap-autoloader:
     devDependencies:
@@ -129,9 +129,6 @@ importers:
       highlight.js:
         specifier: ^11.8.0
         version: 11.8.0
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
       katex:
         specifier: ^0.16.8
         version: 0.16.8
@@ -159,6 +156,9 @@ importers:
       prismjs:
         specifier: ^1.29.0
         version: 1.29.0
+      yaml:
+        specifier: ^2.5.1
+        version: 2.5.1
     devDependencies:
       '@highlightjs/cdn-assets':
         specifier: ^11.8.0
@@ -1041,6 +1041,7 @@ packages:
   '@humanwhocodes/config-array@0.11.13':
     resolution: {integrity: sha512-JSBDMiDKSzQVngfRjOdFXgFfklaXI4K9nLF49Auh21lmBWRLIK3+xTErTWD4KU54pb6coM6ESE7Awz/FNU3zgQ==}
     engines: {node: '>=10.10.0'}
+    deprecated: Use @eslint/config-array instead
 
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
@@ -1048,6 +1049,7 @@ packages:
 
   '@humanwhocodes/object-schema@2.0.1':
     resolution: {integrity: sha512-dvuCeX5fC9dXgJn9t+X5atfmgQAzUOWqS1254Gh0m6i8wKd10ebXkfNKiRK+1GWi/yTvvLDHpoxLr0xxxeslWw==}
+    deprecated: Use @eslint/object-schema instead
 
   '@hutson/parse-repository-url@3.0.2':
     resolution: {integrity: sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==}
@@ -1945,6 +1947,7 @@ packages:
   are-we-there-yet@3.0.1:
     resolution: {integrity: sha512-QZW4EDmGwlYur0Yyf/b2uGucHQMa8aFUP7eu9ddR73vvhFyt4V0Vl3QHPcTNJ8l6qYOBdxgXdnBXQrHilfRQBg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
+    deprecated: This package is no longer supported.
 
   argparse@1.0.10:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
@@ -3045,6 +3048,7 @@ packages:
   gauge@4.0.4:
     resolution: {integrity: sha512-f9m+BEN5jkg6a0fZjleidjN51VE1X+mPFQ2DJ0uv1V39oCLCbsGe6yjbBnp7eK7z/+GAon99a3nHuqbuuthyPg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
+    deprecated: This package is no longer supported.
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -3120,13 +3124,16 @@ packages:
 
   glob@7.1.4:
     resolution: {integrity: sha512-hkLPepehmnKk41pUGm3sYxoFs/umurYfYJCerbXEyFIWcAzvpipAgVkBqqT9RBKMGjnq6kMuyYwha6csxbiM1A==}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
+    deprecated: Glob versions prior to v9 are no longer supported
 
   glob@9.3.5:
     resolution: {integrity: sha512-e1LleDykUz2Iu+MTYdkSsuWX8lvAjAcs0Xef0lNIu0S2wOAzuTxCJtcd9S3cijlwYF18EsU3rzb8jPVobxDh9Q==}
@@ -3344,6 +3351,7 @@ packages:
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -4272,6 +4280,7 @@ packages:
   npmlog@6.0.2:
     resolution: {integrity: sha512-/vBvz5Jfr9dT/aFWd0FIRf+T/Q2WBsLENygUaFUqstqsycmZAP/t5BvFJTK0viFmSUxiUKTUplWy5vt+rvKIxg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
+    deprecated: This package is no longer supported.
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
@@ -4799,6 +4808,7 @@ packages:
 
   rimraf@3.0.2:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
+    deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
 
   rimraf@4.4.1:
@@ -5526,6 +5536,11 @@ packages:
 
   yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
+
+  yaml@2.5.1:
+    resolution: {integrity: sha512-bLQOjaX/ADgQ20isPJRvF0iRUHIxVhYvr53Of7wGcWlO2jvtUlH5m87DsmulFVxRpNLOnI4tB6p/oh8D7kpn9Q==}
+    engines: {node: '>= 14'}
+    hasBin: true
 
   yargs-parser@20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
@@ -6421,12 +6436,12 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.23.6
 
-  '@gera2ld/plaid-test@2.6.0(@babel/core@7.23.6)(eslint@8.56.0)(typescript@5.3.3)':
+  '@gera2ld/plaid-test@2.6.0(@babel/core@7.23.6)(@types/node@20.10.5)(@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)':
     dependencies:
       '@types/jest': 29.5.11
       babel-jest: 29.7.0(@babel/core@7.23.6)
-      eslint-plugin-jest: 27.6.0(eslint@8.56.0)(jest@29.7.0)(typescript@5.3.3)
-      jest: 29.7.0
+      eslint-plugin-jest: 27.6.0(@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(jest@29.7.0(@types/node@20.10.5))(typescript@5.3.3)
+      jest: 29.7.0(@types/node@20.10.5)
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/node'
@@ -6438,27 +6453,27 @@ snapshots:
       - ts-node
       - typescript
 
-  '@gera2ld/plaid@2.7.0(vite@5.0.10)':
+  '@gera2ld/plaid@2.7.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))':
     dependencies:
       '@babel/core': 7.23.6
       '@babel/plugin-transform-runtime': 7.23.6(@babel/core@7.23.6)
       '@babel/preset-env': 7.23.6(@babel/core@7.23.6)
       '@babel/preset-typescript': 7.23.3(@babel/core@7.23.6)
-      '@typescript-eslint/eslint-plugin': 6.15.0(@typescript-eslint/parser@6.15.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/eslint-plugin': 6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.15.0(eslint@8.56.0)(typescript@5.3.3)
       '@unocss/postcss': 0.58.0(postcss@8.4.32)
       autoprefixer: 10.4.16(postcss@8.4.32)
       commander: 11.1.0
       eslint: 8.56.0
       eslint-config-prettier: 9.1.0(eslint@8.56.0)
-      eslint-plugin-prettier: 5.1.0(eslint-config-prettier@9.1.0)(eslint@8.56.0)(prettier@3.1.1)
+      eslint-plugin-prettier: 5.1.0(eslint-config-prettier@9.1.0(eslint@8.56.0))(eslint@8.56.0)(prettier@3.1.1)
       npm-run-all: 4.1.5
       postcss: 8.4.32
       postcss-calc: 9.0.1(postcss@8.4.32)
       postcss-nested: 6.0.1(postcss@8.4.32)
       prettier: 3.1.1
       typescript: 5.3.3
-      unocss: 0.58.0(postcss@8.4.32)(vite@5.0.10)
+      unocss: 0.58.0(postcss@8.4.32)(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))
     transitivePeerDependencies:
       - '@types/eslint'
       - '@unocss/webpack'
@@ -6699,12 +6714,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.1
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  '@lerna/create@8.0.1(typescript@5.3.3)':
+  '@lerna/create@8.0.1(encoding@0.1.13)(typescript@5.3.3)':
     dependencies:
       '@npmcli/run-script': 7.0.2
       '@nx/devkit': 17.2.6(nx@17.2.6)
       '@octokit/plugin-enterprise-rest': 6.0.1
-      '@octokit/rest': 19.0.11
+      '@octokit/rest': 19.0.11(encoding@0.1.13)
       byte-size: 8.1.1
       chalk: 4.1.0
       clone-deep: 4.0.1
@@ -6734,7 +6749,7 @@ snapshots:
       make-dir: 4.0.0
       minimatch: 3.0.5
       multimatch: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.6.7(encoding@0.1.13)
       npm-package-arg: 8.1.1
       npm-packlist: 5.1.1
       npm-registry-fetch: 14.0.5
@@ -6892,11 +6907,11 @@ snapshots:
 
   '@octokit/auth-token@3.0.4': {}
 
-  '@octokit/core@4.2.4':
+  '@octokit/core@4.2.4(encoding@0.1.13)':
     dependencies:
       '@octokit/auth-token': 3.0.4
-      '@octokit/graphql': 5.0.6
-      '@octokit/request': 6.2.8
+      '@octokit/graphql': 5.0.6(encoding@0.1.13)
+      '@octokit/request': 6.2.8(encoding@0.1.13)
       '@octokit/request-error': 3.0.3
       '@octokit/types': 9.3.2
       before-after-hook: 2.2.3
@@ -6910,9 +6925,9 @@ snapshots:
       is-plain-object: 5.0.0
       universal-user-agent: 6.0.1
 
-  '@octokit/graphql@5.0.6':
+  '@octokit/graphql@5.0.6(encoding@0.1.13)':
     dependencies:
-      '@octokit/request': 6.2.8
+      '@octokit/request': 6.2.8(encoding@0.1.13)
       '@octokit/types': 9.3.2
       universal-user-agent: 6.0.1
     transitivePeerDependencies:
@@ -6922,19 +6937,19 @@ snapshots:
 
   '@octokit/plugin-enterprise-rest@6.0.1': {}
 
-  '@octokit/plugin-paginate-rest@6.1.2(@octokit/core@4.2.4)':
+  '@octokit/plugin-paginate-rest@6.1.2(@octokit/core@4.2.4(encoding@0.1.13))':
     dependencies:
-      '@octokit/core': 4.2.4
+      '@octokit/core': 4.2.4(encoding@0.1.13)
       '@octokit/tsconfig': 1.0.2
       '@octokit/types': 9.3.2
 
-  '@octokit/plugin-request-log@1.0.4(@octokit/core@4.2.4)':
+  '@octokit/plugin-request-log@1.0.4(@octokit/core@4.2.4(encoding@0.1.13))':
     dependencies:
-      '@octokit/core': 4.2.4
+      '@octokit/core': 4.2.4(encoding@0.1.13)
 
-  '@octokit/plugin-rest-endpoint-methods@7.2.3(@octokit/core@4.2.4)':
+  '@octokit/plugin-rest-endpoint-methods@7.2.3(@octokit/core@4.2.4(encoding@0.1.13))':
     dependencies:
-      '@octokit/core': 4.2.4
+      '@octokit/core': 4.2.4(encoding@0.1.13)
       '@octokit/types': 10.0.0
 
   '@octokit/request-error@3.0.3':
@@ -6943,23 +6958,23 @@ snapshots:
       deprecation: 2.3.1
       once: 1.4.0
 
-  '@octokit/request@6.2.8':
+  '@octokit/request@6.2.8(encoding@0.1.13)':
     dependencies:
       '@octokit/endpoint': 7.0.6
       '@octokit/request-error': 3.0.3
       '@octokit/types': 9.3.2
       is-plain-object: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.6.7(encoding@0.1.13)
       universal-user-agent: 6.0.1
     transitivePeerDependencies:
       - encoding
 
-  '@octokit/rest@19.0.11':
+  '@octokit/rest@19.0.11(encoding@0.1.13)':
     dependencies:
-      '@octokit/core': 4.2.4
-      '@octokit/plugin-paginate-rest': 6.1.2(@octokit/core@4.2.4)
-      '@octokit/plugin-request-log': 1.0.4(@octokit/core@4.2.4)
-      '@octokit/plugin-rest-endpoint-methods': 7.2.3(@octokit/core@4.2.4)
+      '@octokit/core': 4.2.4(encoding@0.1.13)
+      '@octokit/plugin-paginate-rest': 6.1.2(@octokit/core@4.2.4(encoding@0.1.13))
+      '@octokit/plugin-request-log': 1.0.4(@octokit/core@4.2.4(encoding@0.1.13))
+      '@octokit/plugin-rest-endpoint-methods': 7.2.3(@octokit/core@4.2.4(encoding@0.1.13))
     transitivePeerDependencies:
       - encoding
 
@@ -6999,11 +7014,13 @@ snapshots:
 
   '@polka/url@1.0.0-next.24': {}
 
-  '@rollup/pluginutils@5.1.0':
+  '@rollup/pluginutils@5.1.0(rollup@4.9.1)':
     dependencies:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
+    optionalDependencies:
+      rollup: 4.9.1
 
   '@rollup/rollup-android-arm-eabi@4.9.1':
     optional: true
@@ -7316,7 +7333,7 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0)(eslint@8.56.0)(typescript@5.3.3)':
+  '@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)':
     dependencies:
       '@eslint-community/regexpp': 4.10.0
       '@typescript-eslint/parser': 6.15.0(eslint@8.56.0)(typescript@5.3.3)
@@ -7331,6 +7348,7 @@ snapshots:
       natural-compare: 1.4.0
       semver: 7.5.4
       ts-api-utils: 1.0.3(typescript@5.3.3)
+    optionalDependencies:
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -7343,6 +7361,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 6.15.0
       debug: 4.3.4
       eslint: 8.56.0
+    optionalDependencies:
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -7364,6 +7383,7 @@ snapshots:
       debug: 4.3.4
       eslint: 8.56.0
       ts-api-utils: 1.0.3(typescript@5.3.3)
+    optionalDependencies:
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -7381,6 +7401,7 @@ snapshots:
       is-glob: 4.0.3
       semver: 7.5.4
       tsutils: 3.21.0(typescript@5.3.3)
+    optionalDependencies:
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -7394,6 +7415,7 @@ snapshots:
       is-glob: 4.0.3
       semver: 7.5.4
       ts-api-utils: 1.0.3(typescript@5.3.3)
+    optionalDependencies:
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -7439,19 +7461,20 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unocss/astro@0.58.0(vite@5.0.10)':
+  '@unocss/astro@0.58.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))':
     dependencies:
       '@unocss/core': 0.58.0
       '@unocss/reset': 0.58.0
-      '@unocss/vite': 0.58.0(vite@5.0.10)
-      vite: 5.0.10
+      '@unocss/vite': 0.58.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))
+    optionalDependencies:
+      vite: 5.0.10(@types/node@20.10.5)
     transitivePeerDependencies:
       - rollup
 
-  '@unocss/cli@0.58.0':
+  '@unocss/cli@0.58.0(rollup@4.9.1)':
     dependencies:
       '@ampproject/remapping': 2.2.1
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.9.1)
       '@unocss/config': 0.58.0
       '@unocss/core': 0.58.0
       '@unocss/preset-uno': 0.58.0
@@ -7575,10 +7598,10 @@ snapshots:
     dependencies:
       '@unocss/core': 0.58.0
 
-  '@unocss/vite@0.58.0(vite@5.0.10)':
+  '@unocss/vite@0.58.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))':
     dependencies:
       '@ampproject/remapping': 2.2.1
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.9.1)
       '@unocss/config': 0.58.0
       '@unocss/core': 0.58.0
       '@unocss/inspector': 0.58.0
@@ -7587,7 +7610,7 @@ snapshots:
       chokidar: 3.5.3
       fast-glob: 3.3.2
       magic-string: 0.30.5
-      vite: 5.0.10
+      vite: 5.0.10(@types/node@20.10.5)
     transitivePeerDependencies:
       - rollup
 
@@ -8207,9 +8230,10 @@ snapshots:
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
+    optionalDependencies:
       typescript: 5.3.3
 
-  create-jest@29.7.0:
+  create-jest@29.7.0(@types/node@20.10.5):
     dependencies:
       '@jest/types': 29.6.3
       chalk: 4.1.2
@@ -8700,22 +8724,25 @@ snapshots:
     dependencies:
       eslint: 8.56.0
 
-  eslint-plugin-jest@27.6.0(eslint@8.56.0)(jest@29.7.0)(typescript@5.3.3):
+  eslint-plugin-jest@27.6.0(@typescript-eslint/eslint-plugin@6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(jest@29.7.0(@types/node@20.10.5))(typescript@5.3.3):
     dependencies:
       '@typescript-eslint/utils': 5.62.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
-      jest: 29.7.0
+    optionalDependencies:
+      '@typescript-eslint/eslint-plugin': 6.15.0(@typescript-eslint/parser@6.15.0(eslint@8.56.0)(typescript@5.3.3))(eslint@8.56.0)(typescript@5.3.3)
+      jest: 29.7.0(@types/node@20.10.5)
     transitivePeerDependencies:
       - supports-color
       - typescript
 
-  eslint-plugin-prettier@5.1.0(eslint-config-prettier@9.1.0)(eslint@8.56.0)(prettier@3.1.1):
+  eslint-plugin-prettier@5.1.0(eslint-config-prettier@9.1.0(eslint@8.56.0))(eslint@8.56.0)(prettier@3.1.1):
     dependencies:
       eslint: 8.56.0
-      eslint-config-prettier: 9.1.0(eslint@8.56.0)
       prettier: 3.1.1
       prettier-linter-helpers: 1.0.0
       synckit: 0.8.6
+    optionalDependencies:
+      eslint-config-prettier: 9.1.0(eslint@8.56.0)
 
   eslint-scope@5.1.1:
     dependencies:
@@ -9588,13 +9615,13 @@ snapshots:
       - babel-plugin-macros
       - supports-color
 
-  jest-cli@29.7.0:
+  jest-cli@29.7.0(@types/node@20.10.5):
     dependencies:
       '@jest/core': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
       chalk: 4.1.2
-      create-jest: 29.7.0
+      create-jest: 29.7.0(@types/node@20.10.5)
       exit: 0.1.2
       import-local: 3.1.0
       jest-config: 29.7.0(@types/node@20.10.5)
@@ -9612,7 +9639,6 @@ snapshots:
       '@babel/core': 7.23.6
       '@jest/test-sequencer': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 20.10.5
       babel-jest: 29.7.0(@babel/core@7.23.6)
       chalk: 4.1.2
       ci-info: 3.9.0
@@ -9632,6 +9658,8 @@ snapshots:
       pretty-format: 29.7.0
       slash: 3.0.0
       strip-json-comments: 3.1.1
+    optionalDependencies:
+      '@types/node': 20.10.5
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -9713,7 +9741,7 @@ snapshots:
       jest-util: 29.7.0
 
   jest-pnp-resolver@1.2.3(jest-resolve@29.7.0):
-    dependencies:
+    optionalDependencies:
       jest-resolve: 29.7.0
 
   jest-regex-util@29.6.3: {}
@@ -9851,12 +9879,12 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jest@29.7.0:
+  jest@29.7.0(@types/node@20.10.5):
     dependencies:
       '@jest/core': 29.7.0
       '@jest/types': 29.6.3
       import-local: 3.1.0
-      jest-cli: 29.7.0
+      jest-cli: 29.7.0(@types/node@20.10.5)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -9928,13 +9956,13 @@ snapshots:
     dependencies:
       package-json: 8.1.1
 
-  lerna@8.0.1:
+  lerna@8.0.1(encoding@0.1.13):
     dependencies:
-      '@lerna/create': 8.0.1(typescript@5.3.3)
+      '@lerna/create': 8.0.1(encoding@0.1.13)(typescript@5.3.3)
       '@npmcli/run-script': 7.0.2
       '@nx/devkit': 17.2.6(nx@17.2.6)
       '@octokit/plugin-enterprise-rest': 6.0.1
-      '@octokit/rest': 19.0.11
+      '@octokit/rest': 19.0.11(encoding@0.1.13)
       byte-size: 8.1.1
       chalk: 4.1.0
       clone-deep: 4.0.1
@@ -9970,7 +9998,7 @@ snapshots:
       make-dir: 4.0.0
       minimatch: 3.0.5
       multimatch: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.6.7(encoding@0.1.13)
       npm-package-arg: 8.1.1
       npm-packlist: 5.1.1
       npm-registry-fetch: 14.0.5
@@ -10358,9 +10386,11 @@ snapshots:
 
   node-fetch-native@1.4.1: {}
 
-  node-fetch@2.6.7:
+  node-fetch@2.6.7(encoding@0.1.13):
     dependencies:
       whatwg-url: 5.0.0
+    optionalDependencies:
+      encoding: 0.1.13
 
   node-gyp@10.0.1:
     dependencies:
@@ -11664,10 +11694,10 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  unocss@0.58.0(postcss@8.4.32)(vite@5.0.10):
+  unocss@0.58.0(postcss@8.4.32)(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5)):
     dependencies:
-      '@unocss/astro': 0.58.0(vite@5.0.10)
-      '@unocss/cli': 0.58.0
+      '@unocss/astro': 0.58.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))
+      '@unocss/cli': 0.58.0(rollup@4.9.1)
       '@unocss/core': 0.58.0
       '@unocss/extractor-arbitrary-variants': 0.58.0
       '@unocss/postcss': 0.58.0(postcss@8.4.32)
@@ -11685,8 +11715,9 @@ snapshots:
       '@unocss/transformer-compile-class': 0.58.0
       '@unocss/transformer-directives': 0.58.0
       '@unocss/transformer-variant-group': 0.58.0
-      '@unocss/vite': 0.58.0(vite@5.0.10)
-      vite: 5.0.10
+      '@unocss/vite': 0.58.0(rollup@4.9.1)(vite@5.0.10(@types/node@20.10.5))
+    optionalDependencies:
+      vite: 5.0.10(@types/node@20.10.5)
     transitivePeerDependencies:
       - postcss
       - rollup
@@ -11744,12 +11775,13 @@ snapshots:
     dependencies:
       builtins: 5.0.1
 
-  vite@5.0.10:
+  vite@5.0.10(@types/node@20.10.5):
     dependencies:
       esbuild: 0.19.10
       postcss: 8.4.32
       rollup: 4.9.1
     optionalDependencies:
+      '@types/node': 20.10.5
       fsevents: 2.3.3
 
   vscode-oniguruma@1.7.0: {}
@@ -11878,6 +11910,8 @@ snapshots:
   yallist@3.1.1: {}
 
   yallist@4.0.0: {}
+
+  yaml@2.5.1: {}
 
   yargs-parser@20.2.9: {}
 

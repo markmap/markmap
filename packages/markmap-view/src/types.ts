@@ -26,6 +26,7 @@ export type IMarkmapJSONOptions = Partial<{
   spacingHorizontal: number;
   spacingVertical: number;
   zoom: boolean;
+  htmlParser: any;
 }>;
 
 export interface IPadding {

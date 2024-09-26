@@ -61,6 +61,7 @@ export interface ITransformContext {
   };
   /** The index of line where content without frontmatter starts */
   contentLineOffset: number;
+  parserOptions?: Partial<IHtmlParserOptions>;
 }
 
 export interface ITransformResult extends ITransformContext {

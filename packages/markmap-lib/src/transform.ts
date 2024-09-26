@@ -66,22 +66,18 @@ export class Transformer implements ITransformer {
 
   transform(
     content: string,
-    opts?: Partial<IHtmlParserOptions>,
+    fallbackParserOptions?: Partial<IHtmlParserOptions>,
   ): ITransformResult {
     const context: ITransformContext = {
       content,
       features: {},
       contentLineOffset: 0,
+      parserOptions: fallbackParserOptions,
     };
     this.hooks.beforeParse.call(this.md, context);
     const html = this.md.render(context.content, {});
     this.hooks.afterParse.call(this.md, context);
-    const root = cleanNode(
-      buildTree(html, {
-        ...context.frontmatter?.markmap?.htmlParser,
-        ...opts,
-      }),
-    );
+    const root = cleanNode(buildTree(html, context.parserOptions));
     root.content ||= `${context.frontmatter?.title || ''}`;
     return { ...context, root };
   }
