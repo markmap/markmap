@@ -1,4 +1,4 @@
-import katexPlugin from '@iktakahiro/markdown-it-katex';
+import katexPlugin from '@vscode/markdown-it-katex';
 import { noop, wrapFunction } from 'markmap-common';
 import { ITransformHooks } from '../../types';
 import { definePlugin } from '../base';
