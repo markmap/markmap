@@ -1,9 +1,10 @@
 import { builtinModules } from 'module';
+import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'vite';
 import { versionLoader } from '../../util.mjs';
-import pkg from './package.json' assert { type: 'json' };
 
 const getVersion = versionLoader(import.meta.url);
+const { packageJson: pkg } = await readPackageUp();
 
 const external = [
   ...builtinModules,

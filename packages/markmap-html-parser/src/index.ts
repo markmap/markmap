@@ -1,4 +1,4 @@
-import { AnyNode, Cheerio, CheerioAPI, Element, load } from 'cheerio';
+import { Cheerio, CheerioAPI, load } from 'cheerio';
 import { IPureNode, walkTree } from 'markmap-common';
 
 export enum Levels {
@@ -27,10 +27,10 @@ export interface IHtmlNode {
 }
 
 export interface IHtmlParserContext {
-  $node: Cheerio<Element>;
+  $node: Cheerio<any>;
   $: CheerioAPI;
   getContent(
-    $node: Cheerio<AnyNode>,
+    $node: Cheerio<any>,
     preserveTag?: boolean,
   ): { html?: string; comments?: string[] };
 }
@@ -38,7 +38,7 @@ export interface IHtmlParserContext {
 export interface IHtmlParserResult {
   html?: string | null;
   comments?: string[];
-  queue?: Cheerio<Element>;
+  queue?: Cheerio<any>;
   nesting?: boolean;
 }
 
@@ -172,13 +172,13 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
     return heading || rootNode;
   }
 
-  function getContent($node: Cheerio<AnyNode>) {
+  function getContent($node: Cheerio<any>) {
     const result = extractMagicComments($node);
     const html = $.html(result.$node)?.trimEnd();
     return { comments: result.comments, html };
   }
 
-  function extractMagicComments($node: Cheerio<AnyNode>) {
+  function extractMagicComments($node: Cheerio<any>) {
     const comments: string[] = [];
     $node = $node.filter((_, child) => {
       if (child.type === 'comment') {
@@ -193,7 +193,7 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
     return { $node, comments };
   }
 
-  function checkNodes($els: Cheerio<Element>, node?: IHtmlNode) {
+  function checkNodes($els: Cheerio<any>, node?: IHtmlNode) {
     $els.each((_, child) => {
       const $child = $(child);
       const rule = Object.entries(options.selectorRules).find(([selector]) =>

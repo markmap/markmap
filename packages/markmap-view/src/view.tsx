@@ -344,9 +344,10 @@ export class Markmap {
 
     // Update the nodes
     const node = this.g
-      .selectAll<SVGGElement, FlextreeNode<INode>>(
-        childSelector<SVGGElement>('g'),
-      )
+      .selectAll<
+        SVGGElement,
+        FlextreeNode<INode>
+      >(childSelector<SVGGElement>('g'))
       .data(descendants, (d) => d.data.state.key);
     const nodeEnter = node
       .enter()
@@ -582,9 +583,10 @@ export class Markmap {
         }
       | undefined;
     this.g
-      .selectAll<SVGGElement, FlextreeNode<INode>>(
-        childSelector<SVGGElement>('g'),
-      )
+      .selectAll<
+        SVGGElement,
+        FlextreeNode<INode>
+      >(childSelector<SVGGElement>('g'))
       .each(function walk(d) {
         if (d.data === node) {
           result = {

@@ -5,18 +5,18 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@babel/plugin-transform-react-jsx": "^7.23.4",
+    "@babel/plugin-transform-react-jsx": "^7.25.2",
     "@gera2ld/plaid": "~2.7.0",
     "@gera2ld/plaid-test": "~2.6.0",
     "del-cli": "^5.1.0",
-    "husky": "^8.0.3",
-    "lerna": "^8.0.1",
+    "husky": "^9.1.6",
+    "lerna": "^8.1.8",
     "read-package-up": "^11.0.0",
-    "typedoc": "^0.25.6",
-    "vite": "^5.0.10"
+    "typedoc": "^0.26.7",
+    "vite": "^5.4.8"
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky || true",
     "build": "run-s lint clean build:types build:js test",
     "lint": "eslint --ext .ts,.tsx . && prettier --ignore-path .eslintignore --check .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix && prettier --ignore-path .eslintignore --write .",
