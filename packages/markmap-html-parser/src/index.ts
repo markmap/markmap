@@ -217,6 +217,16 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
       skippingHeading = Levels.None;
       const isHeading = level <= Levels.H6;
       let data = $child.data();
+      let html = result.html || '';
+      if ($child.is('ol>li') && node?.children) {
+        const start = +($child.parent().attr('start') || 1);
+        const listIndex = start + node.children.length;
+        html = `${listIndex}. ${html}`;
+        data = {
+          ...data,
+          listIndex,
+        };
+      }
       if ($child.children('code:only-child').length) {
         data = {
           ...data,
@@ -228,7 +238,7 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
         nesting: !!result.queue || isHeading,
         tagName: child.tagName,
         level,
-        html: result.html || '',
+        html,
         comments: result.comments,
         data,
       });

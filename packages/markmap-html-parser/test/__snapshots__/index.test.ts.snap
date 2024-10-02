@@ -62,6 +62,80 @@ exports[`li > pre 2`] = `
 }
 `;
 
+exports[`ol > li 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "childrenLevel": 0,
+          "data": {
+            "listIndex": 3,
+          },
+          "html": "3. hello",
+          "id": 2,
+          "level": 9,
+          "parent": 1,
+          "tag": "li",
+        },
+        {
+          "children": [],
+          "childrenLevel": 0,
+          "data": {
+            "listIndex": 4,
+          },
+          "html": "4. world",
+          "id": 3,
+          "level": 9,
+          "parent": 1,
+          "tag": "li",
+        },
+      ],
+      "childrenLevel": 9,
+      "html": "",
+      "id": 1,
+      "level": 8,
+      "parent": 0,
+      "tag": "ol",
+    },
+  ],
+  "childrenLevel": 8,
+  "html": "",
+  "id": 0,
+  "level": 0,
+  "parent": 0,
+  "tag": "",
+}
+`;
+
+exports[`ol > li 2`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "content": "3. hello",
+          "payload": {
+            "listIndex": 3,
+          },
+        },
+        {
+          "children": [],
+          "content": "4. world",
+          "payload": {
+            "listIndex": 4,
+          },
+        },
+      ],
+      "content": "",
+    },
+  ],
+  "content": "",
+}
+`;
+
 exports[`parseHtml 1`] = `
 {
   "children": [
@@ -131,7 +205,10 @@ exports[`parseHtml 1`] = `
                 {
                   "children": [],
                   "childrenLevel": 0,
-                  "html": "item 5",
+                  "data": {
+                    "listIndex": 1,
+                  },
+                  "html": "1. item 5",
                   "id": 13,
                   "level": 9,
                   "parent": 12,
@@ -140,7 +217,10 @@ exports[`parseHtml 1`] = `
                 {
                   "children": [],
                   "childrenLevel": 0,
-                  "html": "item 6",
+                  "data": {
+                    "listIndex": 2,
+                  },
+                  "html": "2. item 6",
                   "id": 14,
                   "level": 9,
                   "parent": 12,
@@ -207,7 +287,10 @@ exports[`parseHtml 1`] = `
                     },
                   ],
                   "childrenLevel": 8,
-                  "html": "item 7",
+                  "data": {
+                    "listIndex": 3,
+                  },
+                  "html": "3. item 7",
                   "id": 15,
                   "level": 9,
                   "parent": 12,
@@ -337,11 +420,17 @@ exports[`parseHtml 2`] = `
               "children": [
                 {
                   "children": [],
-                  "content": "item 5",
+                  "content": "1. item 5",
+                  "payload": {
+                    "listIndex": 1,
+                  },
                 },
                 {
                   "children": [],
-                  "content": "item 6",
+                  "content": "2. item 6",
+                  "payload": {
+                    "listIndex": 2,
+                  },
                 },
                 {
                   "children": [
@@ -373,7 +462,10 @@ exports[`parseHtml 2`] = `
                       "content": "",
                     },
                   ],
-                  "content": "item 7",
+                  "content": "3. item 7",
+                  "payload": {
+                    "listIndex": 3,
+                  },
                 },
               ],
               "content": "",

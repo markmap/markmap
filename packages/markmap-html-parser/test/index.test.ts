@@ -79,3 +79,14 @@ test('li > pre', () => {
   expect(root).toMatchSnapshot();
   expect(convertNode(root)).toMatchSnapshot();
 });
+
+test('ol > li', () => {
+  const root = parseHtml(`<body>
+<ol start="3">
+<li>hello</li>
+<li>world</li>
+</ol>
+</body>`);
+  expect(root).toMatchSnapshot();
+  expect(convertNode(root)).toMatchSnapshot();
+});
