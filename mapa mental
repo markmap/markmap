@@ -1,0 +1,133 @@
+---
+# Mapa Conceitual: Sistemas e Infraestrutura de TICs
+
+## 1. *Sistemas e Infraestrutura de TICs*
+- *Definição geral*: Conjunto de recursos tecnológicos e operacionais utilizados para o desenvolvimento, execução e manutenção de sistemas computacionais e redes.
+
+---
+
+## 2. *Algoritmos e Programas*
+- *Algoritmo*
+  - Definição: Conjunto de instruções para resolver um problema.
+  - Exemplos: Algoritmos de ordenação, busca, cálculo de números primos.
+- *Programa*
+  - Definição: Implementação de um algoritmo em uma linguagem de programação.
+  - Exemplos: Programas em Python, C, Java.
+  
+---
+
+## 3. *Declaração de Variáveis*
+- *Tipos de Variáveis*
+  - *Inteiro (int)*: Armazena números inteiros.
+  - *Ponto flutuante (float)*: Armazena números com casas decimais.
+  - *Booleano (bool)*: Armazena valores verdadeiro ou falso.
+  - *String*: Armazena textos (cadeias de caracteres).
+  
+- *Operadores*
+  - *Aritméticos*: +, -, *, /, %.
+  - *Lógicos*: AND, OR, NOT.
+  - *Relacionais*: >, <, ==, !=, >=, <=.
+
+- *Precisão numérica*
+  - Discussão sobre os erros de arredondamento e limites na representação dos números em computadores (ex: ponto flutuante).
+
+---
+
+## 4. *Entrada e Saída de Dados*
+- *Entrada de Dados*
+  - Recebimento de dados do usuário ou de outras fontes (ex: teclado, arquivos).
+  - Exemplos: input() (Python), scanf() (C).
+  
+- *Saída de Dados*
+  - Exibição de dados para o usuário ou armazenamento (ex: exibição na tela, gravação em arquivo).
+  - Exemplos: print() (Python), printf() (C).
+
+---
+
+## 5. *Estruturas de Controle*
+- *Estruturas de Decisão*
+  - *If-Else*: Execução condicional (ex: if em C, if em Python).
+  - *Switch-Case*: Escolha entre múltiplas alternativas.
+
+- *Estruturas de Repetição*
+  - *For*: Loop com número fixo de iterações.
+  - *While*: Loop enquanto a condição for verdadeira.
+  - *Do-While*: Executa pelo menos uma vez antes de verificar a condição.
+
+- *Funções*
+  - *Definição*: Blocos de código reutilizáveis.
+  - *Passagem de Parâmetros*: Envio de dados para dentro da função, podendo ser por valor ou por referência.
+
+- *Solução de Problemas*
+  - Uso de *comandos sequenciais* (execução passo a passo).
+  - *Comandos de controle* (alternativas e repetições) para resolver problemas mais complexos.
+
+---
+
+## 6. *Estruturas de Dados*
+- *Homogêneas (Vetores e Matrizes)*
+  - *Vetores*: Estruturas unidimensionais (ex: int[] em Java, int[] arr em C).
+  - *Matrizes*: Estruturas bidimensionais (ex: int[][] mat em C).
+  
+- *Métodos Iterativos*
+  - Processos repetitivos usados para resolver problemas em várias iterações, como algoritmos de ordenação e busca.
+
+---
+
+## 7. *Banco de Dados*
+- *Conceitos de Banco de Dados*
+  - *Definição*: Armazenamento estruturado de dados, acessível por sistemas computacionais.
+  
+- *Modelo Conceitual de Banco de Dados*
+  - *Modelo Relacional*: Tabelas, linhas, e colunas (ex: MySQL, PostgreSQL).
+  - *Modelo Não Relacional*: Armazenamento baseado em documentos, chave-valor, ou grafos (ex: MongoDB, Cassandra).
+
+- *Normalização de Bancos de Dados*
+  - Processo para reduzir redundâncias e dependências nos dados.
+  - *Exemplo*: Primeira forma normal (1NF), segunda forma normal (2NF), etc.
+
+- *Paradigmas de Banco de Dados*
+  - *Relacional*: Usa tabelas para armazenar dados e relacioná-los.
+  - *Não Relacional*: Armazenamento baseado em documentos ou estruturas mais flexíveis.
+
+---
+
+## 8. *Redes de Comunicação Digitais*
+- *Histórico*
+  - *ARPANET*: A origem da internet, uma rede de pesquisa dos EUA.
+  - *Evolução*: Como as redes de comunicação cresceram para se tornar a internet global.
+
+- *Topologias de Rede*
+  - *LAN (Local Area Network)*: Rede local, como em uma casa ou empresa.
+  - *MAN (Metropolitan Area Network)*: Rede em uma cidade ou região.
+  - *WAN (Wide Area Network)*: Rede que abrange grandes distâncias, como países ou continentes.
+
+- *Tipos e Modos de Transmissão*
+  - *Simples*: Comunicação unidirecional (ex: rádio AM).
+  - *Duplex*: Comunicação bidirecional (ex: telefonia).
+  - *Half-Duplex*: Bidirecional, mas não simultânea (ex: walkie-talkie).
+
+- *Meios de Comunicação*
+  - *Cabo*: Fios de cobre, fibra ótica.
+  - *Sem fio*: Wi-Fi, Bluetooth, comunicação via satélite.
+
+- *Modulação e Codificação*
+  - *Modulação*: Processamento do sinal para transmissão.
+  - *Codificação*: Transformação dos dados para facilitar a transmissão eficiente e sem erros.
+
+- *Multiplexação*
+  - Técnica que permite usar o mesmo canal de comunicação para transmitir múltiplos sinais simultaneamente.
+
+- *Capacidade de Canal*
+  - *Largura de banda*: Quantidade máxima de dados que pode ser transmitida.
+  
+- *Erros na Transmissão de Dados*
+  - *Erro de bit*: Alteração no valor de um bit durante a transmissão.
+  - *Correção de erros*: Técnicas para identificar e corrigir erros (ex: código Hamming).
+
+---
+
+## 9. *Dispositivos de Interconexão*
+- *Roteadores*: Direcionam pacotes de dados entre redes.
+- *Switches*: Conectam dispositivos dentro de uma rede local.
+- *Hubs*: Dispositivos básicos para interconectar dispositivos, mas sem inteligência.
