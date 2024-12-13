@@ -1,16 +1,18 @@
 import {
-  urlBuilder,
-  buildJSItem,
   buildCSSItem,
+  buildJSItem,
   loadCSS,
   loadJS,
+  urlBuilder,
 } from 'markmap-common';
 import type { Transformer } from 'markmap-lib';
 import type { AutoLoaderOptions } from './types';
 
+export * from './types';
+
 const enabled: Record<string, boolean> = {};
 
-const autoLoaderOptions: AutoLoaderOptions = {
+const autoLoaderOptions = {
   baseJs: [
     `d3@${process.env.D3_VERSION}`,
     `markmap-lib@${process.env.LIB_VERSION}`,
@@ -20,7 +22,7 @@ const autoLoaderOptions: AutoLoaderOptions = {
   baseCss: [`markmap-toolbar@${process.env.TOOLBAR_VERSION}/dist/style.css`],
   manual: false,
   toolbar: false,
-  ...window.markmap?.autoLoader,
+  ...(window.markmap?.autoLoader as Partial<AutoLoaderOptions>),
 };
 
 async function initialize() {
