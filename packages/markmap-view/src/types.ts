@@ -1,13 +1,14 @@
-import { FlextreeNode } from 'd3-flextree';
 import { INode } from 'markmap-common';
 
 export interface IMarkmapState {
   id: string;
   data?: INode;
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
+  rect: {
+    x1: number;
+    x2: number;
+    y1: number;
+    y2: number;
+  };
 }
 
 export type IMarkmapJSONOptions = Partial<{
@@ -36,9 +37,4 @@ export interface IPadding {
   bottom: number;
 }
 
-export type ID3SVGElement = d3.Selection<
-  SVGElement,
-  FlextreeNode<INode>,
-  HTMLElement,
-  FlextreeNode<INode>
->;
+export type ID3SVGElement = d3.Selection<SVGElement, INode, HTMLElement, INode>;

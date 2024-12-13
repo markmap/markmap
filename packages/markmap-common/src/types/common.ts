@@ -42,10 +42,15 @@ export interface INodeState {
    */
   key: string;
   depth: number;
-  el: HTMLElement;
-  x0: number;
-  y0: number;
+  /** DOM element size */
   size: [width: number, height: number];
+  /** Position info */
+  rect: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export type JSScriptItem = {
