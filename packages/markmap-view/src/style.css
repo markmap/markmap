@@ -85,6 +85,7 @@
 
     > div {
       width: var(--markmap-max-width);
+      text-align: left;
       > div {
         display: inline-block;
       }
