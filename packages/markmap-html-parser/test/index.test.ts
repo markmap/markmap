@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import { convertNode, parseHtml } from '../src/index';
 
 test('parseHtml', () => {

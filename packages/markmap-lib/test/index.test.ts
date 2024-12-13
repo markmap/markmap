@@ -1,4 +1,5 @@
 import { wrapFunction } from 'markmap-common';
+import { expect, test } from 'vitest';
 import { Transformer, builtInPlugins } from '../src/index';
 
 test('plugins', () => {
@@ -76,7 +77,7 @@ markmap:
   color: blue
 ---
 
-- $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
+- $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$
 `);
   expect(result).toMatchSnapshot();
   expect(transformer.getUsedAssets(result.features)).toMatchSnapshot();

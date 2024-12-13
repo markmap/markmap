@@ -7,6 +7,7 @@ const configEs = defineConfig({
     lib: {
       entry: 'src/index.ts',
       fileName: 'index',
+      cssFileName: 'style',
       formats: ['es'],
     },
     rollupOptions: {
@@ -22,6 +23,7 @@ const configJs = defineConfig({
     lib: {
       entry: 'src/index.ts',
       fileName: () => 'index.js',
+      cssFileName: 'style',
       formats: ['iife'],
       name: 'markmap',
     },

@@ -8,9 +8,8 @@
     "clean": "del-cli dist",
     "build:types": "tsc",
     "build:js": "vite build && TARGET=browserJs vite build",
-    "build": "run-s clean build:*",
-    "prepublishOnly": "run-s build",
-    "test": "jest test"
+    "build": "pnpm clean && pnpm /^build:/",
+    "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
     "access": "public",

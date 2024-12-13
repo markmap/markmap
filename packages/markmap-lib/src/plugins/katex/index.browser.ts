@@ -1,4 +1,3 @@
-import katexPlugin from '@vscode/markdown-it-katex';
 import MarkdownIt from 'markdown-it';
 import { loadJS, noop } from 'markmap-common';
 import { ITransformHooks } from '../../types';
@@ -6,6 +5,7 @@ import { patchJSItem } from '../../util';
 import { definePlugin } from '../base';
 import { addDefaultVersions } from '../util';
 import { config, name } from './config';
+import { katexPlugin } from './vendor';
 
 const plugin = definePlugin({
   name,

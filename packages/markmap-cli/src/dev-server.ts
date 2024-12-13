@@ -1,5 +1,5 @@
 import { serve } from '@hono/node-server';
-import chokidar from 'chokidar';
+import { FSWatcher, watch } from 'chokidar';
 import { EventEmitter } from 'events';
 import { createReadStream } from 'fs';
 import { readFile, stat } from 'fs/promises';
@@ -10,6 +10,7 @@ import { Transformer } from 'markmap-lib';
 import { fillTemplate } from 'markmap-render';
 import open from 'open';
 import { join } from 'path';
+import { IContentProvider, IDevelopOptions, IFileUpdate } from './types';
 import {
   ASSETS_PREFIX,
   addToolbar,
@@ -17,7 +18,6 @@ import {
   createStreamBody,
   localProvider,
 } from './util';
-import { IDevelopOptions, IContentProvider, IFileUpdate } from './types';
 
 function sequence(fn: () => Promise<void>) {
   let promise: Promise<void> | undefined;
@@ -98,11 +98,11 @@ class FileSystemProvider
   extends BufferContentProvider
   implements IContentProvider
 {
-  private watcher: chokidar.FSWatcher;
+  private watcher: FSWatcher;
 
   constructor(private fileName: string) {
     super();
-    this.watcher = chokidar.watch(fileName).on(
+    this.watcher = watch(fileName).on(
       'all',
       sequence(() => this.update()),
     );
