@@ -166,7 +166,10 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
 
   function getCurrentHeading(level: Levels) {
     let heading: IHtmlNode | undefined;
-    while ((heading = headingStack.at(-1)) && heading.level >= level) {
+    while (
+      (heading = headingStack[headingStack.length - 1]) &&
+      heading.level >= level
+    ) {
       headingStack.pop();
     }
     return heading || rootNode;
