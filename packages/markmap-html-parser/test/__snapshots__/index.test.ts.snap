@@ -119,6 +119,7 @@ exports[`ol > li 2`] = `
           "content": "3. hello",
           "payload": {
             "listIndex": 3,
+            "tag": "li",
           },
         },
         {
@@ -126,6 +127,7 @@ exports[`ol > li 2`] = `
           "content": "4. world",
           "payload": {
             "listIndex": 4,
+            "tag": "li",
           },
         },
       ],
@@ -423,6 +425,7 @@ exports[`parseHtml 2`] = `
                   "content": "1. item 5",
                   "payload": {
                     "listIndex": 1,
+                    "tag": "li",
                   },
                 },
                 {
@@ -430,6 +433,7 @@ exports[`parseHtml 2`] = `
                   "content": "2. item 6",
                   "payload": {
                     "listIndex": 2,
+                    "tag": "li",
                   },
                 },
                 {
@@ -465,6 +469,7 @@ exports[`parseHtml 2`] = `
                   "content": "3. item 7",
                   "payload": {
                     "listIndex": 3,
+                    "tag": "li",
                   },
                 },
               ],
@@ -475,6 +480,7 @@ exports[`parseHtml 2`] = `
           "payload": {
             "fold": 2,
             "id": "h2",
+            "tag": "h2",
           },
         },
         {
@@ -504,6 +510,7 @@ exports[`parseHtml 2`] = `
       "content": "heading 1",
       "payload": {
         "id": "h1",
+        "tag": "h1",
       },
     },
   ],
@@ -627,6 +634,7 @@ exports[`parseHtml with data 2`] = `
                   "content": "l1.1",
                   "payload": {
                     "lines": "1,2",
+                    "tag": "li",
                   },
                 },
                 {
@@ -638,36 +646,42 @@ exports[`parseHtml with data 2`] = `
                           "content": "l1.2.1",
                           "payload": {
                             "lines": "3,4",
+                            "tag": "li",
                           },
                         },
                       ],
                       "content": "",
                       "payload": {
                         "lines": "3,4",
+                        "tag": "ul",
                       },
                     },
                   ],
                   "content": "l1.2",
                   "payload": {
                     "lines": "2,4",
+                    "tag": "li",
                   },
                 },
               ],
               "content": "",
               "payload": {
                 "lines": "1,4",
+                "tag": "ul",
               },
             },
           ],
           "content": "l1",
           "payload": {
             "lines": "0,4",
+            "tag": "li",
           },
         },
       ],
       "content": "",
       "payload": {
         "lines": "0,4",
+        "tag": "ul",
       },
     },
   ],

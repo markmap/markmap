@@ -42,6 +42,7 @@ exports[`checkboxes 1`] = `
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> Dishes",
             "payload": {
               "lines": "4,5",
+              "tag": "li",
             },
           },
           {
@@ -49,6 +50,7 @@ exports[`checkboxes 1`] = `
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path fill-rule="evenodd" d="M6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-5z" clip-rule="evenodd"></path></svg> Cleaning the bathroom",
             "payload": {
               "lines": "5,6",
+              "tag": "li",
             },
           },
           {
@@ -56,6 +58,7 @@ exports[`checkboxes 1`] = `
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> Change the light bulbs",
             "payload": {
               "lines": "6,7",
+              "tag": "li",
             },
           },
           {
@@ -63,12 +66,14 @@ exports[`checkboxes 1`] = `
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path fill-rule="evenodd" d="M6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-5z" clip-rule="evenodd"></path></svg> something else",
             "payload": {
               "lines": "7,9",
+              "tag": "li",
             },
           },
         ],
         "content": "Main",
         "payload": {
           "lines": "2,3",
+          "tag": "h2",
         },
       },
       {
@@ -76,6 +81,7 @@ exports[`checkboxes 1`] = `
         "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> should it works on titles?",
         "payload": {
           "lines": "9,10",
+          "tag": "h2",
         },
       },
       {
@@ -85,6 +91,7 @@ exports[`checkboxes 1`] = `
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path fill-rule="evenodd" d="M6 5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-5z" clip-rule="evenodd"></path></svg> test",
             "payload": {
               "lines": "13,14",
+              "tag": "h3",
             },
           },
           {
@@ -94,6 +101,7 @@ exports[`checkboxes 1`] = `
                 "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> test",
                 "payload": {
                   "lines": "17,18",
+                  "tag": "li",
                 },
               },
               {
@@ -101,18 +109,21 @@ exports[`checkboxes 1`] = `
                 "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> test",
                 "payload": {
                   "lines": "18,21",
+                  "tag": "li",
                 },
               },
             ],
             "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> test",
             "payload": {
               "lines": "15,16",
+              "tag": "h3",
             },
           },
         ],
         "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> idk if it should!",
         "payload": {
           "lines": "11,12",
+          "tag": "h2",
         },
       },
       {
@@ -123,18 +134,21 @@ exports[`checkboxes 1`] = `
 </code></pre>",
             "payload": {
               "lines": "22,25",
+              "tag": "pre",
             },
           },
         ],
         "content": "<svg width="16" height="16" viewBox="0 -3 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"></path></svg> only works on list items is better",
         "payload": {
           "lines": "21,22",
+          "tag": "h2",
         },
       },
     ],
     "content": "Housework",
     "payload": {
       "lines": "0,1",
+      "tag": "h1",
     },
   },
 }
@@ -165,6 +179,7 @@ exports[`content with frontmatter 1`] = `
         "content": "l1.1",
         "payload": {
           "lines": "2,3",
+          "tag": "li",
         },
       },
       {
@@ -174,18 +189,21 @@ exports[`content with frontmatter 1`] = `
             "content": "l1.2.1",
             "payload": {
               "lines": "4,5",
+              "tag": "li",
             },
           },
         ],
         "content": "l1.2",
         "payload": {
           "lines": "3,5",
+          "tag": "li",
         },
       },
     ],
     "content": "l1",
     "payload": {
       "lines": "1,5",
+      "tag": "li",
     },
   },
 }
@@ -216,6 +234,7 @@ exports[`content with line endings of CRLF 1`] = `
         "content": "l1.1",
         "payload": {
           "lines": "2,3",
+          "tag": "li",
         },
       },
       {
@@ -225,18 +244,21 @@ exports[`content with line endings of CRLF 1`] = `
             "content": "l1.2.1",
             "payload": {
               "lines": "4,5",
+              "tag": "li",
             },
           },
         ],
         "content": "l1.2",
         "payload": {
           "lines": "3,5",
+          "tag": "li",
         },
       },
     ],
     "content": "l1",
     "payload": {
       "lines": "1,5",
+      "tag": "li",
     },
   },
 }
@@ -275,6 +297,7 @@ c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
 M834 80h400000v40h-400000z"></path></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1179em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span>",
     "payload": {
       "lines": "1,2",
+      "tag": "li",
     },
   },
 }
@@ -326,6 +349,7 @@ exports[`content without frontmatter 1`] = `
         "content": "l1.1",
         "payload": {
           "lines": "1,2",
+          "tag": "li",
         },
       },
       {
@@ -335,18 +359,21 @@ exports[`content without frontmatter 1`] = `
             "content": "l1.2.1",
             "payload": {
               "lines": "3,4",
+              "tag": "li",
             },
           },
         ],
         "content": "l1.2",
         "payload": {
           "lines": "2,4",
+          "tag": "li",
         },
       },
     ],
     "content": "l1",
     "payload": {
       "lines": "0,4",
+      "tag": "li",
     },
   },
 }
@@ -428,12 +455,14 @@ exports[`links - target=_blank 1`] = `
         "content": "<a href="https://www.google.com" target="_blank">Google</a>",
         "payload": {
           "lines": "2,3",
+          "tag": "li",
         },
       },
     ],
     "content": "heading 1",
     "payload": {
       "lines": "0,1",
+      "tag": "h2",
     },
   },
 }
@@ -462,6 +491,7 @@ exports[`magic comments 1`] = `
             "content": "1.1",
             "payload": {
               "lines": "3,4",
+              "tag": "li",
             },
           },
           {
@@ -469,6 +499,7 @@ exports[`magic comments 1`] = `
             "content": "1.2",
             "payload": {
               "lines": "4,5",
+              "tag": "li",
             },
           },
         ],
@@ -476,6 +507,7 @@ exports[`magic comments 1`] = `
         "payload": {
           "fold": 2,
           "lines": "2,5",
+          "tag": "li",
         },
       },
       {
@@ -485,6 +517,7 @@ exports[`magic comments 1`] = `
             "content": "2.1",
             "payload": {
               "lines": "6,7",
+              "tag": "li",
             },
           },
           {
@@ -492,12 +525,14 @@ exports[`magic comments 1`] = `
             "content": "2.2",
             "payload": {
               "lines": "7,8",
+              "tag": "li",
             },
           },
         ],
         "content": "2",
         "payload": {
           "lines": "5,8",
+          "tag": "li",
         },
       },
     ],
@@ -505,6 +540,7 @@ exports[`magic comments 1`] = `
     "payload": {
       "fold": 1,
       "lines": "0,1",
+      "tag": "h2",
     },
   },
 }
@@ -577,6 +613,7 @@ exports[`tables 1`] = `
 </table>",
     "payload": {
       "lines": "0,4",
+      "tag": "table",
     },
   },
 }

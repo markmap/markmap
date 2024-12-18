@@ -259,6 +259,7 @@ export function convertNode(htmlRoot: IHtmlNode) {
     };
     if (htmlNode.data) {
       node.payload = {
+        tag: htmlNode.tag,
         ...htmlNode.data,
       };
     }
