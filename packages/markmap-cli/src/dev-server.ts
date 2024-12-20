@@ -5,7 +5,7 @@ import { createReadStream } from 'fs';
 import { readFile, stat } from 'fs/promises';
 import { Hono } from 'hono';
 import { getMimeType } from 'hono/utils/mime';
-import { IDeferred, INode, IPureNode, defer } from 'markmap-common';
+import { IAssets, IDeferred, INode, IPureNode, defer } from 'markmap-common';
 import { Transformer, type ITransformResult } from 'markmap-lib';
 import { fillTemplate } from 'markmap-render';
 import open from 'open';
@@ -170,7 +170,7 @@ async function setUpServer(
   provider: IContentProvider,
   options: IDevelopOptions,
 ) {
-  let assets = transformer.getAssets();
+  let assets: IAssets = transformer.getAssets();
   if (options.toolbar) assets = addToolbar(transformer.urlBuilder, assets);
   const html = `${fillTemplate(null, assets, {
     urlBuilder: transformer.urlBuilder,

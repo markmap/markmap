@@ -1,6 +1,6 @@
 import { CSSItem, JSItem, UrlBuilder } from 'markmap-common';
 
-export function patchJSItem(urlBuilder: UrlBuilder, item: JSItem) {
+export function patchJSItem(urlBuilder: UrlBuilder, item: JSItem): JSItem {
   if (item.type === 'script' && item.data.src) {
     return {
       ...item,
@@ -13,7 +13,7 @@ export function patchJSItem(urlBuilder: UrlBuilder, item: JSItem) {
   return item;
 }
 
-export function patchCSSItem(urlBuilder: UrlBuilder, item: CSSItem) {
+export function patchCSSItem(urlBuilder: UrlBuilder, item: CSSItem): CSSItem {
   if (item.type === 'stylesheet' && item.data.href) {
     return {
       ...item,

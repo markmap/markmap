@@ -84,6 +84,14 @@ export class Transformer implements ITransformer {
     return { ...context, root };
   }
 
+  resolveJS(item: JSItem) {
+    return patchJSItem(this.urlBuilder, item);
+  }
+
+  resolveCSS(item: CSSItem) {
+    return patchCSSItem(this.urlBuilder, item);
+  }
+
   /**
    * Get all assets from enabled plugins or filter them by plugin names as keys.
    */
@@ -98,9 +106,16 @@ export class Transformer implements ITransformer {
       }
     }
     return {
-      styles: styles.map((item) => patchCSSItem(this.urlBuilder, item)),
-      scripts: scripts.map((item) => patchJSItem(this.urlBuilder, item)),
+      styles: styles.map((item) => this.resolveCSS(item)),
+      scripts: scripts.map((item) => this.resolveJS(item)),
     };
+  }
+
+  getPreloadScripts(): IAssets {
+    const scripts = this.plugins
+      .flatMap((plugin) => plugin.config?.preloadScripts || [])
+      .map((item) => this.resolveJS(item));
+    return { scripts };
   }
 
   /**
