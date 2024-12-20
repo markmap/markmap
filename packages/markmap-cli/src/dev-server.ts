@@ -5,8 +5,8 @@ import { createReadStream } from 'fs';
 import { readFile, stat } from 'fs/promises';
 import { Hono } from 'hono';
 import { getMimeType } from 'hono/utils/mime';
-import { IDeferred, INode, defer } from 'markmap-common';
-import { Transformer } from 'markmap-lib';
+import { IDeferred, INode, IPureNode, defer } from 'markmap-common';
+import { Transformer, type ITransformResult } from 'markmap-lib';
 import { fillTemplate } from 'markmap-render';
 import open from 'open';
 import { join } from 'path';
@@ -121,47 +121,43 @@ class FileSystemProvider
 
 function startServer(paddingBottom: number) {
   let ts = 0;
-  let root: INode;
+  let root: IPureNode;
   let line: number;
-  let offset = 0;
   const { mm, markmap } = window;
   refresh();
   function refresh() {
     fetch(`/~data?ts=${ts}`)
       .then((res) => res.json())
-      .then((res) => {
-        if (res.ts && res.ts > ts && res.result) {
-          let frontmatter: any;
-          ({ root, frontmatter, contentLineOffset: offset } = res.result);
-          mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
-          mm.setData(root);
-          if (!ts) mm.fit();
-          ts = res.ts;
-          line = -1;
-        }
-        if (root && res.line != null && line !== res.line) {
-          line = res.line;
-          const active = findActiveNode();
-          if (active) mm.ensureView(active, { bottom: paddingBottom });
-        }
-        setTimeout(refresh, 300);
-      });
+      .then(
+        (res: { ts?: number; line?: number; result?: ITransformResult }) => {
+          if (res.ts && res.ts > ts && res.result) {
+            let frontmatter: any;
+            ({ root, frontmatter } = res.result);
+            mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
+            mm.setData(root);
+            if (!ts) mm.fit();
+            ts = res.ts;
+            line = -1;
+          }
+          if (root && res.line != null && line !== res.line) {
+            line = res.line;
+            const active = findActiveNode();
+            if (active) mm.ensureView(active, { bottom: paddingBottom });
+          }
+          setTimeout(refresh, 300);
+        },
+      );
   }
   function findActiveNode() {
-    const lineWithoutFrontmatter = line - offset;
     let best: INode | undefined;
-    dfs(root);
+    dfs(root as INode);
     return best;
     function dfs(node: INode) {
       const [start, end] =
         (node.payload?.lines as string | undefined)
           ?.split(',')
           .map((s) => +s) || [];
-      if (
-        start >= 0 &&
-        start <= lineWithoutFrontmatter &&
-        lineWithoutFrontmatter < end
-      ) {
+      if (start >= 0 && start <= line && line < end) {
         best = node;
       }
       node.children?.forEach(dfs);

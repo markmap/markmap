@@ -71,11 +71,13 @@ export class Transformer implements ITransformer {
     const context: ITransformContext = {
       content,
       features: {},
-      contentLineOffset: 0,
       parserOptions: fallbackParserOptions,
     };
     this.hooks.beforeParse.call(this.md, context);
-    const html = this.md.render(context.content, {});
+    let { content: rawContent } = context;
+    if (context.frontmatterInfo)
+      rawContent = rawContent.slice(context.frontmatterInfo.offset);
+    const html = this.md.render(rawContent, {});
     this.hooks.afterParse.call(this.md, context);
     const root = cleanNode(buildTree(html, context.parserOptions));
     root.content ||= `${context.frontmatter?.title || ''}`;

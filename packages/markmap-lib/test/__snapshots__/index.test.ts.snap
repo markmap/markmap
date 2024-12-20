@@ -28,7 +28,6 @@ exports[`checkboxes 1`] = `
 [ ] this is not a checkbox either
 \`\`\`
 ",
-  "contentLineOffset": 0,
   "features": {
     "hljs": true,
   },
@@ -156,13 +155,16 @@ exports[`checkboxes 1`] = `
 
 exports[`content with frontmatter 1`] = `
 {
-  "content": "
+  "content": "---
+markmap:
+  color: blue
+---
+
 - l1
   - l1.1
   - l1.2
     - l1.2.1
 ",
-  "contentLineOffset": 4,
   "features": {},
   "frontmatter": {
     "markmap": {
@@ -171,6 +173,10 @@ exports[`content with frontmatter 1`] = `
       ],
     },
   },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 31,
+  },
   "parserOptions": {},
   "root": {
     "children": [
@@ -178,7 +184,7 @@ exports[`content with frontmatter 1`] = `
         "children": [],
         "content": "l1.1",
         "payload": {
-          "lines": "2,3",
+          "lines": "6,7",
           "tag": "li",
         },
       },
@@ -188,21 +194,21 @@ exports[`content with frontmatter 1`] = `
             "children": [],
             "content": "l1.2.1",
             "payload": {
-              "lines": "4,5",
+              "lines": "8,9",
               "tag": "li",
             },
           },
         ],
         "content": "l1.2",
         "payload": {
-          "lines": "3,5",
+          "lines": "7,9",
           "tag": "li",
         },
       },
     ],
     "content": "l1",
     "payload": {
-      "lines": "1,5",
+      "lines": "5,9",
       "tag": "li",
     },
   },
@@ -211,13 +217,16 @@ exports[`content with frontmatter 1`] = `
 
 exports[`content with line endings of CRLF 1`] = `
 {
-  "content": "
+  "content": "---
+markmap:
+  color: blue
+---
+
 - l1
   - l1.1
   - l1.2
     - l1.2.1
 ",
-  "contentLineOffset": 4,
   "features": {},
   "frontmatter": {
     "markmap": {
@@ -226,6 +235,10 @@ exports[`content with line endings of CRLF 1`] = `
       ],
     },
   },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 35,
+  },
   "parserOptions": {},
   "root": {
     "children": [
@@ -233,7 +246,7 @@ exports[`content with line endings of CRLF 1`] = `
         "children": [],
         "content": "l1.1",
         "payload": {
-          "lines": "2,3",
+          "lines": "6,7",
           "tag": "li",
         },
       },
@@ -243,21 +256,21 @@ exports[`content with line endings of CRLF 1`] = `
             "children": [],
             "content": "l1.2.1",
             "payload": {
-              "lines": "4,5",
+              "lines": "8,9",
               "tag": "li",
             },
           },
         ],
         "content": "l1.2",
         "payload": {
-          "lines": "3,5",
+          "lines": "7,9",
           "tag": "li",
         },
       },
     ],
     "content": "l1",
     "payload": {
-      "lines": "1,5",
+      "lines": "5,9",
       "tag": "li",
     },
   },
@@ -266,10 +279,13 @@ exports[`content with line endings of CRLF 1`] = `
 
 exports[`content with only katex enabled 1`] = `
 {
-  "content": "
+  "content": "---
+markmap:
+  color: blue
+---
+
 - $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$
 ",
-  "contentLineOffset": 4,
   "features": {
     "katex": true,
   },
@@ -279,6 +295,10 @@ exports[`content with only katex enabled 1`] = `
         "blue",
       ],
     },
+  },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 31,
   },
   "parserOptions": {},
   "root": {
@@ -296,7 +316,7 @@ s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
 M834 80h400000v40h-400000z"></path></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1179em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span>",
     "payload": {
-      "lines": "1,2",
+      "lines": "5,6",
       "tag": "li",
     },
   },
@@ -339,7 +359,6 @@ exports[`content without frontmatter 1`] = `
   - l1.2
     - l1.2.1
 ",
-  "contentLineOffset": 0,
   "features": {},
   "parserOptions": undefined,
   "root": {
@@ -420,7 +439,6 @@ exports[`images 1`] = `
 
 ![](image2.png)
 ",
-  "contentLineOffset": 0,
   "features": {},
   "parserOptions": undefined,
   "root": {
@@ -445,7 +463,6 @@ exports[`links - target=_blank 1`] = `
 
 - [Google](https://www.google.com)
 ",
-  "contentLineOffset": 0,
   "features": {},
   "parserOptions": undefined,
   "root": {
@@ -479,7 +496,6 @@ exports[`magic comments 1`] = `
   - 2.1
   - 2.2
 ",
-  "contentLineOffset": 0,
   "features": {},
   "parserOptions": undefined,
   "root": {
@@ -588,7 +604,6 @@ exports[`tables 1`] = `
 | apple | 10 |
 | banana | 12 |
 ",
-  "contentLineOffset": 0,
   "features": {},
   "parserOptions": undefined,
   "root": {

@@ -29,9 +29,10 @@ export default definePlugin({
         ...context.parserOptions,
         ...frontmatter?.markmap?.htmlParser,
       };
-      context.content = content.slice(match.index + match[0].length);
-      context.contentLineOffset =
-        content.slice(0, match.index).split('\n').length + 1;
+      context.frontmatterInfo = {
+        lines: content.slice(0, match.index).split('\n').length + 1,
+        offset: match.index + match[0].length,
+      };
     });
     return {};
   },

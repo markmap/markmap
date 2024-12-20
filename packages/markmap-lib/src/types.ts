@@ -59,8 +59,10 @@ export interface ITransformContext {
     title?: string;
     markmap?: IMarkmapJSONOptions;
   };
-  /** The index of line where content without frontmatter starts */
-  contentLineOffset: number;
+  frontmatterInfo?: {
+    lines: number;
+    offset: number;
+  };
   parserOptions?: Partial<IHtmlParserOptions>;
 }
 
