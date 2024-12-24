@@ -323,32 +323,37 @@ export class Markmap {
         (d) => [d],
         (d) => d.state.key,
       );
-    const mmLineEnter = mmLine.enter().append('line');
-    const mmLineExit = mmGExit.selectAll<SVGLineElement, INode>(
-      childSelector<SVGLineElement>('line'),
-    );
+    const mmLineEnter = mmLine
+      .enter()
+      .append('line')
+      .attr('stroke', (d) => color(d))
+      .attr('stroke-width', 0);
     const mmLineMerge = mmLine.merge(mmLineEnter);
 
     // Circle to link to children of the node
     const mmCircle = mmGMerge
-      .selectAll<SVGCircleElement, INode>(
-        childSelector<SVGCircleElement>('circle'),
-      )
+      .selectAll<
+        SVGCircleElement,
+        INode
+      >(childSelector<SVGCircleElement>('circle'))
       .data(
         (d) => (d.children?.length ? [d] : []),
         (d) => d.state.key,
-      )
-      .join(
-        (enter) => {
-          return enter
-            .append('circle')
-            .attr('stroke-width', '1.5')
-            .attr('r', 0)
-            .on('click', (e, d) => this.handleClick(e, d))
-            .on('mousedown', stopPropagation);
-        },
-        (update) => update,
-        (exit) => exit.remove(),
+      );
+    const mmCircleEnter = mmCircle
+      .enter()
+      .append('circle')
+      .attr('stroke-width', 0)
+      .attr('r', 0)
+      .on('click', (e, d) => this.handleClick(e, d))
+      .on('mousedown', stopPropagation);
+    const mmCircleMerge = mmCircleEnter
+      .merge(mmCircle)
+      .attr('stroke', (d) => color(d))
+      .attr('fill', (d) =>
+        d.payload?.fold && d.children
+          ? color(d)
+          : 'var(--markmap-circle-open-bg)',
       );
 
     const observer = this.observer;
@@ -403,12 +408,18 @@ export class Markmap {
       >(childSelector<SVGPathElement>('path'))
       .data(links, (d) => d.target.state.key);
     const mmPathExit = mmPath.exit();
+    const pathOrigin: [number, number] = [
+      originRect.x + originRect.width,
+      originRect.y + originRect.height,
+    ];
     const mmPathEnter = mmPath
       .enter()
       .insert('path', 'g')
       .attr('class', 'markmap-link')
       .attr('data-depth', (d) => d.target.state.depth)
-      .attr('data-path', (d) => d.target.state.path);
+      .attr('data-path', (d) => d.target.state.path)
+      .attr('d', linkShape({ source: pathOrigin, target: pathOrigin }))
+      .attr('stroke-width', 0);
     const mmPathMerge = mmPathEnter.merge(mmPath);
 
     this.svg.style(
@@ -416,15 +427,9 @@ export class Markmap {
       maxWidth ? `${maxWidth}px` : (null as any),
     );
     await new Promise(requestAnimationFrame);
+    // Note: d.state.rect is only available after relayout
     this._relayout();
-
-    this.transition(mmGExit)
-      .attr('transform', (d) => {
-        const targetX = originRect.x + originRect.width - d.state.rect.width;
-        const targetY = originRect.y + originRect.height - d.state.rect.height;
-        return `translate(${targetX},${targetY})`;
-      })
-      .remove();
+    const targetRect = origin.state.rect;
 
     mmGEnter.attr(
       'transform',
@@ -433,36 +438,45 @@ export class Markmap {
           originRect.y + originRect.height - d.state.rect.height
         })`,
     );
+    this.transition(mmGExit)
+      .attr('transform', (d) => {
+        const targetX = targetRect.x + targetRect.width - d.state.rect.width;
+        const targetY = targetRect.y + targetRect.height - d.state.rect.height;
+        return `translate(${targetX},${targetY})`;
+      })
+      .remove();
+
     this.transition(mmGMerge).attr(
       'transform',
       (d) => `translate(${d.state.rect.x},${d.state.rect.y})`,
     );
 
+    const mmLineExit = mmGExit.selectAll<SVGLineElement, INode>(
+      childSelector<SVGLineElement>('line'),
+    );
     this.transition(mmLineExit)
       .attr('x1', (d) => d.state.rect.width)
-      .attr('x2', (d) => d.state.rect.width);
+      .attr('stroke-width', 0);
     mmLineEnter
       .attr('x1', (d) => d.state.rect.width)
       .attr('x2', (d) => d.state.rect.width);
     mmLineMerge
       .attr('y1', (d) => d.state.rect.height)
-      .attr('y2', (d) => d.state.rect.height)
-      .attr('stroke', (d) => color(d));
+      .attr('y2', (d) => d.state.rect.height);
     this.transition(mmLineMerge)
       .attr('x1', -1)
       .attr('x2', (d) => d.state.rect.width + 2)
+      .attr('stroke', (d) => color(d))
       .attr('stroke-width', linkWidth);
 
-    mmCircle
+    const mmCircleExit = mmGExit.selectAll<SVGCircleElement, INode>(
+      childSelector<SVGCircleElement>('circle'),
+    );
+    this.transition(mmCircleExit).attr('r', 0).attr('stroke-width', 0);
+    mmCircleMerge
       .attr('cx', (d) => d.state.rect.width)
-      .attr('cy', (d) => d.state.rect.height)
-      .attr('stroke', (d) => color(d))
-      .attr('fill', (d) =>
-        d.payload?.fold && d.children
-          ? color(d)
-          : 'var(--markmap-circle-open-bg)',
-      );
-    this.transition(mmCircle).attr('r', 6);
+      .attr('cy', (d) => d.state.rect.height);
+    this.transition(mmCircleMerge).attr('r', 6).attr('stroke-width', '1.5');
 
     this.transition(mmFoExit).style('opacity', 0);
     mmFoMerge
@@ -470,18 +484,15 @@ export class Markmap {
       .attr('height', (d) => d.state.rect.height);
     this.transition(mmFoMerge).style('opacity', 1);
 
-    const pathOrigin: [number, number] = [
-      originRect.x + originRect.width,
-      originRect.y + originRect.height,
+    const pathTarget: [number, number] = [
+      targetRect.x + targetRect.width,
+      targetRect.y + targetRect.height,
     ];
     this.transition(mmPathExit)
-      .attr('d', linkShape({ source: pathOrigin, target: pathOrigin }))
+      .attr('d', linkShape({ source: pathTarget, target: pathTarget }))
+      .attr('stroke-width', 0)
       .remove();
 
-    mmPathEnter.attr(
-      'd',
-      linkShape({ source: pathOrigin, target: pathOrigin }),
-    );
     this.transition(mmPathMerge)
       .attr('stroke', (d) => color(d.target))
       .attr('stroke-width', (d) => linkWidth(d.target))
