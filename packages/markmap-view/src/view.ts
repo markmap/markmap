@@ -238,7 +238,7 @@ export class Markmap {
       const node = fnode.data;
       node.state.rect = {
         x: fnode.y,
-        y: fnode.x,
+        y: fnode.x - fnode.xSize / 2,
         width: fnode.ySize - spacingHorizontal,
         height: fnode.xSize,
       };
@@ -421,8 +421,7 @@ export class Markmap {
     this.transition(mmGExit)
       .attr('transform', (d) => {
         const targetX = originRect.x + originRect.width - d.state.rect.width;
-        const targetY =
-          originRect.y + originRect.height / 2 - d.state.rect.height;
+        const targetY = originRect.y + originRect.height - d.state.rect.height;
         return `translate(${targetX},${targetY})`;
       })
       .remove();
@@ -431,13 +430,12 @@ export class Markmap {
       'transform',
       (d) =>
         `translate(${originRect.x + originRect.width - d.state.rect.width},${
-          originRect.y + originRect.height / 2 - d.state.rect.height
+          originRect.y + originRect.height - d.state.rect.height
         })`,
     );
     this.transition(mmGMerge).attr(
       'transform',
-      (d) =>
-        `translate(${d.state.rect.x},${d.state.rect.y - d.state.rect.height / 2})`,
+      (d) => `translate(${d.state.rect.x},${d.state.rect.y})`,
     );
 
     this.transition(mmLineExit)
@@ -474,7 +472,7 @@ export class Markmap {
 
     const pathOrigin: [number, number] = [
       originRect.x + originRect.width,
-      originRect.y + originRect.height / 2,
+      originRect.y + originRect.height,
     ];
     this.transition(mmPathExit)
       .attr('d', linkShape({ source: pathOrigin, target: pathOrigin }))
@@ -492,11 +490,11 @@ export class Markmap {
         const origTarget = d.target;
         const source: [number, number] = [
           origSource.state.rect.x + origSource.state.rect.width,
-          origSource.state.rect.y + origSource.state.rect.height / 2,
+          origSource.state.rect.y + origSource.state.rect.height,
         ];
         const target: [number, number] = [
           origTarget.state.rect.x,
-          origTarget.state.rect.y + origTarget.state.rect.height / 2,
+          origTarget.state.rect.y + origTarget.state.rect.height,
         ];
         return linkShape({ source, target });
       });
@@ -576,8 +574,8 @@ export class Markmap {
       itemData.state.rect.x + itemData.state.rect.width + 2,
     ].map((x) => x * transform.k + transform.x);
     const [top, bottom] = [
-      itemData.state.rect.y - itemData.state.rect.height / 2,
-      itemData.state.rect.y + itemData.state.rect.height / 2,
+      itemData.state.rect.y,
+      itemData.state.rect.y + itemData.state.rect.height,
     ].map((y) => y * transform.k + transform.y);
     // Skip if the node includes or is included in the container.
     const pd: IPadding = {
