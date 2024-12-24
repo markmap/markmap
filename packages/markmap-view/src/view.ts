@@ -560,10 +560,7 @@ export class Markmap {
   /**
    * Pan the content to make the provided node visible in the viewport.
    */
-  async ensureView(
-    node: INode,
-    padding: Partial<IPadding> | undefined,
-  ): Promise<void> {
+  async ensureVisible(node: INode, padding?: Partial<IPadding>) {
     const itemData = this.findElement(node)?.data;
     if (!itemData) return;
     const svgNode = this.svg.node()!;
@@ -589,6 +586,41 @@ export class Markmap {
     const dys = [pd.top - top, relRect.height - pd.bottom - bottom];
     const dx = dxs[0] * dxs[1] > 0 ? minBy(dxs, Math.abs) / transform.k : 0;
     const dy = dys[0] * dys[1] > 0 ? minBy(dys, Math.abs) / transform.k : 0;
+    if (dx || dy) {
+      const newTransform = transform.translate(dx, dy);
+      return this.transition(this.svg)
+        .call(this.zoom.transform, newTransform)
+        .end()
+        .catch(noop);
+    }
+  }
+
+  /** @deprecated Use `ensureVisible` instead */
+  ensureView = this.ensureVisible;
+
+  async centerNode(node: INode, padding?: Partial<IPadding>) {
+    const itemData = this.findElement(node)?.data;
+    if (!itemData) return;
+    const svgNode = this.svg.node()!;
+    const relRect = svgNode.getBoundingClientRect();
+    const transform = zoomTransform(svgNode);
+    const x =
+      (itemData.state.rect.x + itemData.state.rect.width / 2) * transform.k +
+      transform.x;
+    const y =
+      (itemData.state.rect.y + itemData.state.rect.height / 2) * transform.k +
+      transform.y;
+    const pd: IPadding = {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      ...padding,
+    };
+    const cx = (pd.left + relRect.width - pd.right) / 2;
+    const cy = (pd.top + relRect.height - pd.bottom) / 2;
+    const dx = (cx - x) / transform.k;
+    const dy = (cy - y) / transform.k;
     if (dx || dy) {
       const newTransform = transform.translate(dx, dy);
       return this.transition(this.svg)
