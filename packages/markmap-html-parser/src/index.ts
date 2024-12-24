@@ -219,7 +219,12 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
       if (!$child.is(options.selector)) return;
       skippingHeading = Levels.None;
       const isHeading = level <= Levels.H6;
-      let data = $child.data();
+      let data = {
+        // If the child is an inline element and expected to be a separate node,
+        // data from the closest `<p>` should be included, e.g. `<p data-lines><img /></p>`
+        ...$child.closest('p').data(),
+        ...$child.data(),
+      };
       let html = result.html || '';
       if ($child.is('ol>li') && node?.children) {
         const start = +($child.parent().attr('start') || 1);
@@ -228,12 +233,6 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
         data = {
           ...data,
           listIndex,
-        };
-      }
-      if ($child.children('code:only-child').length) {
-        data = {
-          ...data,
-          ...$child.children().data(),
         };
       }
       const childNode = addChild({

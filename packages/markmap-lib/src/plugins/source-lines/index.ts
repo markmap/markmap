@@ -15,14 +15,35 @@ const plugin = definePlugin({
       md.renderer.renderAttrs = wrapFunction(
         md.renderer.renderAttrs,
         (renderAttrs, token) => {
-          let attrs = renderAttrs(token);
           if (token.block && token.map) {
             const lineRange = token.map.map((line) => line + frontmatterLines);
-            attrs += ` data-lines=${lineRange.join(',')}`;
+            token.attrSet('data-lines', lineRange.join(','));
           }
-          return attrs;
+          return renderAttrs(token);
         },
       );
+
+      if (md.renderer.rules.fence) {
+        // In markdown-it, fences with language info are hard-coded as
+        // `<pre><code ...>`, so we have to modify the result string directly.
+        md.renderer.rules.fence = wrapFunction(
+          md.renderer.rules.fence,
+          (fence, tokens, idx, ...rest) => {
+            let result = fence(tokens, idx, ...rest);
+            const token = tokens[idx];
+            if (result.startsWith('<pre>') && token.map) {
+              const lineRange = token.map.map(
+                (line) => line + frontmatterLines,
+              );
+              result =
+                result.slice(0, 4) +
+                ` data-lines=${lineRange.join(',')}` +
+                result.slice(4);
+            }
+            return result;
+          },
+        );
+      }
     });
     return {};
   },

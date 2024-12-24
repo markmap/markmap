@@ -129,7 +129,7 @@ exports[`checkboxes 1`] = `
         "children": [
           {
             "children": [],
-            "content": "<pre><code data-lines="22,25"><span class="hljs-string">[ ]</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> a checkbox either
+            "content": "<pre data-lines="22,25"><code data-lines="22,25"><span class="hljs-string">[ ]</span> <span class="hljs-keyword">this</span> <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> a checkbox either
 </code></pre>",
             "payload": {
               "lines": "22,25",
@@ -446,10 +446,18 @@ exports[`images 1`] = `
       {
         "children": [],
         "content": "<img src="image1.png" alt="">",
+        "payload": {
+          "lines": "0,1",
+          "tag": "img",
+        },
       },
       {
         "children": [],
         "content": "<img src="image2.png" alt="">",
+        "payload": {
+          "lines": "2,3",
+          "tag": "img",
+        },
       },
     ],
     "content": "",
