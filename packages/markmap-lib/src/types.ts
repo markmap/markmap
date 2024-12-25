@@ -49,7 +49,7 @@ export interface ITransformer {
 }
 
 export interface IMarkmapJSONOptions extends IMarkmapJSONOptionsForView {
-  htmlParser?: Partial<IHtmlParserOptions>;
+  htmlParser: Partial<IHtmlParserOptions>;
 }
 
 export interface ITransformContext {
@@ -57,7 +57,7 @@ export interface ITransformContext {
   content: string;
   frontmatter?: {
     title?: string;
-    markmap?: IMarkmapJSONOptions;
+    markmap?: Partial<IMarkmapJSONOptions>;
   };
   frontmatterInfo?: {
     lines: number;

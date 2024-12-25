@@ -23,8 +23,9 @@ export function fillTemplate(
   assets: IAssets,
   extra?: {
     baseJs?: JSItem[];
-    jsonOptions?: IMarkmapJSONOptions;
-    getOptions?: (jsonOptions: IMarkmapJSONOptions) => Partial<IMarkmapOptions>;
+    jsonOptions?: Partial<IMarkmapJSONOptions>;
+    getOptions?: (jsonOptions: Partial<IMarkmapJSONOptions>) => Partial<IMarkmapOptions>;
+    /** See https://github.com/gera2ld/npm2url */
     urlBuilder?: UrlBuilder;
   },
 ): string {

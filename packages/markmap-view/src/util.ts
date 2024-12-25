@@ -3,7 +3,7 @@ import { IMarkmapOptions, INode } from 'markmap-common';
 import { defaultOptions } from './constants';
 import { IMarkmapJSONOptions } from './types';
 
-export function deriveOptions(jsonOptions?: IMarkmapJSONOptions) {
+export function deriveOptions(jsonOptions?: Partial<IMarkmapJSONOptions>) {
   const derivedOptions: Partial<IMarkmapOptions> = {};
   const options = { ...jsonOptions };
 

@@ -38,7 +38,7 @@ export default definePlugin({
   },
 });
 
-function normalizeMarkmapJsonOptions(options?: IMarkmapJSONOptions) {
+function normalizeMarkmapJsonOptions(options?: Partial<IMarkmapJSONOptions>) {
   if (!options) return;
   ['color', 'extraJs', 'extraCss'].forEach((key) => {
     if (options[key] != null) options[key] = normalizeStringArray(options[key]);
