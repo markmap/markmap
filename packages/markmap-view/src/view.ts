@@ -98,6 +98,7 @@ export class Markmap {
       refreshHook.tap(() => {
         this.setData();
       }),
+      () => this.observer.disconnect(),
     );
   }
 
