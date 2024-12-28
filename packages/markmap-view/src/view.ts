@@ -288,27 +288,59 @@ export class Markmap {
 
   async renderData(originData?: INode) {
     const { paddingX, autoFit, color, maxWidth } = this.options;
-    if (!this.state.data) return;
+    const rootNode = this.state.data;
+    if (!rootNode) return;
 
+    const nodeMap: Record<number, INode> = {};
+    const parentMap: Record<number, number> = {};
     const nodes: INode[] = [];
-    walkTree(this.state.data, (item, next) => {
+    walkTree(rootNode, (item, next, parent) => {
       if (!item.payload?.fold) next();
+      nodeMap[item.state.id] = item;
+      if (parent) parentMap[item.state.id] = parent.state.id;
       nodes.push(item);
     });
 
-    const origin = originData || this.state.data;
-    const originRect = origin.state.rect;
+    const originMap: Record<number, number> = {};
+    const sourceRectMap: Record<
+      number,
+      { x: number; y: number; width: number; height: number }
+    > = {};
+    const setOriginNode = (originNode: INode | undefined) => {
+      if (!originNode || originMap[originNode.state.id]) return;
+      walkTree(originNode, (item, next) => {
+        originMap[item.state.id] = originNode.state.id;
+        next();
+      });
+    };
+    const getOriginSourceRect = (node: INode) => {
+      const rect = sourceRectMap[originMap[node.state.id]];
+      return rect || rootNode.state.rect;
+    };
+    const getOriginTargetRect = (node: INode) =>
+      (nodeMap[originMap[node.state.id]] || rootNode).state.rect;
+    sourceRectMap[rootNode.state.id] = rootNode.state.rect;
+    if (originData) setOriginNode(originData);
 
     // Update the nodes
     const mmG = this.g
       .selectAll<SVGGElement, INode>(childSelector<SVGGElement>('g'))
+      .each((d) => {
+        // Save the current rects before updating nodes
+        sourceRectMap[d.state.id] = d.state.rect;
+      })
       .data(nodes, (d) => d.state.key);
     const mmGEnter = mmG
       .enter()
       .append('g')
       .attr('data-depth', (d) => d.state.depth)
-      .attr('data-path', (d) => d.state.path);
-    const mmGExit = mmG.exit<INode>();
+      .attr('data-path', (d) => d.state.path)
+      .each((d) => {
+        setOriginNode(nodeMap[parentMap[d.state.id]]);
+      });
+    const mmGExit = mmG.exit<INode>().each((d) => {
+      setOriginNode(nodeMap[parentMap[d.state.id]]);
+    });
     const mmGMerge = mmG
       .merge(mmGEnter)
       .attr('class', (d) =>
@@ -408,18 +440,21 @@ export class Markmap {
         { source: INode; target: INode }
       >(childSelector<SVGPathElement>('path'))
       .data(links, (d) => d.target.state.key);
-    const mmPathExit = mmPath.exit();
-    const pathOrigin: [number, number] = [
-      originRect.x + originRect.width,
-      originRect.y + originRect.height,
-    ];
+    const mmPathExit = mmPath.exit<{ source: INode; target: INode }>();
     const mmPathEnter = mmPath
       .enter()
       .insert('path', 'g')
       .attr('class', 'markmap-link')
       .attr('data-depth', (d) => d.target.state.depth)
       .attr('data-path', (d) => d.target.state.path)
-      .attr('d', linkShape({ source: pathOrigin, target: pathOrigin }))
+      .attr('d', (d) => {
+        const originRect = getOriginSourceRect(d.target);
+        const pathOrigin: [number, number] = [
+          originRect.x + originRect.width,
+          originRect.y + originRect.height,
+        ];
+        return linkShape({ source: pathOrigin, target: pathOrigin });
+      })
       .attr('stroke-width', 0);
     const mmPathMerge = mmPathEnter.merge(mmPath);
 
@@ -430,17 +465,16 @@ export class Markmap {
     await new Promise(requestAnimationFrame);
     // Note: d.state.rect is only available after relayout
     this._relayout();
-    const targetRect = origin.state.rect;
 
-    mmGEnter.attr(
-      'transform',
-      (d) =>
-        `translate(${originRect.x + originRect.width - d.state.rect.width},${
-          originRect.y + originRect.height - d.state.rect.height
-        })`,
-    );
+    mmGEnter.attr('transform', (d) => {
+      const originRect = getOriginSourceRect(d);
+      return `translate(${originRect.x + originRect.width - d.state.rect.width},${
+        originRect.y + originRect.height - d.state.rect.height
+      })`;
+    });
     this.transition(mmGExit)
       .attr('transform', (d) => {
+        const targetRect = getOriginTargetRect(d);
         const targetX = targetRect.x + targetRect.width - d.state.rect.width;
         const targetY = targetRect.y + targetRect.height - d.state.rect.height;
         return `translate(${targetX},${targetY})`;
@@ -485,12 +519,15 @@ export class Markmap {
       .attr('height', (d) => d.state.rect.height);
     this.transition(mmFoMerge).style('opacity', 1);
 
-    const pathTarget: [number, number] = [
-      targetRect.x + targetRect.width,
-      targetRect.y + targetRect.height,
-    ];
     this.transition(mmPathExit)
-      .attr('d', linkShape({ source: pathTarget, target: pathTarget }))
+      .attr('d', (d) => {
+        const targetRect = getOriginTargetRect(d.target);
+        const pathTarget: [number, number] = [
+          targetRect.x + targetRect.width,
+          targetRect.y + targetRect.height,
+        ];
+        return linkShape({ source: pathTarget, target: pathTarget });
+      })
       .attr('stroke-width', 0)
       .remove();
 
