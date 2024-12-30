@@ -32,21 +32,6 @@ export function addClass(className: string, ...rest: string[]): string {
   return classList.join(' ');
 }
 
-export function childSelector<T extends Element>(
-  filter?: string | ((el: T) => boolean),
-): () => T[] {
-  if (typeof filter === 'string') {
-    const tagName = filter;
-    filter = (el: T): boolean => el.tagName === tagName;
-  }
-  const filterFn = filter;
-  return function selector(this: HTMLElement): T[] {
-    let nodes = Array.from(this.childNodes as NodeListOf<T>);
-    if (filterFn) nodes = nodes.filter((node) => filterFn(node));
-    return nodes;
-  };
-}
-
 export function wrapFunction<T extends unknown[], U>(
   fn: (...args: T) => U,
   wrapper: (fn: (...args: T) => U, ...args: T) => U,

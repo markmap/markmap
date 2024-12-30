@@ -64,3 +64,18 @@ export function simpleHash(str: string) {
   }
   return (hash >>> 0).toString(36);
 }
+
+export function childSelector<T extends Element>(
+  filter?: string | ((el: T) => boolean),
+): () => T[] {
+  if (typeof filter === 'string') {
+    const tagName = filter;
+    filter = (el: T): boolean => el.tagName === tagName;
+  }
+  const filterFn = filter;
+  return function selector(this: Element): T[] {
+    let nodes = Array.from(this.childNodes as NodeListOf<T>);
+    if (filterFn) nodes = nodes.filter((node) => filterFn(node));
+    return nodes;
+  };
+}

@@ -16,7 +16,6 @@ import {
   INode,
   IPureNode,
   addClass,
-  childSelector,
   debounce,
   getId,
   noop,
@@ -25,7 +24,7 @@ import {
 import { defaultOptions, isMacintosh } from './constants';
 import css from './style.css?inline';
 import { ID3SVGElement, IMarkmapState, IPadding } from './types';
-import { simpleHash } from './util';
+import { childSelector, simpleHash } from './util';
 
 export const globalCSS = css;
 
