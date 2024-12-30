@@ -24,7 +24,9 @@ export function fillTemplate(
   extra?: {
     baseJs?: JSItem[];
     jsonOptions?: Partial<IMarkmapJSONOptions>;
-    getOptions?: (jsonOptions: Partial<IMarkmapJSONOptions>) => Partial<IMarkmapOptions>;
+    getOptions?: (
+      jsonOptions: Partial<IMarkmapJSONOptions>,
+    ) => Partial<IMarkmapOptions>;
     /** See https://github.com/gera2ld/npm2url */
     urlBuilder?: UrlBuilder;
   },

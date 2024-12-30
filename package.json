@@ -30,7 +30,8 @@
   "scripts": {
     "prepare": "husky || true",
     "build": "pnpm lint && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
-    "lint": "eslint",
+    "lint": "eslint && prettier --check packages/*/src",
+    "lint:fix": "eslint --fix && prettier --write packages/*/src",
     "test": "vitest --run",
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",
