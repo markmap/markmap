@@ -37,7 +37,7 @@ const plugin = definePlugin({
               );
               result =
                 result.slice(0, 4) +
-                ` data-lines=${lineRange.join(',')}` +
+                ` data-lines="${lineRange.join(',')}"` +
                 result.slice(4);
             }
             return result;
