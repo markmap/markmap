@@ -19,9 +19,11 @@ export default defineConfig({
     emptyOutDir: false,
     minify: false,
     lib: {
-      entry: 'src/index.ts',
+      entry: {
+        index: 'src/index.ts',
+        client: 'src/client/index.ts',
+      },
       formats: ['es'],
-      fileName: 'index',
     },
     rollupOptions: {
       external,

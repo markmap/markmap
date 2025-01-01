@@ -1,25 +1,27 @@
-import { readFile, writeFile } from 'fs/promises';
-import { resolve } from 'path';
-import { fileURLToPath } from 'url';
 import { Command } from 'commander';
-import open from 'open';
-import updateNotifier from 'update-notifier';
-import { readPackageUp } from 'read-package-up';
-import { CSSItem, JSItem, buildJSItem } from 'markmap-common';
+import { readFile, writeFile } from 'fs/promises';
+import { CSSItem, JSItem, buildJSItem, mergeAssets } from 'markmap-common';
 import {
   Transformer,
-  type IMarkmapCreateOptions,
   type IAssets,
+  type IMarkmapCreateOptions,
 } from 'markmap-lib';
 import { baseJsPaths, fillTemplate } from 'markmap-render';
-import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
-import { IDevelopOptions } from './types';
+import open from 'open';
+import { basename, resolve } from 'path';
+import { readPackageUp } from 'read-package-up';
+import updateNotifier from 'update-notifier';
+import { fileURLToPath } from 'url';
 import { develop } from './dev-server';
 import { fetchAssets } from './fetch-assets';
+import { IDevelopOptions } from './types';
+import { ASSETS_PREFIX, config, localProvider, toolbarAssets } from './util';
 
-export * from 'markmap-lib';
+export * from './dev-server';
 export * from './types';
-export { config, develop, fetchAssets };
+export { config, fetchAssets };
+
+export * as markmap from 'markmap-lib';
 
 async function loadFile(path: string) {
   if (path.startsWith(ASSETS_PREFIX)) {
@@ -65,7 +67,7 @@ async function inlineAssets(assets: IAssets): Promise<IAssets> {
 }
 
 export async function createMarkmap(
-  options: IMarkmapCreateOptions & IDevelopOptions,
+  options: IMarkmapCreateOptions & IDevelopOptions & { open: boolean },
 ): Promise<void> {
   const transformer = new Transformer();
   if (options.offline) {
@@ -81,22 +83,20 @@ export async function createMarkmap(
   const { root, features, frontmatter } = transformer.transform(
     options.content || '',
   );
-  let assets = transformer.getUsedAssets(features);
-  assets = {
-    ...assets,
-    scripts: [
-      ...baseJsPaths
-        .map((path) => transformer.urlBuilder.getFullUrl(path))
-        .map((path) => buildJSItem(path)),
-      ...(assets.scripts || []),
-    ],
-  };
-  if (options.toolbar) {
-    assets = addToolbar(transformer.urlBuilder, assets);
-  }
-  if (options.offline) {
-    assets = await inlineAssets(assets);
-  }
+  const otherAssets = mergeAssets(
+    {
+      scripts: baseJsPaths.map(buildJSItem),
+    },
+    options.toolbar ? toolbarAssets : null,
+  );
+  let assets = mergeAssets(
+    {
+      scripts: otherAssets.scripts?.map((item) => transformer.resolveJS(item)),
+      styles: otherAssets.styles?.map((item) => transformer.resolveCSS(item)),
+    },
+    transformer.getUsedAssets(features),
+  );
+  if (options.offline) assets = await inlineAssets(assets);
   const html = fillTemplate(root, assets, {
     baseJs: [],
     jsonOptions: (frontmatter as any)?.markmap,
@@ -134,18 +134,23 @@ export async function main() {
       '-w, --watch',
       'watch the input file and update output on the fly, note that this feature is for development only',
     )
-    .action(async (input, cmd) => {
+    .action(async (input: string, cmd) => {
       let { offline } = cmd;
       if (cmd.watch) offline = true;
       if (offline) await fetchAssets();
       const content = await readFile(input, 'utf8');
       const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
       if (cmd.watch) {
-        await develop(input, {
-          open: cmd.open,
+        const devServer = await develop({
           toolbar: cmd.toolbar,
           offline,
         });
+        const address = devServer.serverInfo!.address;
+        const provider = devServer.addProvider({ filePath: input });
+        const filename = basename(input);
+        const url = `http://localhost:${address.port}/?key=${provider.key}&filename=${encodeURIComponent(filename)}`;
+        console.log(`Listening at ${url}`);
+        if (cmd.open) open(url);
       } else {
         await createMarkmap({
           content,

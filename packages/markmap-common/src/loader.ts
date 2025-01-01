@@ -1,5 +1,11 @@
 import { hm } from '@gera2ld/jsx-dom';
-import { JSItem, JSScriptItem, CSSItem, CSSStylesheetItem } from './types';
+import {
+  CSSItem,
+  CSSStylesheetItem,
+  IAssets,
+  JSItem,
+  JSScriptItem,
+} from './types';
 import { defer, memoize } from './util';
 
 const memoizedPreloadJS = memoize((url: string) => {
@@ -111,5 +117,23 @@ export function buildCSSItem(path: string): CSSStylesheetItem {
     data: {
       href: path,
     },
+  };
+}
+
+export function extractAssets(assets: IAssets) {
+  return [
+    ...(assets.scripts?.map(
+      (item) => (item.type === 'script' && item.data.src) || '',
+    ) || []),
+    ...(assets.styles?.map(
+      (item) => (item.type === 'stylesheet' && item.data.href) || '',
+    ) || []),
+  ].filter(Boolean);
+}
+
+export function mergeAssets(...args: (IAssets | null | undefined)[]): IAssets {
+  return {
+    styles: args.flatMap((arg) => arg?.styles || []),
+    scripts: args.flatMap((arg) => arg?.scripts || []),
   };
 }

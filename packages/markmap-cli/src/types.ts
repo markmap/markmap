@@ -1,9 +1,5 @@
 export interface IDevelopOptions {
   /**
-   * Whether to open the generated markmap in browser
-   */
-  open: boolean;
-  /**
    * Whether to show the default toolbar
    */
   toolbar: boolean;
@@ -16,14 +12,17 @@ export interface IDevelopOptions {
   port?: number;
 }
 
-export interface IFileUpdate {
-  ts?: number;
-  content?: string;
-  line?: number;
+export interface IVersionedValue<T = unknown> {
+  ts: number;
+  value: T;
 }
 
+export type IFileState = Record<string, IVersionedValue>;
+
 export interface IContentProvider {
-  getUpdate: (ts: number, timeout?: number) => Promise<IFileUpdate>;
+  key: string;
+  state: IFileState;
+  getUpdate: (query: Record<string, number>, timeout?: number) => Promise<void>;
   setContent: (content: string) => void;
   setCursor: (line: number) => void;
   dispose: () => void;

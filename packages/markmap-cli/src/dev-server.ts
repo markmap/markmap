@@ -1,28 +1,30 @@
-import { serve } from '@hono/node-server';
+import { ServerType, serve } from '@hono/node-server';
 import { FSWatcher, watch } from 'chokidar';
-import { EventEmitter } from 'events';
+import { createHash } from 'crypto';
 import { createReadStream } from 'fs';
 import { readFile, stat } from 'fs/promises';
-import { Hono } from 'hono';
+import { Context, Hono } from 'hono';
 import { getMimeType } from 'hono/utils/mime';
-import { IAssets, IDeferred, INode, IPureNode, defer } from 'markmap-common';
-import { Transformer, type ITransformResult } from 'markmap-lib';
+import { IDeferred, defer, mergeAssets } from 'markmap-common';
+import { Transformer } from 'markmap-lib';
 import { fillTemplate } from 'markmap-render';
-import open from 'open';
-import { join } from 'path';
-import { IContentProvider, IDevelopOptions, IFileUpdate } from './types';
+import { AddressInfo } from 'net';
+import { join, resolve } from 'path';
+import { IContentProvider, IDevelopOptions, IFileState } from './types';
 import {
   ASSETS_PREFIX,
-  addToolbar,
   config,
   createStreamBody,
   localProvider,
+  toolbarAssets,
 } from './util';
 
-function sequence(fn: () => Promise<void>) {
+type MaybePromise<T> = T | Promise<T>;
+
+function sequence(fn: () => MaybePromise<void>) {
   let promise: Promise<void> | undefined;
   return () => {
-    promise ||= fn().finally(() => {
+    promise ||= Promise.resolve(fn()).finally(() => {
       promise = undefined;
     });
     return promise;
@@ -30,67 +32,70 @@ function sequence(fn: () => Promise<void>) {
 }
 
 class BufferContentProvider implements IContentProvider {
-  private deferredSet = new Set<IDeferred<IFileUpdate>>();
+  private deferredSet = new Set<IDeferred<void>>();
 
-  private events = new EventEmitter();
+  state: IFileState = {
+    content: {
+      ts: 0,
+      value: '',
+    },
+    line: {
+      ts: 0,
+      value: 0,
+    },
+  };
 
-  private ts = 0;
+  protected disposeList: Array<() => void> = [];
 
-  private content = '';
+  constructor(readonly key: string) {}
 
-  private line = -1;
-
-  constructor() {
-    this.events.on('content', () => {
-      this.feed({
-        ts: this.ts,
-        content: this.content,
-      });
-    });
-    this.events.on('cursor', () => {
-      this.feed({
-        line: this.line,
-      });
-    });
-  }
-
-  async getUpdate(ts: number, timeout = 10000): Promise<IFileUpdate> {
-    const deferred = defer<IFileUpdate>();
+  async getUpdate(query: Record<string, number>, timeout = 10000) {
+    const deferred = defer<void>();
     this.deferredSet.add(deferred);
     setTimeout(() => {
-      this.feed({}, deferred);
+      this.feed(null, deferred);
     }, timeout);
-    if (ts < this.ts) {
-      this.feed({ ts: this.ts, content: this.content }, deferred);
+    if (Object.keys(query).some((key) => query[key] < this.state[key].ts)) {
+      this.feed(null, deferred);
     }
-    return deferred.promise;
+    await deferred.promise;
   }
 
-  protected feed(data: IFileUpdate, deferred?: IDeferred<IFileUpdate>) {
+  protected feed(data: Partial<IFileState> | null, deferred?: IDeferred<void>) {
+    if (data) {
+      Object.assign(this.state, data);
+    }
     if (deferred) {
-      deferred.resolve(data);
+      deferred.resolve();
       this.deferredSet.delete(deferred);
     } else {
       for (const d of this.deferredSet) {
-        d.resolve(data);
+        d.resolve();
       }
       this.deferredSet.clear();
     }
   }
 
   setCursor(line: number) {
-    this.line = line;
-    this.events.emit('cursor');
+    this.feed({
+      line: {
+        ts: Date.now(),
+        value: line,
+      },
+    });
   }
 
   setContent(content: string) {
-    this.ts = Date.now();
-    this.content = content;
-    this.events.emit('content');
+    this.feed({
+      content: {
+        ts: Date.now(),
+        value: content,
+      },
+    });
   }
 
   dispose() {
-    /* noop */
+    this.disposeList.forEach((dispose) => dispose());
   }
 }
 
@@ -98,153 +103,227 @@ class FileSystemProvider
   extends BufferContentProvider
   implements IContentProvider
 {
-  private watcher: FSWatcher;
-
-  constructor(private fileName: string) {
-    super();
-    this.watcher = watch(fileName).on(
-      'all',
-      sequence(() => this.update()),
-    );
+  constructor(
+    key: string,
+    readonly filePath: string,
+    watch: (callback: () => void) => () => void,
+  ) {
+    super(key);
+    this.disposeList.push(watch(() => this.update()));
   }
 
-  private async update() {
-    const content = await readFile(this.fileName, 'utf8');
+  async update() {
+    const content = await readFile(this.filePath, 'utf8');
     this.setContent(content);
   }
-
-  dispose() {
-    super.dispose();
-    this.watcher.close();
-  }
 }
 
-function startServer(paddingBottom: number) {
-  let ts = 0;
-  let root: IPureNode;
-  let line: number;
-  const { mm, markmap } = window;
-  refresh();
-  function refresh() {
-    fetch(`/~data?ts=${ts}`)
-      .then((res) => res.json())
-      .then(
-        (res: { ts?: number; line?: number; result?: ITransformResult }) => {
-          if (res.ts && res.ts > ts && res.result) {
-            let frontmatter: any;
-            ({ root, frontmatter } = res.result);
-            mm.setOptions(markmap.deriveOptions(frontmatter?.markmap));
-            mm.setData(root);
-            if (!ts) mm.fit();
-            ts = res.ts;
-            line = -1;
-          }
-          if (root && res.line != null && line !== res.line) {
-            line = res.line;
-            const active = findActiveNode();
-            if (active) mm.ensureView(active, { bottom: paddingBottom });
-          }
-          setTimeout(refresh, 300);
-        },
+function sha256(input: string) {
+  return createHash('sha256').update(input, 'utf8').digest('hex').slice(0, 7);
+}
+
+async function sendStatic(c: Context, realpath: string) {
+  try {
+    const result = await stat(realpath);
+    if (!result.isFile()) throw new Error('File not found');
+  } catch {
+    return c.body('File not found', 404);
+  }
+  const stream = createReadStream(realpath);
+  const type = getMimeType(realpath);
+  if (type) c.header('content-type', type);
+  return c.body(createStreamBody(stream));
+}
+
+export class MarkmapDevServer {
+  providers: Record<string, IContentProvider> = {};
+
+  private transformer: Transformer;
+  private html: string;
+
+  private watcher: FSWatcher | undefined;
+  private callbacks: Record<string, () => void> = {};
+
+  private disposeList: Array<() => void> = [];
+
+  serverInfo: {
+    server: ServerType;
+    address: AddressInfo;
+  } | null = null;
+
+  constructor(
+    public options: IDevelopOptions,
+    transformer?: Transformer,
+  ) {
+    this.transformer = transformer || new Transformer();
+    this.html = this._buildHtml();
+    this.disposeList.push(() => {
+      this.watcher?.close();
+    });
+  }
+
+  private _buildHtml() {
+    const otherAssets = mergeAssets(
+      this.options.toolbar ? toolbarAssets : null,
+      {
+        scripts: [
+          {
+            type: 'iife',
+            data: {
+              fn: (options) => {
+                window.markmap.cliOptions = options;
+              },
+              getParams: () => [this.options],
+            },
+          },
+        ],
+      },
+    );
+    const assets = mergeAssets(this.transformer.getAssets(), {
+      scripts: otherAssets.scripts?.map((item) =>
+        this.transformer.resolveJS(item),
+      ),
+      styles: otherAssets.styles?.map((item) =>
+        this.transformer.resolveCSS(item),
+      ),
+    });
+    // Note: `client.js` must be loaded after `mm` is ready
+    const html =
+      fillTemplate(null, assets, {
+        urlBuilder: this.transformer.urlBuilder,
+      }) + '<script src="/~client.js"></script>';
+    return html;
+  }
+
+  async setup() {
+    if (this.serverInfo) throw new Error('Server already set up');
+    const app = new Hono();
+    app.get('/', (c) => {
+      const key = c.req.query('key') || '';
+      if (!this.providers[key]) return c.notFound();
+      return c.html(this.html);
+    });
+    app.get('/~data', async (c) => {
+      const key = c.req.query('key') || '';
+      const provider = this.providers[key];
+      if (!provider) return c.json({}, 404);
+      const query = Object.fromEntries(
+        ['content', 'line'].map((key) => [key, +(c.req.query(key) || '') || 0]),
       );
+      await provider.getUpdate(query);
+      const updatedKeys = Object.keys(query).filter(
+        (key) => query[key] < provider.state[key].ts,
+      );
+      const result = Object.fromEntries(
+        updatedKeys.map((key) => {
+          let data = provider.state[key];
+          if (key === 'content') {
+            const result = this.transformer.transform(data.value as string);
+            data = {
+              ...data,
+              value: {
+                frontmatter: result.frontmatter,
+                root: result.root,
+              },
+            };
+          }
+          return [key, data];
+        }),
+      );
+      return c.json(result);
+    });
+    app.post('/~api', async (c) => {
+      const key = c.req.query('key') || '';
+      const provider = this.providers[key];
+      if (!provider) return c.json({}, 404);
+      const { cmd, args } = await c.req.json();
+      await provider[cmd]?.(...args);
+      return c.body(null, 204);
+    });
+    const { distDir, assetsDir } = config;
+    app.get('/~client.*', async (c) => {
+      const realpath = join(distDir, c.req.path.slice(2));
+      return sendStatic(c, realpath);
+    });
+    app.get(`${ASSETS_PREFIX}*`, async (c) => {
+      const relpath = c.req.path.slice(ASSETS_PREFIX.length);
+      const realpath = join(assetsDir, relpath);
+      return sendStatic(c, realpath);
+    });
+
+    const deferred = defer<AddressInfo>();
+    const server = serve(
+      {
+        fetch: app.fetch,
+        port: this.options.port,
+      },
+      deferred.resolve,
+    );
+    const address = await deferred.promise;
+    this.serverInfo = {
+      server,
+      address,
+    };
   }
-  function findActiveNode() {
-    let best: INode | undefined;
-    dfs(root as INode);
-    return best;
-    function dfs(node: INode) {
-      const [start, end] =
-        (node.payload?.lines as string | undefined)
-          ?.split(',')
-          .map((s) => +s) || [];
-      if (start >= 0 && start <= line && line < end) {
-        best = node;
-      }
-      node.children?.forEach(dfs);
+
+  async shutdown() {
+    if (!this.serverInfo) throw new Error('Server is not set up yet');
+    const deferred = defer();
+    this.serverInfo.server.close((err) => {
+      if (err) deferred.reject();
+      else deferred.resolve();
+    });
+    await deferred.promise;
+    this.serverInfo = null;
+  }
+
+  async destroy() {
+    await this.shutdown();
+    this.disposeList.forEach((dispose) => dispose());
+  }
+
+  private _watch(filePath: string, callback: () => MaybePromise<void>) {
+    let { watcher } = this;
+    if (!watcher) {
+      watcher = watch([]).on('all', (_event, path) => {
+        const callback = this.callbacks[path];
+        callback?.();
+      });
+      this.watcher = watcher;
     }
+    watcher.add(filePath);
+    this.callbacks[filePath] = sequence(callback);
+    return () => {
+      watcher.unwatch(filePath);
+      delete this.callbacks[filePath];
+    };
+  }
+
+  addProvider(options?: { key?: string; filePath?: string }) {
+    const filePath = options?.filePath && resolve(options.filePath);
+    const key =
+      options?.key ||
+      (filePath ? sha256(filePath) : Math.random().toString(36).slice(2, 9));
+    this.providers[key] ||= filePath
+      ? new FileSystemProvider(key, filePath, (callback: () => void) =>
+          this._watch(filePath, callback),
+        )
+      : new BufferContentProvider(key);
+    return this.providers[key];
+  }
+
+  delProvider(key: string) {
+    const provider = this.providers[key];
+    provider?.dispose();
+    delete this.providers[key];
   }
 }
 
-async function setUpServer(
-  transformer: Transformer,
-  provider: IContentProvider,
-  options: IDevelopOptions,
-) {
-  let assets: IAssets = transformer.getAssets();
-  if (options.toolbar) assets = addToolbar(transformer.urlBuilder, assets);
-  const html = `${fillTemplate(null, assets, {
-    urlBuilder: transformer.urlBuilder,
-  })}<script>(${startServer.toString()})(${options.toolbar ? 60 : 0})</script>`;
-
-  const app = new Hono();
-  app.get('/', (c) => c.html(html));
-  app.get('/~data', async (c) => {
-    const update = await provider.getUpdate(+(c.req.query('ts') || 0));
-    const result =
-      update.content == null
-        ? null
-        : transformer.transform(update.content || '');
-    return c.json({ ts: update.ts, result, line: update.line });
-  });
-  app.post('/~api', async (c) => {
-    const { cmd, args } = await c.req.json();
-    await provider[cmd]?.(...args);
-    return c.body(null, 204);
-  });
-  const { assetsDir } = config;
-  app.get(`${ASSETS_PREFIX}*`, async (c) => {
-    const relpath = c.req.path.slice(ASSETS_PREFIX.length);
-    const realpath = join(assetsDir, relpath);
-    try {
-      const result = await stat(realpath);
-      if (!result.isFile()) throw new Error('File not found');
-    } catch {
-      return c.body('File not found', 404);
-    }
-    const stream = createReadStream(realpath);
-    const type = getMimeType(relpath);
-    if (type) c.header('content-type', type);
-    return c.body(createStreamBody(stream));
-  });
-
-  const server = serve(
-    {
-      fetch: app.fetch,
-      port: options.port,
-    },
-    (info) => {
-      const { port } = info;
-      console.info(`Listening at http://localhost:${port}`);
-      if (options.open) open(`http://localhost:${port}`);
-    },
-  );
-
-  let closing: Promise<void>;
-  return {
-    provider,
-    close() {
-      if (!closing) {
-        closing = new Promise((resolve, reject) =>
-          server.close((err?: Error) => {
-            if (err) reject(err);
-            else resolve();
-          }),
-        );
-      }
-      return closing;
-    },
-  };
-}
-
-export async function develop(
-  fileName: string | undefined,
-  options: IDevelopOptions,
-) {
+export async function develop(options: IDevelopOptions) {
   const transformer = new Transformer();
   transformer.urlBuilder.setProvider('local', localProvider);
   transformer.urlBuilder.provider = 'local';
-  const provider = fileName
-    ? new FileSystemProvider(fileName)
-    : new BufferContentProvider();
-  return setUpServer(transformer, provider, options);
+  const devServer = new MarkmapDevServer(options, transformer);
+  await devServer.setup();
+  return devServer;
 }

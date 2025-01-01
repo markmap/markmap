@@ -1,35 +1,31 @@
 import { createWriteStream } from 'fs';
 import { mkdir, stat } from 'fs/promises';
+import { extractAssets } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
 import { dirname, resolve } from 'path';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { ReadableStream } from 'stream/web';
-import { ASSETS_PREFIX, addToolbar, config, localProvider } from './util';
+import { ASSETS_PREFIX, config, localProvider, toolbarAssets } from './util';
 
 const providerName = 'local-hook';
 
 export async function fetchAssets(assetsDir = config.assetsDir) {
   const transformer = new Transformer();
-  const { provider } = transformer.urlBuilder;
   transformer.urlBuilder.setProvider(providerName, localProvider);
   transformer.urlBuilder.provider = providerName;
-  let assets = transformer.getAssets();
-  assets = addToolbar(transformer.urlBuilder, assets);
+  const assets = transformer.getAssets();
   delete transformer.urlBuilder.providers[providerName];
-  transformer.urlBuilder.provider = provider;
-  const pluginPaths = [
-    ...(assets.scripts?.map(
-      (item) => (item.type === 'script' && item.data.src) || '',
-    ) || []),
-    ...(assets.styles?.map(
-      (item) => (item.type === 'stylesheet' && item.data.href) || '',
-    ) || []),
-  ]
+  const pluginPaths = extractAssets(assets)
     .filter((url) => url.startsWith(ASSETS_PREFIX))
     .map((url) => url.slice(ASSETS_PREFIX.length));
-  const paths = [...baseJsPaths, ...pluginPaths];
+  const paths = [
+    ...baseJsPaths,
+    ...pluginPaths,
+    ...extractAssets(toolbarAssets),
+  ];
+  // Delay getFastestProvider in case the assets are already downloaded
   let findingProvider: Promise<string>;
   const findProvider = () => {
     findingProvider ||= transformer.urlBuilder.getFastestProvider();

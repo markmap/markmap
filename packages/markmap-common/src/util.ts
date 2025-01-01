@@ -39,7 +39,7 @@ export function wrapFunction<T extends unknown[], U>(
   return (...args: T) => wrapper(fn, ...args);
 }
 
-export function defer<T>() {
+export function defer<T = void>() {
   const obj: Partial<IDeferred<T>> = {};
   obj.promise = new Promise<T>((resolve, reject) => {
     obj.resolve = resolve;
