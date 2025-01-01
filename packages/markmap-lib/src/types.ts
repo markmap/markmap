@@ -74,7 +74,10 @@ export interface ITransformPlugin {
   name: string;
   config?: IAssets & {
     versions?: Record<string, string>;
+    /** For browsers only. Scripts that needs to be preloaded for the transformer to work. */
     preloadScripts?: JSItem[];
+    /** Additional resources needed for the plugin to work offline. */
+    resources?: string[];
   };
   /**
    * @returns The assets that should be loaded for rendering the output.

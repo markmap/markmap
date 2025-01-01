@@ -20,9 +20,13 @@ export async function fetchAssets(assetsDir = config.assetsDir) {
   const pluginPaths = extractAssets(assets)
     .filter((url) => url.startsWith(ASSETS_PREFIX))
     .map((url) => url.slice(ASSETS_PREFIX.length));
+  const resources = transformer.plugins.flatMap(
+    (plugin) => plugin.config?.resources || [],
+  );
   const paths = [
     ...baseJsPaths,
     ...pluginPaths,
+    ...resources,
     ...extractAssets(toolbarAssets),
   ];
   // Delay getFastestProvider in case the assets are already downloaded

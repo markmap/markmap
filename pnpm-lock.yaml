@@ -221,6 +221,9 @@ importers:
         specifier: workspace:*
         version: link:../markmap-view
     devDependencies:
+      d3:
+        specifier: ^7.8.5
+        version: 7.9.0
       markmap-common:
         specifier: workspace:*
         version: link:../markmap-common

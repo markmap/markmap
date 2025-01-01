@@ -53,4 +53,5 @@ export const config = {
     webfontloader,
   ] as JSItem[],
   styles,
+  resources: __define__.KATEX_RESOURCES,
 };

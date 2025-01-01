@@ -111,13 +111,6 @@ export class Transformer implements ITransformer {
     };
   }
 
-  getPreloadScripts(): IAssets {
-    const scripts = this.plugins
-      .flatMap((plugin) => plugin.config?.preloadScripts || [])
-      .map((item) => this.resolveJS(item));
-    return { scripts };
-  }
-
   /**
    * Get used assets by features object returned by `transform`.
    */
