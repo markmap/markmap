@@ -14,7 +14,7 @@ import {
 } from './types';
 import { patchCSSItem, patchJSItem } from './util';
 
-export const builtInPlugins = process.env.NO_PLUGINS ? [] : availablePlugins;
+export const builtInPlugins = __define__.NO_PLUGINS ? [] : availablePlugins;
 
 function cleanNode(node: IPureNode): IPureNode {
   while (!node.content && node.children.length === 1) {

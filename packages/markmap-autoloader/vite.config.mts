@@ -1,14 +1,16 @@
 import { defineConfig } from 'vite';
-import { versionLoader } from '../../util.mjs';
+import { versionLoader } from '../../util.mts';
 
-const getVersion = versionLoader(import.meta.url);
+const getVersion = versionLoader(import.meta.dirname);
 
 export default defineConfig({
   define: {
-    'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
-    'process.env.LIB_VERSION': JSON.stringify(await getVersion('markmap-lib')),
-    'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
-    'process.env.TOOLBAR_VERSION': JSON.stringify(await getVersion('markmap-toolbar')),
+    '__define__.D3_VERSION': JSON.stringify(await getVersion('d3')),
+    '__define__.LIB_VERSION': JSON.stringify(await getVersion('markmap-lib')),
+    '__define__.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
+    '__define__.TOOLBAR_VERSION': JSON.stringify(
+      await getVersion('markmap-toolbar'),
+    ),
   },
   build: {
     emptyOutDir: false,

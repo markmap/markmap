@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { buildCSSItem, buildJSItem, JSItem, UrlBuilder } from 'markmap-common';
 import { IAssets } from 'markmap-lib';
 
-const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
+const TOOLBAR_VERSION = __define__.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
 const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.js`;
 

@@ -1,10 +1,10 @@
 import { builtinModules } from 'module';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'vite';
-import { versionLoader } from '../../util.mjs';
+import { versionLoader } from '../../util.mts';
 
-const { packageJson: pkg } = await readPackageUp();
-const getVersion = versionLoader(import.meta.url);
+const getVersion = versionLoader(import.meta.dirname);
+const { packageJson: pkg } = await readPackageUp({ cwd: import.meta.dirname });
 
 const external = [
   ...builtinModules,
@@ -13,17 +13,17 @@ const external = [
 ];
 
 const define = {
-  'process.env.LIB_VERSION': JSON.stringify(pkg.version),
-  'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
-  'process.env.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
-  'process.env.HLJS_VERSION': JSON.stringify(
+  '__define__.LIB_VERSION': JSON.stringify(pkg.version),
+  '__define__.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
+  '__define__.PRISM_VERSION': JSON.stringify(await getVersion('prismjs')),
+  '__define__.HLJS_VERSION': JSON.stringify(
     await getVersion('@highlightjs/cdn-assets/package.json'),
   ),
-  'process.env.KATEX_VERSION': JSON.stringify(await getVersion('katex')),
-  'process.env.WEBFONTLOADER_VERSION': JSON.stringify(
+  '__define__.KATEX_VERSION': JSON.stringify(await getVersion('katex')),
+  '__define__.WEBFONTLOADER_VERSION': JSON.stringify(
     await getVersion('webfontloader'),
   ),
-  'process.env.NO_PLUGINS': 'false',
+  '__define__.NO_PLUGINS': 'false',
 };
 
 const configNode = defineConfig({
@@ -49,7 +49,7 @@ const configNode = defineConfig({
 const configNodeLight = defineConfig({
   define: {
     ...define,
-    'process.env.NO_PLUGINS': 'true',
+    '__define__.NO_PLUGINS': 'true',
   },
   build: {
     emptyOutDir: false,

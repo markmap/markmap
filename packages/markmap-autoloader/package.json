@@ -38,6 +38,7 @@
     "markmap-common": "*"
   },
   "devDependencies": {
+    "d3": "^7.8.5",
     "markmap-common": "workspace:*",
     "markmap-lib": "workspace:*",
     "markmap-toolbar": "workspace:*",

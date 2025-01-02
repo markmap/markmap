@@ -11,11 +11,11 @@ import {
 } from 'markmap-common';
 import { IMarkmapJSONOptions } from 'markmap-view';
 
-export const template = process.env.TEMPLATE || '';
+export const template = __define__.TEMPLATE || '';
 
 export const baseJsPaths = [
-  `d3@${process.env.D3_VERSION}/dist/d3.min.js`,
-  `markmap-view@${process.env.VIEW_VERSION}/dist/browser/index.js`,
+  `d3@${__define__.D3_VERSION}/dist/d3.min.js`,
+  `markmap-view@${__define__.VIEW_VERSION}/dist/browser/index.js`,
 ];
 
 export function fillTemplate(

@@ -2,7 +2,7 @@ import { builtinModules } from 'module';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'vite';
 
-const { packageJson: pkg } = await readPackageUp();
+const { packageJson: pkg } = await readPackageUp({ cwd: import.meta.dirname });
 
 const external = [
   ...builtinModules,
@@ -11,7 +11,7 @@ const external = [
 ];
 
 const define = {
-  'process.env.TREE_PARSER_VERSION': JSON.stringify(pkg.version),
+  '__define__.HTML_PARSER_VERSION': JSON.stringify(pkg.version),
 };
 
 const configNode = defineConfig({

@@ -14,12 +14,12 @@ const enabled: Record<string, boolean> = {};
 
 const autoLoaderOptions = {
   baseJs: [
-    `d3@${process.env.D3_VERSION}`,
-    `markmap-lib@${process.env.LIB_VERSION}`,
-    `markmap-view@${process.env.VIEW_VERSION}`,
-    `markmap-toolbar@${process.env.TOOLBAR_VERSION}`,
+    `d3@${__define__.D3_VERSION}`,
+    `markmap-lib@${__define__.LIB_VERSION}`,
+    `markmap-view@${__define__.VIEW_VERSION}`,
+    `markmap-toolbar@${__define__.TOOLBAR_VERSION}`,
   ],
-  baseCss: [`markmap-toolbar@${process.env.TOOLBAR_VERSION}/dist/style.css`],
+  baseCss: [`markmap-toolbar@${__define__.TOOLBAR_VERSION}/dist/style.css`],
   manual: false,
   toolbar: false,
   ...(window.markmap?.autoLoader as Partial<AutoLoaderOptions>),

@@ -336,7 +336,7 @@ exports[`content with only katex enabled 2`] = `
     {
       "data": {
         "defer": true,
-        "src": "https://cdn.jsdelivr.net/npm/webfontloader@undefined/webfontloader.js",
+        "src": "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js",
       },
       "type": "script",
     },
@@ -344,7 +344,7 @@ exports[`content with only katex enabled 2`] = `
   "styles": [
     {
       "data": {
-        "href": "https://cdn.jsdelivr.net/npm/katex@undefined/dist/katex.min.css",
+        "href": "https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css",
       },
       "type": "stylesheet",
     },
@@ -411,7 +411,7 @@ exports[`custom url provider 1`] = `
     {
       "data": {
         "defer": true,
-        "src": "/local/webfontloader@undefined/webfontloader.js",
+        "src": "/local/webfontloader@1.6.28/webfontloader.js",
       },
       "type": "script",
     },
@@ -419,13 +419,13 @@ exports[`custom url provider 1`] = `
   "styles": [
     {
       "data": {
-        "href": "/local/katex@undefined/dist/katex.min.css",
+        "href": "/local/katex@0.16.18/dist/katex.min.css",
       },
       "type": "stylesheet",
     },
     {
       "data": {
-        "href": "/local/@highlightjs/cdn-assets@undefined/styles/default.min.css",
+        "href": "/local/@highlightjs/cdn-assets@11.11.1/styles/default.min.css",
       },
       "type": "stylesheet",
     },
@@ -583,7 +583,7 @@ exports[`plugins 1`] = `
     {
       "data": {
         "defer": true,
-        "src": "https://cdn.jsdelivr.net/npm/webfontloader@undefined/webfontloader.js",
+        "src": "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js",
       },
       "type": "script",
     },
@@ -591,13 +591,13 @@ exports[`plugins 1`] = `
   "styles": [
     {
       "data": {
-        "href": "https://cdn.jsdelivr.net/npm/katex@undefined/dist/katex.min.css",
+        "href": "https://cdn.jsdelivr.net/npm/katex@0.16.18/dist/katex.min.css",
       },
       "type": "stylesheet",
     },
     {
       "data": {
-        "href": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@undefined/styles/default.min.css",
+        "href": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/styles/default.min.css",
       },
       "type": "stylesheet",
     },

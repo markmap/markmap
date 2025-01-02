@@ -1,21 +1,21 @@
-import { JSItem, buildJSItem, buildCSSItem } from 'markmap-common';
+import { JSItem, buildCSSItem, buildJSItem } from 'markmap-common';
 
 export const name = 'katex';
 
 const preloadScripts = [
-  `katex@${process.env.KATEX_VERSION}/dist/katex.min.js`,
+  `katex@${__define__.KATEX_VERSION}/dist/katex.min.js`,
 ].map((path) => buildJSItem(path));
 const webfontloader = buildJSItem(
-  `webfontloader@${process.env.WEBFONTLOADER_VERSION}/webfontloader.js`,
+  `webfontloader@${__define__.WEBFONTLOADER_VERSION}/webfontloader.js`,
 );
 webfontloader.data.defer = true;
-const styles = [`katex@${process.env.KATEX_VERSION}/dist/katex.min.css`].map(
+const styles = [`katex@${__define__.KATEX_VERSION}/dist/katex.min.css`].map(
   (path) => buildCSSItem(path),
 );
 export const config = {
   versions: {
-    katex: process.env.KATEX_VERSION || '',
-    webfontloader: process.env.WEBFONTLOADER_VERSION || '',
+    katex: __define__.KATEX_VERSION || '',
+    webfontloader: __define__.WEBFONTLOADER_VERSION || '',
   },
   preloadScripts,
   scripts: [

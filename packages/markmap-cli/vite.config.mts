@@ -1,17 +1,17 @@
 import { builtinModules } from 'module';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'vite';
-import { versionLoader } from '../../util.mjs';
+import { versionLoader } from '../../util.mts';
 
-const getVersion = versionLoader(import.meta.url);
-const { packageJson: pkg } = await readPackageUp();
+const getVersion = versionLoader(import.meta.dirname);
+const { packageJson: pkg } = await readPackageUp({ cwd: import.meta.dirname });
 
 // Bundle @babel/runtime to avoid requiring esm version in the output
 const external = [...builtinModules, ...Object.keys(pkg.dependencies)];
 
 export default defineConfig({
   define: {
-    'process.env.TOOLBAR_VERSION': JSON.stringify(
+    '__define__.TOOLBAR_VERSION': JSON.stringify(
       await getVersion('markmap-toolbar'),
     ),
   },

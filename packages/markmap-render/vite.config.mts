@@ -1,13 +1,17 @@
 import { readFile } from 'fs/promises';
 import { builtinModules } from 'module';
+import { join } from 'path';
 import { readPackageUp } from 'read-package-up';
 import { defineConfig } from 'vite';
-import { versionLoader } from '../../util.mjs';
+import { versionLoader } from '../../util.mts';
 
-const getVersion = versionLoader(import.meta.url);
-const { packageJson: pkg } = await readPackageUp();
+const getVersion = versionLoader(import.meta.dirname);
+const { packageJson: pkg } = await readPackageUp({ cwd: import.meta.dirname });
 
-const TEMPLATE = await readFile('templates/markmap.html', 'utf8');
+const TEMPLATE = await readFile(
+  join(import.meta.dirname, 'templates/markmap.html'),
+  'utf8',
+);
 const external = [
   ...builtinModules,
   ...Object.keys(pkg.dependencies),
@@ -15,9 +19,9 @@ const external = [
 ];
 
 const define = {
-  'process.env.TEMPLATE': JSON.stringify(TEMPLATE),
-  'process.env.D3_VERSION': JSON.stringify(await getVersion('d3')),
-  'process.env.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
+  '__define__.TEMPLATE': JSON.stringify(TEMPLATE),
+  '__define__.D3_VERSION': JSON.stringify(await getVersion('d3')),
+  '__define__.VIEW_VERSION': JSON.stringify(await getVersion('markmap-view')),
 };
 
 export default defineConfig({

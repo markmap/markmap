@@ -11,9 +11,5 @@
     "jsxImportSource": "@gera2ld/jsx-dom",
     "declaration": true,
     "emitDeclarationOnly": true
-  },
-  "include": [
-    "packages/*/src/**/*",
-    "packages/*/types/**/*"
-  ]
+  }
 }

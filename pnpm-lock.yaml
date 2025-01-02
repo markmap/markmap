@@ -74,6 +74,9 @@ importers:
 
   packages/markmap-autoloader:
     devDependencies:
+      d3:
+        specifier: ^7.8.5
+        version: 7.9.0
       markmap-common:
         specifier: workspace:*
         version: link:../markmap-common
@@ -119,9 +122,6 @@ importers:
       open:
         specifier: ^10.1.0
         version: 10.1.0
-      pkg-dir:
-        specifier: ^8.0.0
-        version: 8.0.0
       read-package-up:
         specifier: ^11.0.0
         version: 11.0.0
@@ -3760,10 +3760,6 @@ packages:
   pkg-dir@4.2.0:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
-
-  pkg-dir@8.0.0:
-    resolution: {integrity: sha512-4peoBq4Wks0riS0z8741NVv+/8IiTvqnZAr8QGgtdifrtpdXbNw/FxRS1l6NFqm4EMzuS0EDqNNx4XGaz8cuyQ==}
-    engines: {node: '>=18'}
 
   pkg-types@1.2.1:
     resolution: {integrity: sha512-sQoqa8alT3nHjGuTjuKgOnvjo4cljkufdtLMnO2LBP/wRwuDlo1tkaEdMxCRhyGRPacv/ztlZgDPm2b7FAmEvw==}
@@ -8432,10 +8428,6 @@ snapshots:
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
-
-  pkg-dir@8.0.0:
-    dependencies:
-      find-up-simple: 1.0.0
 
   pkg-types@1.2.1:
     dependencies:

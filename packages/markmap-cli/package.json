@@ -54,7 +54,6 @@
     "markmap-render": "workspace:*",
     "markmap-toolbar": "workspace:*",
     "open": "^10.1.0",
-    "pkg-dir": "^8.0.0",
     "read-package-up": "^11.0.0",
     "update-notifier": "^7.3.1"
   }
