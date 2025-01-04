@@ -1,6 +1,6 @@
 {
   "name": "markmap-html-parser",
-  "version": "0.18.4",
+  "version": "0.18.5",
   "description": "Parse HTML into markmap data structure",
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
