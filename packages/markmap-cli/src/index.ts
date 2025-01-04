@@ -9,7 +9,6 @@ import {
 import { baseJsPaths, fillTemplate } from 'markmap-render';
 import open from 'open';
 import { basename, resolve } from 'path';
-import { getPortPromise } from 'portfinder';
 import { readPackageUp } from 'read-package-up';
 import updateNotifier from 'update-notifier';
 import { fileURLToPath } from 'url';
@@ -146,7 +145,7 @@ export async function main() {
         const devServer = await develop({
           toolbar: cmd.toolbar,
           offline,
-          port: +cmd.port || (await getPortPromise()),
+          port: +cmd.port || undefined,
         });
         const address = devServer.serverInfo!.address;
         const provider = devServer.addProvider({ filePath: input });

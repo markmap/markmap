@@ -10,6 +10,7 @@ import { Transformer } from 'markmap-lib';
 import { fillTemplate } from 'markmap-render';
 import { AddressInfo } from 'net';
 import { join, resolve } from 'path';
+import { getPortPromise } from 'portfinder';
 import { IContentProvider, IDevelopOptions, IFileState } from './types';
 import {
   ASSETS_PREFIX,
@@ -255,7 +256,7 @@ export class MarkmapDevServer {
     const server = serve(
       {
         fetch: app.fetch,
-        port: this.options.port,
+        port: this.options.port || (await getPortPromise()),
       },
       deferred.resolve,
     );
