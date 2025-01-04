@@ -9,6 +9,7 @@ import {
 import { baseJsPaths, fillTemplate } from 'markmap-render';
 import open from 'open';
 import { basename, resolve } from 'path';
+import { getPortPromise } from 'portfinder';
 import { readPackageUp } from 'read-package-up';
 import updateNotifier from 'update-notifier';
 import { fileURLToPath } from 'url';
@@ -123,17 +124,18 @@ export async function main() {
     .version(pkg.version)
     .description('Create a markmap from a Markdown input file')
     .arguments('<input>')
-    .option('--no-open', 'do not open the output file after generation')
-    .option('--no-toolbar', 'do not show toolbar')
-    .option('-o, --output <output>', 'specify filename of the output HTML')
+    .option('--no-open', 'Do not open the output file after generation')
+    .option('--no-toolbar', 'Do not show toolbar')
+    .option('-o, --output <output>', 'Specify the filename of the output HTML')
     .option(
       '--offline',
       'Inline all assets to allow the generated HTML to work offline',
     )
     .option(
       '-w, --watch',
-      'watch the input file and update output on the fly, note that this feature is for development only',
+      'Watch the input file and update output on the fly, note that this feature is for development only',
     )
+    .option('--port <port>', 'Set the port for the devServer to listen')
     .action(async (input: string, cmd) => {
       let { offline } = cmd;
       if (cmd.watch) offline = true;
@@ -144,6 +146,7 @@ export async function main() {
         const devServer = await develop({
           toolbar: cmd.toolbar,
           offline,
+          port: +cmd.port || (await getPortPromise()),
         });
         const address = devServer.serverInfo!.address;
         const provider = devServer.addProvider({ filePath: input });

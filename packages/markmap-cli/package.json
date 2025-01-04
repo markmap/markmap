@@ -54,6 +54,7 @@
     "markmap-render": "workspace:*",
     "markmap-toolbar": "workspace:*",
     "open": "^10.1.0",
+    "portfinder": "^1.0.32",
     "read-package-up": "^11.0.0",
     "update-notifier": "^7.3.1"
   }
