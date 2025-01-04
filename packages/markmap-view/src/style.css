@@ -9,6 +9,7 @@
   --markmap-font: 300 16px/20px sans-serif;
   --markmap-circle-open-bg: #fff;
   --markmap-text-color: #333;
+  --markmap-highlight-node-bg: #ff02;
 
   font: var(--markmap-font);
   color: var(--markmap-text-color);
@@ -90,6 +91,10 @@
         display: inline-block;
       }
     }
+  }
+
+  &-highlight rect {
+    fill: var(--markmap-highlight-node-bg);
   }
 }
 

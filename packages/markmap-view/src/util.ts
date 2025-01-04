@@ -69,8 +69,8 @@ export function childSelector<T extends Element>(
   filter?: string | ((el: T) => boolean),
 ): () => T[] {
   if (typeof filter === 'string') {
-    const tagName = filter;
-    filter = (el: T): boolean => el.tagName === tagName;
+    const selector = filter;
+    filter = (el: T): boolean => el.matches(selector);
   }
   const filterFn = filter;
   return function selector(this: Element): T[] {

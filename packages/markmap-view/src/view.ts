@@ -28,6 +28,10 @@ import { childSelector, simpleHash } from './util';
 
 export const globalCSS = css;
 
+const SELECTOR_NODE = 'g.markmap-node';
+const SELECTOR_LINK = 'path.markmap-link';
+const SELECTOR_HIGHLIGHT = 'g.markmap-highlight';
+
 const linkShape = linkHorizontal();
 
 function linkWidth(data: INode): number {
@@ -59,11 +63,11 @@ export class Markmap {
 
   g: d3.Selection<SVGGElement, INode, HTMLElement, INode>;
 
-  observer: ResizeObserver;
-
   zoom: d3.ZoomBehavior<SVGElement, INode>;
 
-  revokers: (() => void)[] = [];
+  private _observer: ResizeObserver;
+
+  private _disposeList: (() => void)[] = [];
 
   constructor(
     svg: string | SVGElement | ID3SVGElement,
@@ -88,16 +92,17 @@ export class Markmap {
       rect: { x1: 0, y1: 0, x2: 0, y2: 0 },
     };
     this.g = this.svg.append('g');
-    this.observer = new ResizeObserver(
+    this.g.append('g').attr('class', 'markmap-highlight');
+    this._observer = new ResizeObserver(
       debounce(() => {
         this.renderData();
       }, 100),
     );
-    this.revokers.push(
+    this._disposeList.push(
       refreshHook.tap(() => {
         this.setData();
       }),
-      () => this.observer.disconnect(),
+      () => this._observer.disconnect(),
     );
   }
 
@@ -160,13 +165,13 @@ export class Markmap {
     this.toggleNode(d, recursive);
   };
 
-  private _initializeData(node: INode): void {
+  private _initializeData(node: IPureNode | INode) {
     let nodeId = 0;
     const { color, initialExpandLevel } = this.options;
 
     let foldRecursively = 0;
     let depth = 0;
-    walkTree(node, (item, next, parent) => {
+    walkTree(node as INode, (item, next, parent) => {
       depth += 1;
       item.children = item.children?.map((child) => ({ ...child }));
       nodeId += 1;
@@ -203,13 +208,15 @@ export class Markmap {
       if (isFoldRecursively) foldRecursively -= 1;
       depth -= 1;
     });
+
+    return node as INode;
   }
 
   private _relayout() {
     if (!this.state.data) return;
 
     this.g
-      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>('g'))
+      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>(SELECTOR_NODE))
       .selectAll<SVGForeignObjectElement, INode>(
         childSelector<SVGForeignObjectElement>('foreignObject'),
       )
@@ -278,11 +285,29 @@ export class Markmap {
 
   async setData(data?: IPureNode | null, opts?: Partial<IMarkmapOptions>) {
     if (opts) this.setOptions(opts);
-    if (data) this.state.data = data as INode;
+    if (data) this.state.data = this._initializeData(data);
     if (!this.state.data) return;
-    this._initializeData(this.state.data);
     this.updateStyle();
     await this.renderData();
+  }
+
+  async setHighlight(node?: INode | null) {
+    this.state.highlight = node || undefined;
+    await this.renderData();
+  }
+
+  private _getHighlightRect(highlight: INode) {
+    const svgNode = this.svg.node()!;
+    const transform = zoomTransform(svgNode);
+    const padding = 4 / transform.k;
+    const rect = {
+      ...highlight.state.rect,
+    };
+    rect.x -= padding;
+    rect.y -= padding;
+    rect.width += 2 * padding;
+    rect.height += 2 * padding;
+    return rect;
   }
 
   async renderData(originData?: INode) {
@@ -321,9 +346,21 @@ export class Markmap {
     sourceRectMap[rootNode.state.id] = rootNode.state.rect;
     if (originData) setOriginNode(originData);
 
+    // Update highlight
+    const { highlight } = this.state;
+    let highlightNodes = this.g
+      .selectAll(childSelector(SELECTOR_HIGHLIGHT))
+      .selectAll<SVGRectElement, INode>(childSelector<SVGRectElement>('rect'))
+      .data(highlight ? [this._getHighlightRect(highlight)] : [])
+      .join('rect')
+      .attr('x', (d) => d.x)
+      .attr('y', (d) => d.y)
+      .attr('width', (d) => d.width)
+      .attr('height', (d) => d.height);
+
     // Update the nodes
     const mmG = this.g
-      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>('g'))
+      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>(SELECTOR_NODE))
       .each((d) => {
         // Save the current rects before updating nodes
         sourceRectMap[d.state.id] = d.state.rect;
@@ -388,7 +425,7 @@ export class Markmap {
           : 'var(--markmap-circle-open-bg)',
       );
 
-    const observer = this.observer;
+    const observer = this._observer;
     const mmFo = mmGMerge
       .selectAll<
         SVGForeignObjectElement,
@@ -437,7 +474,7 @@ export class Markmap {
       .selectAll<
         SVGPathElement,
         { source: INode; target: INode }
-      >(childSelector<SVGPathElement>('path'))
+      >(childSelector<SVGPathElement>(SELECTOR_LINK))
       .data(links, (d) => d.target.state.key);
     const mmPathExit = mmPath.exit<{ source: INode; target: INode }>();
     const mmPathEnter = mmPath
@@ -464,6 +501,15 @@ export class Markmap {
     await new Promise(requestAnimationFrame);
     // Note: d.state.rect is only available after relayout
     this._relayout();
+
+    highlightNodes = highlightNodes
+      .data(highlight ? [this._getHighlightRect(highlight)] : [])
+      .join('rect');
+    this.transition(highlightNodes)
+      .attr('x', (d) => d.x)
+      .attr('y', (d) => d.y)
+      .attr('width', (d) => d.width)
+      .attr('height', (d) => d.height);
 
     mmGEnter.attr('transform', (d) => {
       const originRect = getOriginSourceRect(d);
@@ -593,7 +639,7 @@ export class Markmap {
         }
       | undefined;
     this.g
-      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>('g'))
+      .selectAll<SVGGElement, INode>(childSelector<SVGGElement>(SELECTOR_NODE))
       .each(function walk(d) {
         if (d === node) {
           result = {
@@ -703,7 +749,7 @@ export class Markmap {
   destroy() {
     this.svg.on('.zoom', null);
     this.svg.html(null);
-    this.revokers.forEach((fn) => {
+    this._disposeList.forEach((fn) => {
       fn();
     });
   }

@@ -3,6 +3,7 @@ import { INode } from 'markmap-common';
 export interface IMarkmapState {
   id: string;
   data?: INode;
+  highlight?: INode;
   rect: {
     x1: number;
     x2: number;
