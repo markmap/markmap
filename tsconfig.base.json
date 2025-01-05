@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "es2020",
+    "composite": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@gera2ld/jsx-dom",
+    "declaration": true,
+    "emitDeclarationOnly": true
+  }
+}

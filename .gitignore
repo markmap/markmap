@@ -6,3 +6,4 @@ packages/*/dist
 .nyc_output/
 packages/*/coverage
 packages/*/types
+*.tsbuildinfo

@@ -1,15 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "es2020",
-    "module": "es2020",
-    "strict": true,
-    "skipLibCheck": true,
-    "noImplicitAny": false,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "@gera2ld/jsx-dom",
-    "declaration": true,
-    "emitDeclarationOnly": true
-  }
+  "files": [],
+  "references": [
+    { "path": "./packages/markmap-autoloader" },
+    { "path": "./packages/markmap-cli" },
+    { "path": "./packages/markmap-common" },
+    { "path": "./packages/markmap-html-parser" },
+    { "path": "./packages/markmap-lib" },
+    { "path": "./packages/markmap-render" },
+    { "path": "./packages/markmap-toolbar" },
+    { "path": "./packages/markmap-view" }
+  ]
 }
