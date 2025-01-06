@@ -5,12 +5,11 @@
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
-    "clean": "del-cli dist",
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
     "build:js": "vite build && TARGET=nodeLight vite build && TARGET=browserEs vite build && TARGET=browserJs vite build",
     "build": "pnpm clean && pnpm /^build:/",
-    "prepublishOnly": "pnpm build",
-    "test": "jest test"
+    "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
     "access": "public",
@@ -81,19 +80,5 @@
   },
   "peerDependencies": {
     "markmap-common": "*"
-  },
-  "jest": {
-    "transform": {
-      "\\.ts$": [
-        "babel-jest",
-        {
-          "rootMode": "upward"
-        }
-      ],
-      "\\.svg$": "<rootDir>/scripts/file-transform.js"
-    },
-    "moduleNameMapper": {
-      "^(.*\\.svg)\\?raw$": "$1"
-    }
   }
 }

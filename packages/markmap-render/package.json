@@ -5,7 +5,7 @@
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
-    "clean": "del-cli dist",
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
     "build:js": "vite build",
     "build": "pnpm clean && pnpm /^build:/",
@@ -45,11 +45,11 @@
   },
   "devDependencies": {
     "d3": "^7.8.5",
-    "markmap-common": "workspace:*"
+    "markmap-common": "workspace:*",
+    "markmap-view": "workspace:*"
   },
   "dependencies": {
-    "@babel/runtime": "^7.22.6",
-    "markmap-view": "workspace:*"
+    "@babel/runtime": "^7.22.6"
   },
   "peerDependencies": {
     "markmap-common": "*"

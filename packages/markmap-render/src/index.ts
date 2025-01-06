@@ -9,7 +9,7 @@ import {
   persistCSS,
   persistJS,
 } from 'markmap-common';
-import { IMarkmapJSONOptions } from 'markmap-view';
+import type { IMarkmapJSONOptions } from 'markmap-view';
 
 export const template = __define__.TEMPLATE || '';
 

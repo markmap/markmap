@@ -19,7 +19,7 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "clean": "del-cli dist",
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
     "build:js": "vite build && TARGET=es vite build",
     "build": "pnpm clean && pnpm /^build:/",
@@ -39,13 +39,13 @@
   "typings": "dist/index.d.ts",
   "dependencies": {
     "@babel/runtime": "^7.22.6",
-    "@gera2ld/jsx-dom": "^2.2.2",
-    "@types/d3": "^7.4.0",
-    "d3": "^7.8.5",
-    "d3-flextree": "^2.1.2"
+    "d3": "^7.8.5"
   },
   "devDependencies": {
+    "@gera2ld/jsx-dom": "^2.2.2",
+    "@types/d3": "^7.4.0",
     "@types/d3-flextree": "^2.1.1",
+    "d3-flextree": "^2.1.2",
     "markmap-common": "workspace:*"
   },
   "peerDependencies": {

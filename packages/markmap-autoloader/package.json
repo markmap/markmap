@@ -19,7 +19,7 @@
     "url": "git+https://github.com/markmap/markmap.git"
   },
   "scripts": {
-    "clean": "del-cli dist",
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
     "build:js": "vite build",
     "build": "pnpm clean && pnpm /^build:/",

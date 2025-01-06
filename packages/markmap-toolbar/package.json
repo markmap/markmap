@@ -5,7 +5,7 @@
   "author": "Gerald <gera2ld@live.com>",
   "license": "MIT",
   "scripts": {
-    "clean": "del-cli dist",
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
     "build:js": "vite build && TARGET=es vite build",
     "build": "pnpm clean && pnpm /^build:/",
