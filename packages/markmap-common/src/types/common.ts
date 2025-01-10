@@ -41,10 +41,13 @@ export interface INodeState {
    * The unique identifier of a node, supposed to be based on content.
    */
   key: string;
+  /**
+   * 0-based depth of the node in the tree.
+   */
   depth: number;
   /** DOM element size */
   size: [width: number, height: number];
-  /** Position info */
+  /** Position info, only available after layout */
   rect: {
     x: number;
     y: number;
@@ -94,23 +97,26 @@ export interface IDeferred<T> {
 
 export interface IMarkmapOptions {
   autoFit: boolean;
-  color: (node: INode) => string;
   duration: number;
   embedGlobalCSS: boolean;
   fitRatio: number;
   id?: string;
   initialExpandLevel: number;
   maxInitialScale: number;
-  maxWidth: number;
-  nodeMinHeight: number;
-  paddingX: number;
   pan: boolean;
   scrollForPan: boolean;
-  spacingHorizontal: number;
-  spacingVertical: number;
   style?: (id: string) => string;
   toggleRecursively: boolean;
   zoom: boolean;
+
+  // Theme options
+  color: (node: INode) => string;
+  lineWidth: (node: INode) => number;
+  maxWidth: number;
+  nodeMinHeight: number;
+  paddingX: number;
+  spacingHorizontal: number;
+  spacingVertical: number;
 }
 
 export interface IAssets {

@@ -28,6 +28,7 @@ export interface IMarkmapJSONOptions {
   spacingHorizontal: number;
   spacingVertical: number;
   zoom: boolean;
+  lineWidth: number | number[];
 }
 
 export interface IPadding {

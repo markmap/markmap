@@ -1,13 +1,13 @@
 import { scaleOrdinal } from 'd3';
 import { IMarkmapOptions, INode } from 'markmap-common';
-import { defaultOptions } from './constants';
+import { defaultOptions, lineWidthFactory } from './constants';
 import { IMarkmapJSONOptions } from './types';
 
 export function deriveOptions(jsonOptions?: Partial<IMarkmapJSONOptions>) {
   const derivedOptions: Partial<IMarkmapOptions> = {};
   const options = { ...jsonOptions };
 
-  const { color, colorFreezeLevel } = options;
+  const { color, colorFreezeLevel, lineWidth } = options;
   if (color?.length === 1) {
     const solidColor = color[0];
     derivedOptions.color = () => solidColor;
@@ -27,6 +27,12 @@ export function deriveOptions(jsonOptions?: Partial<IMarkmapJSONOptions>) {
       };
       return color(node);
     };
+  }
+  if (lineWidth) {
+    const args = Array.isArray(lineWidth) ? lineWidth : [lineWidth, 0, 1];
+    derivedOptions.lineWidth = lineWidthFactory(
+      ...(args as Parameters<typeof lineWidthFactory>),
+    );
   }
 
   const numberKeys = [

@@ -6,21 +6,28 @@ export const isMacintosh =
 
 export const defaultColorFn = scaleOrdinal(schemeCategory10);
 
+export const lineWidthFactory =
+  (baseWidth = 1, deltaWidth: number = 3, k: number = 2) =>
+  (node: INode) =>
+    baseWidth + deltaWidth / k ** node.state.depth;
+
 export const defaultOptions: IMarkmapOptions = {
   autoFit: false,
-  color: (node: INode): string => defaultColorFn(`${node.state?.path || ''}`),
   duration: 500,
   embedGlobalCSS: true,
   fitRatio: 0.95,
   maxInitialScale: 2,
-  maxWidth: 0,
-  nodeMinHeight: 16,
-  paddingX: 8,
   scrollForPan: isMacintosh,
-  spacingHorizontal: 80,
-  spacingVertical: 5,
   initialExpandLevel: -1,
   zoom: true,
   pan: true,
   toggleRecursively: false,
+
+  color: (node: INode): string => defaultColorFn(`${node.state?.path || ''}`),
+  lineWidth: lineWidthFactory(),
+  maxWidth: 0,
+  nodeMinHeight: 16,
+  paddingX: 8,
+  spacingHorizontal: 80,
+  spacingVertical: 5,
 };

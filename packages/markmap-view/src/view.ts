@@ -34,10 +34,6 @@ const SELECTOR_HIGHLIGHT = 'g.markmap-highlight';
 
 const linkShape = linkHorizontal();
 
-function linkWidth(data: INode): number {
-  return Math.max(4 - 2 * data.state.depth, 1.5);
-}
-
 function minBy(numbers: number[], by: (v: number) => number): number {
   const index = minIndex(numbers, by);
   return numbers[index];
@@ -53,7 +49,7 @@ function stopPropagation(e: Event) {
 export const refreshHook = new Hook<[]>();
 
 export class Markmap {
-  options = defaultOptions;
+  options = { ...defaultOptions };
 
   state: IMarkmapState;
 
@@ -226,7 +222,7 @@ export class Markmap {
         d.state.size = newSize;
       });
 
-    const { spacingHorizontal, paddingX, spacingVertical } = this.options;
+    const { paddingX, spacingHorizontal, spacingVertical } = this.options;
     const layout = flextree<INode>({})
       .children((d) => {
         if (!d.payload?.fold) return d.children;
@@ -311,7 +307,7 @@ export class Markmap {
   }
 
   async renderData(originData?: INode) {
-    const { paddingX, autoFit, color, maxWidth } = this.options;
+    const { paddingX, autoFit, color, maxWidth, lineWidth } = this.options;
     const rootNode = this.state.data;
     if (!rootNode) return;
 
@@ -547,7 +543,7 @@ export class Markmap {
       .attr('x1', -1)
       .attr('x2', (d) => d.state.rect.width + 2)
       .attr('stroke', (d) => color(d))
-      .attr('stroke-width', linkWidth);
+      .attr('stroke-width', lineWidth);
 
     const mmCircleExit = mmGExit.selectAll<SVGCircleElement, INode>(
       childSelector<SVGCircleElement>('circle'),
@@ -578,7 +574,7 @@ export class Markmap {
 
     this.transition(mmPathMerge)
       .attr('stroke', (d) => color(d.target))
-      .attr('stroke-width', (d) => linkWidth(d.target))
+      .attr('stroke-width', (d) => lineWidth(d.target))
       .attr('d', (d) => {
         const origSource = d.source;
         const origTarget = d.target;
