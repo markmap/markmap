@@ -222,7 +222,8 @@ export class Markmap {
         d.state.size = newSize;
       });
 
-    const { paddingX, spacingHorizontal, spacingVertical } = this.options;
+    const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
+      this.options;
     const layout = flextree<INode>({})
       .children((d) => {
         if (!d.payload?.fold) return d.children;
@@ -232,7 +233,10 @@ export class Markmap {
         return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
       })
       .spacing((a, b) => {
-        return a.parent === b.parent ? spacingVertical : spacingVertical * 2;
+        return (
+          (a.parent === b.parent ? spacingVertical : spacingVertical * 2) +
+          lineWidth(a.data)
+        );
       });
     const tree = layout.hierarchy(this.state.data);
     layout(tree);
@@ -537,8 +541,8 @@ export class Markmap {
       .attr('x1', (d) => d.state.rect.width)
       .attr('x2', (d) => d.state.rect.width);
     mmLineMerge
-      .attr('y1', (d) => d.state.rect.height)
-      .attr('y2', (d) => d.state.rect.height);
+      .attr('y1', (d) => d.state.rect.height + lineWidth(d) / 2)
+      .attr('y2', (d) => d.state.rect.height + lineWidth(d) / 2);
     this.transition(mmLineMerge)
       .attr('x1', -1)
       .attr('x2', (d) => d.state.rect.width + 2)
@@ -551,7 +555,7 @@ export class Markmap {
     this.transition(mmCircleExit).attr('r', 0).attr('stroke-width', 0);
     mmCircleMerge
       .attr('cx', (d) => d.state.rect.width)
-      .attr('cy', (d) => d.state.rect.height);
+      .attr('cy', (d) => d.state.rect.height + lineWidth(d) / 2);
     this.transition(mmCircleMerge).attr('r', 6).attr('stroke-width', '1.5');
 
     this.transition(mmFoExit).style('opacity', 0);
@@ -565,7 +569,7 @@ export class Markmap {
         const targetRect = getOriginTargetRect(d.target);
         const pathTarget: [number, number] = [
           targetRect.x + targetRect.width,
-          targetRect.y + targetRect.height,
+          targetRect.y + targetRect.height + lineWidth(d.target) / 2,
         ];
         return linkShape({ source: pathTarget, target: pathTarget });
       })
@@ -580,11 +584,15 @@ export class Markmap {
         const origTarget = d.target;
         const source: [number, number] = [
           origSource.state.rect.x + origSource.state.rect.width,
-          origSource.state.rect.y + origSource.state.rect.height,
+          origSource.state.rect.y +
+            origSource.state.rect.height +
+            lineWidth(origSource) / 2,
         ];
         const target: [number, number] = [
           origTarget.state.rect.x,
-          origTarget.state.rect.y + origTarget.state.rect.height,
+          origTarget.state.rect.y +
+            origTarget.state.rect.height +
+            lineWidth(origTarget) / 2,
         ];
         return linkShape({ source, target });
       });
