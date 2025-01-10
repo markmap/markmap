@@ -15,6 +15,7 @@
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lerna": "^8.1.9",
+    "lint-staged": "^15.3.0",
     "postcss": "^8.4.49",
     "postcss-calc": "^10.0.2",
     "postcss-nested": "^7.0.2",
@@ -37,5 +38,14 @@
     "build:types": "pnpm -r build:types",
     "build:js": "pnpm -r build:js",
     "build:docs": "typedoc --out api --titleLink / --name markmap"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --write"
+    ]
   }
 }
