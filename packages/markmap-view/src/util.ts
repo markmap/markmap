@@ -1,7 +1,7 @@
 import { scaleOrdinal } from 'd3';
-import { IMarkmapOptions, INode } from 'markmap-common';
+import { INode } from 'markmap-common';
 import { defaultOptions, lineWidthFactory } from './constants';
-import { IMarkmapJSONOptions } from './types';
+import { IMarkmapJSONOptions, IMarkmapOptions } from './types';
 
 export function deriveOptions(jsonOptions?: Partial<IMarkmapJSONOptions>) {
   const derivedOptions: Partial<IMarkmapOptions> = {};

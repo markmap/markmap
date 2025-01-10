@@ -12,7 +12,6 @@ import {
 import { flextree } from 'd3-flextree';
 import {
   Hook,
-  IMarkmapOptions,
   INode,
   IPureNode,
   addClass,
@@ -23,7 +22,12 @@ import {
 } from 'markmap-common';
 import { defaultOptions, isMacintosh } from './constants';
 import css from './style.css?inline';
-import { ID3SVGElement, IMarkmapState, IPadding } from './types';
+import {
+  ID3SVGElement,
+  IMarkmapOptions,
+  IMarkmapState,
+  IPadding,
+} from './types';
 import { childSelector, simpleHash } from './util';
 
 export const globalCSS = css;

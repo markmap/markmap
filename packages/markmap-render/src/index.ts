@@ -1,6 +1,5 @@
 import {
   IAssets,
-  IMarkmapOptions,
   IPureNode,
   JSItem,
   UrlBuilder,
@@ -9,7 +8,7 @@ import {
   persistCSS,
   persistJS,
 } from 'markmap-common';
-import type { IMarkmapJSONOptions } from 'markmap-view';
+import type { IMarkmapJSONOptions, IMarkmapOptions } from 'markmap-view';
 
 export const template = __define__.TEMPLATE || '';
 

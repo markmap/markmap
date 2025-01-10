@@ -1,5 +1,6 @@
 import { scaleOrdinal, schemeCategory10 } from 'd3';
-import { IMarkmapOptions, INode } from 'markmap-common';
+import { INode } from 'markmap-common';
+import { IMarkmapOptions } from './types';
 
 export const isMacintosh =
   typeof navigator !== 'undefined' && navigator.userAgent.includes('Macintosh');
