@@ -30,7 +30,7 @@
     "build:js": "vite build",
     "build": "pnpm clean && pnpm /^build:/",
     "prepublishOnly": "pnpm build",
-    "postinstall": "node -e \"import('./dist/index.js').then(({ fetchAssets }) => fetchAssets()).catch(() => {})\""
+    "postinstall": "node ./dist/fetch-assets.js --ignoreErrors"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"

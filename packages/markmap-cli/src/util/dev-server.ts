@@ -11,14 +11,14 @@ import { fillTemplate } from 'markmap-render';
 import { AddressInfo } from 'net';
 import { join, resolve } from 'path';
 import { getPortPromise } from 'portfinder';
-import { IContentProvider, IDevelopOptions, IFileState } from './types';
+import { IContentProvider, IDevelopOptions, IFileState } from '../types';
 import {
   ASSETS_PREFIX,
   config,
   createStreamBody,
   localProvider,
   toolbarAssets,
-} from './util';
+} from './common';
 
 type MaybePromise<T> = T | Promise<T>;
 

@@ -21,6 +21,8 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'src/index.ts',
+        cli: 'src/cli.ts',
+        'fetch-assets': 'src/fetch-assets.ts',
         client: 'src/client/index.ts',
       },
       formats: ['es'],
