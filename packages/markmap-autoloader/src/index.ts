@@ -105,11 +105,11 @@ export function render(el: HTMLElement) {
     });
     el.append(toolbar);
   }
-  const doRender = () => {
+  const doRender = async () => {
     const { root, frontmatter } = transform(transformer, content);
     const markmapOptions = frontmatter?.markmap;
     const frontmatterOptions = deriveOptions(markmapOptions);
-    mm.setData(root, frontmatterOptions);
+    await mm.setData(root, frontmatterOptions);
     mm.fit();
   };
   transformer.hooks.retransform.tap(doRender);
