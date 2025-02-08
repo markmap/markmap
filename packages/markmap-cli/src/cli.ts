@@ -6,7 +6,6 @@ import { readPackageUp } from 'read-package-up';
 import updateNotifier from 'update-notifier';
 import { fileURLToPath } from 'url';
 import { createMarkmap } from '.';
-import { fetchAssets } from './util/assets-fetcher';
 import { develop } from './util/dev-server';
 
 async function main() {
@@ -39,7 +38,6 @@ async function main() {
     .action(async (input: string, cmd) => {
       let { offline } = cmd;
       if (cmd.watch) offline = true;
-      if (offline) await fetchAssets();
       const content = await readFile(input, 'utf8');
       const output = cmd.output || `${input.replace(/\.\w*$/, '')}.html`;
       if (cmd.watch) {

@@ -27,10 +27,10 @@
   "scripts": {
     "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
-    "build:js": "vite build",
+    "build:js": "vite build && pnpm fetch-assets",
     "build": "pnpm clean && pnpm /^build:/",
-    "prepublishOnly": "pnpm build",
-    "postinstall": "node ./dist/fetch-assets.js --ignoreErrors || true"
+    "fetch-assets": "node ./dist/fetch-assets.js",
+    "prepublishOnly": "pnpm build"
   },
   "bugs": {
     "url": "https://github.com/markmap/markmap/issues"
