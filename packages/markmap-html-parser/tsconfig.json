@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   },
   "include": ["src/**/*", "../../shim.d.ts"]
 }
