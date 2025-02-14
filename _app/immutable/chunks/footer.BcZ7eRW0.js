@@ -1,0 +1,1 @@
+import"./disclose-version.Bg9kRutz.js";import"./legacy.CYTRe4WA.js";import{a as o,t}from"./template.BXSVluzr.js";var a=t('<footer>Designed with &hearts; by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer>');function i(r){var e=a();o(r,e)}export{i as F};

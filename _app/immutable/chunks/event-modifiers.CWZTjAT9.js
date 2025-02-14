@@ -1,0 +1,1 @@
+import{j as l,k as u}from"./utils.DFTM5cE0.js";function v(e,t,r,a,s){var f;l&&u();var n=(f=t.$$slots)==null?void 0:f[r],i=!1;n===!0&&(n=t.children,i=!0),n===void 0||n(e,i?()=>a:a)}function c(e){return function(...t){var r=t[0];return r.preventDefault(),e==null?void 0:e.apply(this,t)}}export{c as p,v as s};

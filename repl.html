@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		
+		<link rel="modulepreload" href="./_app/immutable/entry/start.CmYsp_xy.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/entry.BlhulMy8.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/utils.DFTM5cE0.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.B8-Hwz92.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.DjyNG_VH.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/preload-helper.DYWTPbcH.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/render.DI2TtrIA.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/if.CnkSTwZ2.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/svelte-head.BRMrjwOS.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/template.BXSVluzr.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/disclose-version.Bg9kRutz.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/props.CtMWV0K4.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/store.BgZ6CRHU.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index-client.DL5hyya7.js">
+	</head>
+	<body>
+		<div>
+			<script>
+				{
+					__sveltekit_x02xni = {
+						base: new URL(".", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.CmYsp_xy.js"),
+						import("./_app/immutable/entry/app.DjyNG_VH.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+
+					if ('serviceWorker' in navigator) {
+						addEventListener('load', function () {
+							navigator.serviceWorker.register('./service-worker.js');
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
