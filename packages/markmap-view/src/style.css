@@ -104,3 +104,23 @@
   --markmap-circle-open-bg: #444;
   --markmap-text-color: #eee;
 }
+
+/* Add this at the end of the file or in an appropriate section */
+.markmap-foreign div div input.markmap-edit-input {
+  width: 100%; /* Take full width of the inner div */
+  height: 100%; /* Take full height */
+  border: 1px solid #0078d4; /* A slightly more prominent border, choose a color that fits the theme */
+  padding: 1px 3px; /* Adjust padding as needed */
+  font: inherit; /* Use the same font as the parent node text */
+  line-height: inherit; /* Inherit line height */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  background-color: var(--markmap-node-bg, #f0f0f0); /* Match node background if possible */
+  color: var(--markmap-text-color, #333); /* Match node text color */
+}
+
+/* Optional: Style for when the input is focused */
+.markmap-foreign div div input.markmap-edit-input:focus {
+  outline: none;
+  border-color: #005a9e; /* Darker border on focus */
+  box-shadow: 0 0 0 1px #0078d4; /* Subtle focus ring */
+}

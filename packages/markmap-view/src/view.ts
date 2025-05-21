@@ -165,6 +165,105 @@ export class Markmap {
     this.toggleNode(d, recursive);
   };
 
+  handleNodeDoubleClick = (e: MouseEvent, d: INode) => {
+    e.stopPropagation();
+    console.log('Node double-clicked:', d);
+    this.enableEditMode(d); // Call the new function
+  };
+
+  enableEditMode = (d: INode) => {
+    // Placeholder for implementation
+    console.log('Entering edit mode for node:', d);
+    const nodeElement = this.findElement(d);
+    if (!nodeElement) return;
+
+    const fo = select(nodeElement.g).select('foreignObject');
+    const contentDiv = fo.select('div > div'); // Select the inner div
+    if (contentDiv.empty()) return;
+
+    // const originalContent = d.content; // d.content is the source of truth
+    contentDiv.html(''); // Clear existing content
+
+    const input = contentDiv.append('xhtml:input')
+      .attr('type', 'text')
+      .attr('class', 'markmap-edit-input') // Add this class
+      .property('value', d.content) // Use property to set value for input elements
+      .node() as HTMLInputElement;
+
+    // Inline styles removed, will be handled by CSS class 'markmap-edit-input'
+
+    input.focus();
+    input.select(); // Select all text for easy replacement
+
+    select(input)
+      .on('blur', () => {
+        // Check if the click target is part of the input or related controls
+        // This is a common pattern but might need adjustment based on your specific event flow
+        // For now, we'll directly call save, but this could lead to premature saving if not handled carefully
+        this.saveNodeEdit(d, input.value);
+      })
+      .on('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.saveNodeEdit(d, input.value);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.cancelNodeEdit(d); // We'll define this later
+        }
+      });
+  };
+
+  saveNodeEdit = async (d: INode, newText: string) => {
+    // Prevent saving if the input is currently the only thing in the view
+    // This can happen if blur fires right before Enter/Escape processing
+    const nodeElement = this.findElement(d);
+    if (!nodeElement) return;
+    const fo = select(nodeElement.g).select('foreignObject');
+    const inputElement = fo.select('div > div > input');
+    if (inputElement.empty()) {
+      // Already saved or cancelled, perhaps by another event
+      return;
+    }
+
+    console.log('Saving node:', d.state.id, 'with text:', newText);
+    d.content = newText; // Update the node's content
+
+    // Restore the original div structure with the new content
+    // This replaces the input field with the updated text.
+    const contentDiv = fo.select('div > div');
+    if (!contentDiv.empty()) {
+      contentDiv.html(''); // Clear the input field
+      contentDiv.append('xhtml:div').html(d.content); // Add the new content
+    }
+
+    // Re-render the markmap to reflect changes and update layout.
+    // Pass the edited node `d` as the originData to potentially improve transition animation.
+    await this.renderData(d);
+  };
+
+  cancelNodeEdit = (d: INode) => {
+    // Prevent cancelling if the input is not present
+    const nodeElement = this.findElement(d);
+    if (!nodeElement) return;
+    const fo = select(nodeElement.g).select('foreignObject');
+    const inputElement = fo.select('div > div > input');
+    if (inputElement.empty()) {
+      // Already saved or cancelled
+      return;
+    }
+
+    console.log('Cancelling edit for node:', d.state.id);
+    // Restore the original div structure with the original content
+    const contentDiv = fo.select('div > div');
+    if (!contentDiv.empty()) {
+      contentDiv.html(''); // Clear the input field
+      contentDiv.append('xhtml:div').html(d.content); // Restore original content
+    }
+    // No need to call renderData if content hasn't changed,
+    // but if the input field itself caused a size change, a rerender might be desired.
+    // For simplicity now, we won't rerender on cancel.
+  };
+
   private _initializeData(node: IPureNode | INode) {
     let nodeId = 0;
     const { color, initialExpandLevel } = this.options;
@@ -447,7 +546,7 @@ export class Markmap {
       .attr('y', 0)
       .style('opacity', 0)
       .on('mousedown', stopPropagation)
-      .on('dblclick', stopPropagation);
+      .on('dblclick', (e, d) => this.handleNodeDoubleClick(e, d));
     mmFoEnter
       // The outer `<div>` with a width of `maxWidth`
       .append<HTMLDivElement>('xhtml:div')
