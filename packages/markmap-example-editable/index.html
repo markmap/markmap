@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editable Markmap Example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <style>
+    body { font-family: sans-serif; display: flex; height: 98vh; margin: 5px; gap: 10px; }
+    #input-area { flex: 1; display: flex; flex-direction: column; }
+    #markdown-input { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 10px; font-size: 14px; }
+    #markmap-container { flex: 1; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;}
+    #markmap { display: block; width: 100%; height: 100%; }
+    h3 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <div id="input-area">
+    <h3>Markdown Input:</h3>
+    <textarea id="markdown-input">
+# Hello Markmap
+
+- Start editing here
+- Add your own items
+  - Sub-item 1
+  - Sub-item 2
+    - Deeper item
+- More items
+    </textarea>
+  </div>
+  <div id="markmap-container">
+    <svg id="markmap"></svg>
+  </div>
+  <script src="./main.js"></script>
+</body>
+</html>

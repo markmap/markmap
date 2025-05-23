@@ -1,0 +1,10 @@
+{
+  "name": "markmap-example-editable",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An example of an editable markmap.",
+  "scripts": {
+    "start": "echo \"Open index.html in your browser.\""
+  },
+  "license": "MIT"
+}
