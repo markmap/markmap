@@ -1,4 +1,4 @@
-import { Cheerio, CheerioAPI, load } from 'cheerio';
+import { Cheerio, CheerioAPI, load } from 'cheerio/slim';
 import { IPureNode, walkTree } from 'markmap-common';
 
 export enum Levels {
@@ -108,7 +108,8 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
     ...opts,
   };
   const $ = load(html);
-  const $root = $('body');
+  let $root: Cheerio<any> = $('body');
+  if (!$root.length) $root = $.root();
   let id = 0;
   const rootNode: IHtmlNode = {
     id,

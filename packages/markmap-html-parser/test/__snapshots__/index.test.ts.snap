@@ -326,12 +326,12 @@ exports[`parseHtml 1`] = `
               "children": undefined,
               "childrenLevel": 0,
               "html": "<table>
-<tbody><tr>
+<tr>
 <td>
 <ul><li>this list is ignored</li></ul>
 </td>
 </tr>
-</tbody></table>",
+</table>",
               "id": 23,
               "level": 7,
               "parent": 22,
@@ -488,12 +488,12 @@ exports[`parseHtml 2`] = `
             {
               "children": [],
               "content": "<table>
-<tbody><tr>
+<tr>
 <td>
 <ul><li>this list is ignored</li></ul>
 </td>
 </tr>
-</tbody></table>",
+</table>",
             },
             {
               "children": [],

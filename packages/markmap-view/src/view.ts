@@ -351,7 +351,8 @@ export class Markmap {
     if (originData) setOriginNode(originData);
 
     // Update highlight
-    const { highlight } = this.state;
+    let { highlight } = this.state;
+    if (highlight && !nodeMap[highlight.state.id]) highlight = undefined;
     let highlightNodes = this.g
       .selectAll(childSelector(SELECTOR_HIGHLIGHT))
       .selectAll<SVGRectElement, INode>(childSelector<SVGRectElement>('rect'))

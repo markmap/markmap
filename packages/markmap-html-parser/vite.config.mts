@@ -14,7 +14,7 @@ const define = {
   '__define__.HTML_PARSER_VERSION': JSON.stringify(pkg.version),
 };
 
-const configNode = defineConfig({
+export default defineConfig({
   define,
   build: {
     emptyOutDir: false,
@@ -29,33 +29,3 @@ const configNode = defineConfig({
     },
   },
 });
-
-const configBrowserJs = defineConfig({
-  define,
-  build: {
-    emptyOutDir: false,
-    minify: false,
-    outDir: 'dist',
-    lib: {
-      entry: 'src/index.ts',
-      fileName: 'index',
-      formats: ['iife'],
-      name: 'markmap.htmlParser',
-    },
-    rollupOptions: {
-      output: {
-        extend: true,
-      },
-    },
-  },
-  resolve: {
-    extensions: ['.browser.ts', '.ts'],
-  },
-});
-
-const configMap = {
-  node: configNode,
-  browserJs: configBrowserJs,
-};
-
-export default configMap[process.env.TARGET] || configMap.node;
