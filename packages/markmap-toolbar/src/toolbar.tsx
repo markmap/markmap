@@ -46,9 +46,9 @@ function safeCaller<T extends unknown[]>(fn: (...args: T) => Promise<void>) {
 }
 
 export class Toolbar {
-  private showBrand = true;
+  showBrand = true;
 
-  private registry: { [id: string]: IToolbarItem } = {};
+  registry: { [id: string]: IToolbarItem } = {};
 
   private markmap: Markmap | undefined;
 
@@ -57,6 +57,7 @@ export class Toolbar {
     'zoomOut',
     'fit',
     'recurse',
+    'dark',
   ];
 
   el = mountDom(<div className="mm-toolbar" />) as HTMLDivElement;
@@ -118,9 +119,20 @@ export class Toolbar {
         });
       },
     });
+    this.register({
+      id: 'dark',
+      title: 'Toggle dark theme',
+      content: Toolbar.icon(
+        'M10 4a6 6 0 0 0 0 12a6 6 0 0 0 0 -12v2a4 4 0 0 1 0 8z',
+      ),
+      onClick: () => {
+        document.documentElement.classList.toggle('markmap-dark');
+      },
+    });
     this.render();
   }
 
+  /** @deprecated Set `showBrand` instead. */
   setBrand(show: boolean) {
     this.showBrand = show;
     return this.render();

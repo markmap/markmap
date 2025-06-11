@@ -65,6 +65,9 @@ export function fillTemplate(
                 (getOptions || markmap.deriveOptions)(jsonOptions),
                 root,
               );
+              if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('markmap-dark');
+              }
             },
             getParams: ({ getMarkmap, getOptions, root, jsonOptions }) => {
               return [getMarkmap, getOptions, root, jsonOptions];
