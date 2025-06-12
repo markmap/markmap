@@ -1,0 +1,4 @@
+This is a Brave Rewards publisher verification file.
+
+Domain: markmap.js.org
+Token: 826304f6b62e7a62b10e49f0292e5355cc885f8457ac377f51984374b7ce8519
