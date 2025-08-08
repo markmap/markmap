@@ -21,7 +21,11 @@ const plugin = definePlugin({
       return loading;
     };
 
-    const renderKatex = (source: string, displayMode: boolean) => {
+    const renderKatex = (
+      source: string,
+      displayMode: boolean,
+      onFallback: () => string,
+    ) => {
       const { katex } = window;
       if (katex) {
         return katex.renderToString(source, {
@@ -29,18 +33,29 @@ const plugin = definePlugin({
           throwOnError: false,
         });
       }
-      autoload().then(() => {
-        transformHooks.retransform.call();
-      });
-      return source;
+
+      return onFallback();
     };
+
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.use(katexPlugin);
       ['math_block', 'math_inline'].forEach((key) => {
         const fn: MarkdownIt.Renderer.RenderRule = (tokens, idx) => {
           enableFeature();
-          const result = renderKatex(tokens[idx].content, !!tokens[idx].block);
+
+          const handleKatexFallback = (): string => {
+            autoload().then(() => {
+              transformHooks.retransform.call();
+            });
+            return md.utils.escapeHtml(tokens[idx].content);
+          };
+
+          const result = renderKatex(
+            tokens[idx].content,
+            !!tokens[idx].block,
+            handleKatexFallback,
+          );
           return result;
         };
         md.renderer.rules[key] = fn;
