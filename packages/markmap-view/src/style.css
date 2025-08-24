@@ -93,6 +93,16 @@
     }
   }
 
+  /* RTL Support */
+  &.markmap-rtl {
+    direction: rtl;
+
+    .markmap-foreign > div {
+      text-align: right;
+      direction: rtl;
+    }
+  }
+
   &-highlight rect {
     fill: var(--markmap-highlight-node-bg);
   }

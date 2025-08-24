@@ -116,10 +116,11 @@ export class Markmap {
   }
 
   updateStyle(): void {
-    this.svg.attr(
-      'class',
-      addClass(this.svg.attr('class'), 'markmap', this.state.id),
-    );
+    const classes = ['markmap', this.state.id];
+    if (this.options.rtl) {
+      classes.push('markmap-rtl');
+    }
+    this.svg.attr('class', addClass(this.svg.attr('class'), ...classes));
     const style = this.getStyleContent();
     this.styleNode.text(style);
   }
@@ -226,7 +227,7 @@ export class Markmap {
         d.state.size = newSize;
       });
 
-    const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
+    const { lineWidth, paddingX, spacingHorizontal, spacingVertical, rtl } =
       this.options;
     const layout = flextree<INode>({})
       .children((d) => {
@@ -245,10 +246,19 @@ export class Markmap {
     const tree = layout.hierarchy(this.state.data);
     layout(tree);
     const fnodes = tree.descendants();
+
+    // Calculate the total width for RTL flipping
+    const maxX = rtl
+      ? max(fnodes, (fnode) => fnode.y + fnode.ySize - spacingHorizontal) || 0
+      : 0;
+
     fnodes.forEach((fnode) => {
       const node = fnode.data;
+      const x = rtl
+        ? maxX - (fnode.y + fnode.ySize - spacingHorizontal)
+        : fnode.y;
       node.state.rect = {
-        x: fnode.y,
+        x,
         y: fnode.x - fnode.xSize / 2,
         width: fnode.ySize - spacingHorizontal,
         height: fnode.xSize,
@@ -315,7 +325,7 @@ export class Markmap {
   }
 
   async renderData(originData?: INode) {
-    const { paddingX, autoFit, color, maxWidth, lineWidth } = this.options;
+    const { paddingX, autoFit, color, maxWidth, lineWidth, rtl } = this.options;
     const rootNode = this.state.data;
     if (!rootNode) return;
 
@@ -491,7 +501,7 @@ export class Markmap {
       .attr('d', (d) => {
         const originRect = getOriginSourceRect(d.target);
         const pathOrigin: [number, number] = [
-          originRect.x + originRect.width,
+          rtl ? originRect.x : originRect.x + originRect.width,
           originRect.y + originRect.height,
         ];
         return linkShape({ source: pathOrigin, target: pathOrigin });
@@ -540,17 +550,19 @@ export class Markmap {
       childSelector<SVGLineElement>('line'),
     );
     this.transition(mmLineExit)
-      .attr('x1', (d) => d.state.rect.width)
+      .attr('x1', (d) => (rtl ? 0 : d.state.rect.width))
       .attr('stroke-width', 0);
     mmLineEnter
-      .attr('x1', (d) => d.state.rect.width)
-      .attr('x2', (d) => d.state.rect.width);
+      .attr('x1', (d) => (rtl ? 0 : d.state.rect.width))
+      .attr('x2', (d) => (rtl ? 0 : d.state.rect.width));
     mmLineMerge
       .attr('y1', (d) => d.state.rect.height + lineWidth(d) / 2)
       .attr('y2', (d) => d.state.rect.height + lineWidth(d) / 2);
     this.transition(mmLineMerge)
-      .attr('x1', -1)
-      .attr('x2', (d) => d.state.rect.width + 2)
+      .attr('x1', rtl ? -2 : -1)
+      .attr('x2', (d) =>
+        rtl ? d.state.rect.width + 2 : d.state.rect.width + 2,
+      )
       .attr('stroke', (d) => color(d))
       .attr('stroke-width', lineWidth);
 
@@ -559,7 +571,7 @@ export class Markmap {
     );
     this.transition(mmCircleExit).attr('r', 0).attr('stroke-width', 0);
     mmCircleMerge
-      .attr('cx', (d) => d.state.rect.width)
+      .attr('cx', (d) => (rtl ? 0 : d.state.rect.width))
       .attr('cy', (d) => d.state.rect.height + lineWidth(d) / 2);
     this.transition(mmCircleMerge).attr('r', 6).attr('stroke-width', '1.5');
 
@@ -573,7 +585,7 @@ export class Markmap {
       .attr('d', (d) => {
         const targetRect = getOriginTargetRect(d.target);
         const pathTarget: [number, number] = [
-          targetRect.x + targetRect.width,
+          rtl ? targetRect.x : targetRect.x + targetRect.width,
           targetRect.y + targetRect.height + lineWidth(d.target) / 2,
         ];
         return linkShape({ source: pathTarget, target: pathTarget });
@@ -588,13 +600,17 @@ export class Markmap {
         const origSource = d.source;
         const origTarget = d.target;
         const source: [number, number] = [
-          origSource.state.rect.x + origSource.state.rect.width,
+          rtl
+            ? origSource.state.rect.x
+            : origSource.state.rect.x + origSource.state.rect.width,
           origSource.state.rect.y +
             origSource.state.rect.height +
             lineWidth(origSource) / 2,
         ];
         const target: [number, number] = [
-          origTarget.state.rect.x,
+          rtl
+            ? origTarget.state.rect.x + origTarget.state.rect.width
+            : origTarget.state.rect.x,
           origTarget.state.rect.y +
             origTarget.state.rect.height +
             lineWidth(origTarget) / 2,
