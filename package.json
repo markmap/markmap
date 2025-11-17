@@ -9,6 +9,7 @@
     "@types/node": "^24.0.1",
     "@unocss/postcss": "^66.2.0",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^10.1.0",
     "del-cli": "^6.0.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -32,8 +33,8 @@
   "scripts": {
     "prepare": "husky || true",
     "build": "pnpm lint && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
-    "lint": "eslint && prettier --check packages/*/src",
-    "lint:fix": "eslint --fix && prettier --write packages/*/src",
+    "lint": "eslint && prettier --check \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
+    "lint:fix": "eslint --fix && prettier --write \"packages/*/src/**/*.{ts,tsx,js,jsx}\"",
     "test": "vitest --run",
     "clean": "pnpm -r clean",
     "build:types": "pnpm -r build:types",

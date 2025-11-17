@@ -21,7 +21,7 @@
   "scripts": {
     "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
-    "build:js": "vite build && TARGET=es vite build",
+    "build:js": "vite build && cross-env TARGET=es vite build",
     "build": "pnpm clean && pnpm /^build:/",
     "prepublishOnly": "pnpm build"
   },
@@ -45,6 +45,7 @@
     "@gera2ld/jsx-dom": "^2.2.2",
     "@types/d3": "^7.4.0",
     "@types/d3-flextree": "^2.1.1",
+    "cross-env": "^10.1.0",
     "d3-flextree": "^2.1.2",
     "markmap-common": "workspace:*"
   },
