@@ -1,6 +1,6 @@
 import type * as d3 from 'd3';
 import {
-  linkHorizontal,
+  linkVertical,
   max,
   min,
   minIndex,
@@ -36,7 +36,7 @@ const SELECTOR_NODE = 'g.markmap-node';
 const SELECTOR_LINK = 'path.markmap-link';
 const SELECTOR_HIGHLIGHT = 'g.markmap-highlight';
 
-const linkShape = linkHorizontal();
+const linkShape = linkVertical();
 
 function minBy(numbers: number[], by: (v: number) => number): number {
   const index = minIndex(numbers, by);
@@ -234,7 +234,8 @@ export class Markmap {
       })
       .nodeSize((node) => {
         const [width, height] = node.data.state.size;
-        return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
+        // 交换width和height的位置，因为我们要从上到下布局
+        return [width + (width ? paddingX * 2 : 0) + spacingHorizontal, height];
       })
       .spacing((a, b) => {
         return (
@@ -247,11 +248,12 @@ export class Markmap {
     const fnodes = tree.descendants();
     fnodes.forEach((fnode) => {
       const node = fnode.data;
+      // 修改坐标映射逻辑，适配从上到下的布局
       node.state.rect = {
-        x: fnode.y,
-        y: fnode.x - fnode.xSize / 2,
-        width: fnode.ySize - spacingHorizontal,
-        height: fnode.xSize,
+        x: fnode.x - fnode.xSize / 2,
+        y: fnode.y,
+        width: fnode.xSize,
+        height: fnode.ySize - spacingHorizontal,
       };
     });
     this.state.rect = {
@@ -491,7 +493,7 @@ export class Markmap {
       .attr('d', (d) => {
         const originRect = getOriginSourceRect(d.target);
         const pathOrigin: [number, number] = [
-          originRect.x + originRect.width,
+          originRect.x + originRect.width + lineWidth(d.target) / 2,
           originRect.y + originRect.height,
         ];
         return linkShape({ source: pathOrigin, target: pathOrigin });
@@ -546,11 +548,13 @@ export class Markmap {
       .attr('x1', (d) => d.state.rect.width)
       .attr('x2', (d) => d.state.rect.width);
     mmLineMerge
-      .attr('y1', (d) => d.state.rect.height + lineWidth(d) / 2)
-      .attr('y2', (d) => d.state.rect.height + lineWidth(d) / 2);
+      .attr('x1', (d) => d.state.rect.width + lineWidth(d) / 2)
+      .attr('x2', (d) => d.state.rect.width + lineWidth(d) / 2)
+      .attr('y1', -1)
+      .attr('y2', (d) => d.state.rect.height + 2);
     this.transition(mmLineMerge)
-      .attr('x1', -1)
-      .attr('x2', (d) => d.state.rect.width + 2)
+      .attr('y1', -1)
+      .attr('y2', (d) => d.state.rect.height + 2)
       .attr('stroke', (d) => color(d))
       .attr('stroke-width', lineWidth);
 
@@ -559,8 +563,8 @@ export class Markmap {
     );
     this.transition(mmCircleExit).attr('r', 0).attr('stroke-width', 0);
     mmCircleMerge
-      .attr('cx', (d) => d.state.rect.width)
-      .attr('cy', (d) => d.state.rect.height + lineWidth(d) / 2);
+      .attr('cx', (d) => d.state.rect.width + lineWidth(d) / 2)
+      .attr('cy', (d) => d.state.rect.height);
     this.transition(mmCircleMerge).attr('r', 6).attr('stroke-width', '1.5');
 
     this.transition(mmFoExit).style('opacity', 0);
@@ -573,8 +577,8 @@ export class Markmap {
       .attr('d', (d) => {
         const targetRect = getOriginTargetRect(d.target);
         const pathTarget: [number, number] = [
-          targetRect.x + targetRect.width,
-          targetRect.y + targetRect.height + lineWidth(d.target) / 2,
+          targetRect.x + targetRect.width + lineWidth(d.target) / 2,
+          targetRect.y,
         ];
         return linkShape({ source: pathTarget, target: pathTarget });
       })
@@ -587,17 +591,18 @@ export class Markmap {
       .attr('d', (d) => {
         const origSource = d.source;
         const origTarget = d.target;
+        // 修改连接线的起点和终点坐标计算方式
         const source: [number, number] = [
-          origSource.state.rect.x + origSource.state.rect.width,
-          origSource.state.rect.y +
-            origSource.state.rect.height +
+          origSource.state.rect.x +
+            origSource.state.rect.width +
             lineWidth(origSource) / 2,
+          origSource.state.rect.y + origSource.state.rect.height,
         ];
         const target: [number, number] = [
-          origTarget.state.rect.x,
-          origTarget.state.rect.y +
-            origTarget.state.rect.height +
+          origTarget.state.rect.x +
+            origTarget.state.rect.width +
             lineWidth(origTarget) / 2,
+          origTarget.state.rect.y,
         ];
         return linkShape({ source, target });
       });
