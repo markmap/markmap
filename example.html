@@ -1137,6 +1137,7 @@ html {
       });
       return node;
     }
+    // 修改 _relayout 方法中的布局配置
     _relayout() {
       if (!this.state.data) return;
       this.g.selectAll(childSelector(SELECTOR_NODE)).selectAll(
@@ -1153,7 +1154,10 @@ html {
         if (!((_a = d.payload) == null ? void 0 : _a.fold)) return d.children;
       }).nodeSize((node) => {
         const [width, height] = node.data.state.size;
-        return [width + (width ? paddingX * 2 : 0) + spacingHorizontal, height];
+        return [
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal,
+          height + spacingVertical
+        ];
       }).spacing((a, b) => {
         return (a.parent === b.parent ? spacingVertical : spacingVertical * 2) + lineWidth(a.data);
       });
@@ -1166,7 +1170,7 @@ html {
           x: fnode.x - fnode.xSize / 2,
           y: fnode.y,
           width: fnode.xSize,
-          height: fnode.ySize - spacingHorizontal
+          height: fnode.ySize - spacingVertical
         };
       });
       this.state.rect = {

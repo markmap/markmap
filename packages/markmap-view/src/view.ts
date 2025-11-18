@@ -212,6 +212,7 @@ export class Markmap {
     return node as INode;
   }
 
+  // 修改 _relayout 方法中的布局配置
   private _relayout() {
     if (!this.state.data) return;
 
@@ -228,14 +229,17 @@ export class Markmap {
 
     const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
       this.options;
+    // 修改布局方向为从上到下
     const layout = flextree<INode>({})
       .children((d) => {
         if (!d.payload?.fold) return d.children;
       })
       .nodeSize((node) => {
         const [width, height] = node.data.state.size;
-        // 交换width和height的位置，因为我们要从上到下布局
-        return [width + (width ? paddingX * 2 : 0) + spacingHorizontal, height];
+        return [
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal,
+          height + spacingVertical,
+        ];
       })
       .spacing((a, b) => {
         return (
@@ -248,12 +252,12 @@ export class Markmap {
     const fnodes = tree.descendants();
     fnodes.forEach((fnode) => {
       const node = fnode.data;
-      // 修改坐标映射逻辑，适配从上到下的布局
+      // 修改节点位置计算，确保从上到下布局
       node.state.rect = {
         x: fnode.x - fnode.xSize / 2,
         y: fnode.y,
         width: fnode.xSize,
-        height: fnode.ySize - spacingHorizontal,
+        height: fnode.ySize - spacingVertical,
       };
     });
     this.state.rect = {
@@ -591,7 +595,7 @@ export class Markmap {
       .attr('d', (d) => {
         const origSource = d.source;
         const origTarget = d.target;
-        // 修改连接线的起点和终点坐标计算方式
+        // 确保连接线从父节点底部连接到子节点顶部
         const source: [number, number] = [
           origSource.state.rect.x +
             origSource.state.rect.width +
