@@ -1155,11 +1155,13 @@ html {
       }).nodeSize((node) => {
         const [width, height] = node.data.state.size;
         return [
-          width + (width ? paddingX * 2 : 0) + spacingHorizontal,
-          height + spacingVertical
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5,
+          // 减少水平间距
+          height + spacingVertical * 10
+          // 增加垂直间距
         ];
       }).spacing((a, b) => {
-        return (a.parent === b.parent ? spacingVertical : spacingVertical * 2) + lineWidth(a.data);
+        return (a.parent === b.parent ? spacingVertical * 1.5 : spacingVertical * 2) + lineWidth(a.data);
       });
       const tree = layout.hierarchy(this.state.data);
       layout(tree);
@@ -1170,7 +1172,7 @@ html {
           x: fnode.x - fnode.xSize / 2,
           y: fnode.y,
           width: fnode.xSize,
-          height: fnode.ySize - spacingVertical
+          height: fnode.ySize - spacingVertical * 1.5
         };
       });
       this.state.rect = {
@@ -1410,8 +1412,10 @@ html {
       const naturalWidth = x2 - x1;
       const naturalHeight = y2 - y1;
       const scale = Math.min(
-        offsetWidth / naturalWidth * fitRatio,
-        offsetHeight / naturalHeight * fitRatio,
+        offsetWidth / naturalWidth * fitRatio * 0.8,
+        // 减少缩放比例
+        offsetHeight / naturalHeight * fitRatio * 1.2,
+        // 增加垂直缩放
         maxScale
       );
       const initialZoom = d32.zoomIdentity.translate(

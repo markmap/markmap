@@ -229,22 +229,25 @@ export class Markmap {
 
     const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
       this.options;
-    // 修改布局方向为从上到下
+    // 调整布局参数以解决宽度和高度问题
     const layout = flextree<INode>({})
       .children((d) => {
         if (!d.payload?.fold) return d.children;
       })
       .nodeSize((node) => {
         const [width, height] = node.data.state.size;
+        // 减少水平间距，增加垂直间距
         return [
-          width + (width ? paddingX * 2 : 0) + spacingHorizontal,
-          height + spacingVertical,
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5, // 减少水平间距
+          height + spacingVertical * 10, // 增加垂直间距
         ];
       })
       .spacing((a, b) => {
+        // 调整节点间距
         return (
-          (a.parent === b.parent ? spacingVertical : spacingVertical * 2) +
-          lineWidth(a.data)
+          (a.parent === b.parent
+            ? spacingVertical * 1.5
+            : spacingVertical * 2) + lineWidth(a.data)
         );
       });
     const tree = layout.hierarchy(this.state.data);
@@ -252,12 +255,12 @@ export class Markmap {
     const fnodes = tree.descendants();
     fnodes.forEach((fnode) => {
       const node = fnode.data;
-      // 修改节点位置计算，确保从上到下布局
+      // 确保节点位置正确
       node.state.rect = {
         x: fnode.x - fnode.xSize / 2,
         y: fnode.y,
         width: fnode.xSize,
-        height: fnode.ySize - spacingVertical,
+        height: fnode.ySize - spacingVertical * 1.5,
       };
     });
     this.state.rect = {
@@ -524,9 +527,8 @@ export class Markmap {
 
     mmGEnter.attr('transform', (d) => {
       const originRect = getOriginSourceRect(d);
-      return `translate(${originRect.x + originRect.width - d.state.rect.width},${
-        originRect.y + originRect.height - d.state.rect.height
-      })`;
+      // 调整节点位置，减少偏移
+      return `translate(${originRect.x + originRect.width - d.state.rect.width},${originRect.y + originRect.height - d.state.rect.height})`;
     });
     this.transition(mmGExit)
       .attr('transform', (d) => {
@@ -632,9 +634,10 @@ export class Markmap {
     const { x1, y1, x2, y2 } = this.state.rect;
     const naturalWidth = x2 - x1;
     const naturalHeight = y2 - y1;
+    // 调整缩放比例，使内容更紧凑
     const scale = Math.min(
-      (offsetWidth / naturalWidth) * fitRatio,
-      (offsetHeight / naturalHeight) * fitRatio,
+      (offsetWidth / naturalWidth) * fitRatio * 0.8, // 减少缩放比例
+      (offsetHeight / naturalHeight) * fitRatio * 1.2, // 增加垂直缩放
       maxScale,
     );
     const initialZoom = zoomIdentity
