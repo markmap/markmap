@@ -1157,7 +1157,7 @@ html {
         return [
           width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5,
           // 减少水平间距
-          height + spacingVertical * 10
+          height + spacingVertical * 20
           // 增加垂直间距
         ];
       }).spacing((a, b) => {
@@ -1304,7 +1304,7 @@ html {
         (d) => d.state.key
       );
       const mmFoEnter = mmFo.enter().append("foreignObject").attr("class", "markmap-foreign").attr("x", paddingX).attr("y", 0).style("opacity", 0).on("mousedown", stopPropagation).on("dblclick", stopPropagation);
-      mmFoEnter.append("xhtml:div").append("xhtml:div").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
+      mmFoEnter.append("xhtml:div").append("xhtml:div").style("transform", "translate(25px, 90px)").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
       mmFoEnter.each(function() {
         var _a;
         const el = (_a = this.firstChild) == null ? void 0 : _a.firstChild;
@@ -1363,8 +1363,8 @@ html {
       );
       this.transition(mmLineExit).attr("x1", (d) => d.state.rect.width).attr("stroke-width", 0);
       mmLineEnter.attr("x1", (d) => d.state.rect.width).attr("x2", (d) => d.state.rect.width);
-      mmLineMerge.attr("x1", (d) => d.state.rect.width + lineWidth(d) / 2).attr("x2", (d) => d.state.rect.width + lineWidth(d) / 2).attr("y1", -1).attr("y2", (d) => d.state.rect.height + 2);
-      this.transition(mmLineMerge).attr("y1", -1).attr("y2", (d) => d.state.rect.height + 2).attr("stroke", (d) => color(d)).attr("stroke-width", lineWidth);
+      mmLineMerge.attr("x1", (d) => d.state.rect.width + lineWidth(d) / 2).attr("x2", (d) => d.state.rect.width + lineWidth(d) / 2).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2);
+      this.transition(mmLineMerge).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2).attr("stroke", (d) => color(d)).attr("stroke-width", lineWidth);
       const mmCircleExit = mmGExit.selectAll(
         childSelector("circle")
       );
@@ -1391,7 +1391,7 @@ html {
         ];
         const target = [
           origTarget.state.rect.x + origTarget.state.rect.width + lineWidth(origTarget) / 2,
-          origTarget.state.rect.y
+          origTarget.state.rect.y + 70
         ];
         return linkShape({ source, target });
       });

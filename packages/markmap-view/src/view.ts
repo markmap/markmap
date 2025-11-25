@@ -239,7 +239,7 @@ export class Markmap {
         // 减少水平间距，增加垂直间距
         return [
           width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5, // 减少水平间距
-          height + spacingVertical * 10, // 增加垂直间距
+          height + spacingVertical * 20, // 增加垂直间距
         ];
       })
       .spacing((a, b) => {
@@ -463,6 +463,7 @@ export class Markmap {
       .append<HTMLDivElement>('xhtml:div')
       // The inner `<div>` with `display: inline-block` to get the proper width
       .append<HTMLDivElement>('xhtml:div')
+      .style('transform', 'translate(30px, 90px)')
       .html((d) => d.content)
       .attr('xmlns', 'http://www.w3.org/1999/xhtml');
     mmFoEnter.each(function () {
@@ -556,10 +557,10 @@ export class Markmap {
     mmLineMerge
       .attr('x1', (d) => d.state.rect.width + lineWidth(d) / 2)
       .attr('x2', (d) => d.state.rect.width + lineWidth(d) / 2)
-      .attr('y1', -1)
+      .attr('y1', 70)
       .attr('y2', (d) => d.state.rect.height + 2);
     this.transition(mmLineMerge)
-      .attr('y1', -1)
+      .attr('y1', 70)
       .attr('y2', (d) => d.state.rect.height + 2)
       .attr('stroke', (d) => color(d))
       .attr('stroke-width', lineWidth);
@@ -608,7 +609,7 @@ export class Markmap {
           origTarget.state.rect.x +
             origTarget.state.rect.width +
             lineWidth(origTarget) / 2,
-          origTarget.state.rect.y,
+          origTarget.state.rect.y + 70,
         ];
         return linkShape({ source, target });
       });
