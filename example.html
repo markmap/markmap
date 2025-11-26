@@ -1304,7 +1304,7 @@ html {
         (d) => d.state.key
       );
       const mmFoEnter = mmFo.enter().append("foreignObject").attr("class", "markmap-foreign").attr("x", paddingX).attr("y", 0).style("opacity", 0).on("mousedown", stopPropagation).on("dblclick", stopPropagation);
-      mmFoEnter.append("xhtml:div").append("xhtml:div").style("transform", "translate(25px, 90px)").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
+      mmFoEnter.append("xhtml:div").append("xhtml:div").style("transform", "translate(30px, 90px)").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
       mmFoEnter.each(function() {
         var _a;
         const el = (_a = this.firstChild) == null ? void 0 : _a.firstChild;
