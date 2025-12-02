@@ -46,6 +46,9 @@ function normalizeMarkmapJsonOptions(options?: Partial<IMarkmapJSONOptions>) {
   ['duration', 'maxWidth', 'initialExpandLevel'].forEach((key) => {
     if (options[key] != null) options[key] = normalizeNumber(options[key]);
   });
+  ['ttd'].forEach((key) => {
+    if (options[key] != null) options[key] = !!options[key];
+  }); //增加ttd
   return options;
 }
 

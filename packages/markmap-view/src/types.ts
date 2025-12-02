@@ -28,6 +28,7 @@ export interface IMarkmapJSONOptions {
   nodeMinHeight: number;
   paddingX: number;
   pan: boolean;
+  ttd: boolean;
   spacingHorizontal: number;
   spacingVertical: number;
   zoom: boolean;
@@ -43,6 +44,7 @@ export interface IMarkmapOptions {
   initialExpandLevel: number;
   maxInitialScale: number;
   pan: boolean;
+  ttd: boolean;
   scrollForPan: boolean;
   style?: (id: string) => string;
   toggleRecursively: boolean;
