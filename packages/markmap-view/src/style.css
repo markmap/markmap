@@ -92,10 +92,6 @@
       }
     }
   }
-
-  &-highlight rect {
-    fill: var(--markmap-highlight-node-bg);
-  }
 }
 
 .markmap-dark .markmap {

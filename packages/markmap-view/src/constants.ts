@@ -22,6 +22,7 @@ export const defaultOptions: IMarkmapOptions = {
   initialExpandLevel: -1,
   zoom: true,
   pan: true,
+  ttd: false, //默认ltr
   toggleRecursively: false,
 
   color: (node: INode): string => defaultColorFn(`${node.state?.path || ''}`),

@@ -416,6 +416,8 @@ html {
     initialExpandLevel: -1,
     zoom: true,
     pan: true,
+    ttd: false,
+    //默认ltr
     toggleRecursively: false,
     color: (node) => {
       var _a;
@@ -473,7 +475,7 @@ html {
       const value = options[key];
       if (typeof value === "number") derivedOptions[key] = value;
     });
-    const booleanKeys = ["zoom", "pan"];
+    const booleanKeys = ["zoom", "pan", "ttd"];
     booleanKeys.forEach((key) => {
       const value = options[key];
       if (value != null) derivedOptions[key] = !!value;
@@ -1003,12 +1005,11 @@ html {
       next: lastLows
     };
   };
-  const css = ".markmap {\r\n  --markmap-max-width: 9999px;\r\n  --markmap-a-color: #0097e6;\r\n  --markmap-a-hover-color: #00a8ff;\r\n  --markmap-code-bg: #f0f0f0;\r\n  --markmap-code-color: #555;\r\n  --markmap-highlight-bg: #ffeaa7;\r\n  --markmap-table-border: 1px solid currentColor;\r\n  --markmap-font: 300 16px/20px sans-serif;\r\n  --markmap-circle-open-bg: #fff;\r\n  --markmap-text-color: #333;\r\n  --markmap-highlight-node-bg: #ff02;\r\n\r\n  font: var(--markmap-font);\r\n  color: var(--markmap-text-color);\r\n}\r\n\r\n  .markmap-link {\r\n    fill: none;\r\n  }\r\n\r\n  .markmap-node > circle {\r\n      cursor: pointer;\r\n    }\r\n\r\n  .markmap-foreign {\r\n    display: inline-block;\r\n  }\r\n\r\n  .markmap-foreign p {\r\n      margin: 0;\r\n    }\r\n\r\n  .markmap-foreign a {\r\n      color: var(--markmap-a-color);\r\n    }\r\n\r\n  .markmap-foreign a:hover {\r\n        color: var(--markmap-a-hover-color);\r\n      }\r\n\r\n  .markmap-foreign code {\r\n      padding: 0.25em;\r\n      font-size: calc(1em - 2px);\r\n      color: var(--markmap-code-color);\r\n      background-color: var(--markmap-code-bg);\r\n      border-radius: 2px;\r\n    }\r\n\r\n  .markmap-foreign pre {\r\n      margin: 0;\r\n    }\r\n\r\n  .markmap-foreign pre > code {\r\n        display: block;\r\n      }\r\n\r\n  .markmap-foreign del {\r\n      text-decoration: line-through;\r\n    }\r\n\r\n  .markmap-foreign em {\r\n      font-style: italic;\r\n    }\r\n\r\n  .markmap-foreign strong {\r\n      font-weight: bold;\r\n    }\r\n\r\n  .markmap-foreign mark {\r\n      background: var(--markmap-highlight-bg);\r\n    }\r\n\r\n  .markmap-foreign table,\r\n    .markmap-foreign th,\r\n    .markmap-foreign td {\r\n      border-collapse: collapse;\r\n      border: var(--markmap-table-border);\r\n    }\r\n\r\n  .markmap-foreign img {\r\n      display: inline-block;\r\n    }\r\n\r\n  .markmap-foreign svg {\r\n      fill: currentColor;\r\n    }\r\n\r\n  .markmap-foreign > div {\r\n      width: var(--markmap-max-width);\r\n      text-align: left;\r\n    }\r\n\r\n  .markmap-foreign > div > div {\r\n        display: inline-block;\r\n      }\r\n\r\n  .markmap-highlight rect {\r\n    fill: var(--markmap-highlight-node-bg);\r\n  }\r\n\r\n.markmap-dark .markmap {\r\n  --markmap-code-bg: #1a1b26;\r\n  --markmap-code-color: #ddd;\r\n  --markmap-circle-open-bg: #444;\r\n  --markmap-text-color: #eee;\r\n}\r\n";
+  const css = ".markmap {\r\n  --markmap-max-width: 9999px;\r\n  --markmap-a-color: #0097e6;\r\n  --markmap-a-hover-color: #00a8ff;\r\n  --markmap-code-bg: #f0f0f0;\r\n  --markmap-code-color: #555;\r\n  --markmap-highlight-bg: #ffeaa7;\r\n  --markmap-table-border: 1px solid currentColor;\r\n  --markmap-font: 300 16px/20px sans-serif;\r\n  --markmap-circle-open-bg: #fff;\r\n  --markmap-text-color: #333;\r\n  --markmap-highlight-node-bg: #ff02;\r\n\r\n  font: var(--markmap-font);\r\n  color: var(--markmap-text-color);\r\n}\r\n\r\n  .markmap-link {\r\n    fill: none;\r\n  }\r\n\r\n  .markmap-node > circle {\r\n      cursor: pointer;\r\n    }\r\n\r\n  .markmap-foreign {\r\n    display: inline-block;\r\n  }\r\n\r\n  .markmap-foreign p {\r\n      margin: 0;\r\n    }\r\n\r\n  .markmap-foreign a {\r\n      color: var(--markmap-a-color);\r\n    }\r\n\r\n  .markmap-foreign a:hover {\r\n        color: var(--markmap-a-hover-color);\r\n      }\r\n\r\n  .markmap-foreign code {\r\n      padding: 0.25em;\r\n      font-size: calc(1em - 2px);\r\n      color: var(--markmap-code-color);\r\n      background-color: var(--markmap-code-bg);\r\n      border-radius: 2px;\r\n    }\r\n\r\n  .markmap-foreign pre {\r\n      margin: 0;\r\n    }\r\n\r\n  .markmap-foreign pre > code {\r\n        display: block;\r\n      }\r\n\r\n  .markmap-foreign del {\r\n      text-decoration: line-through;\r\n    }\r\n\r\n  .markmap-foreign em {\r\n      font-style: italic;\r\n    }\r\n\r\n  .markmap-foreign strong {\r\n      font-weight: bold;\r\n    }\r\n\r\n  .markmap-foreign mark {\r\n      background: var(--markmap-highlight-bg);\r\n    }\r\n\r\n  .markmap-foreign table,\r\n    .markmap-foreign th,\r\n    .markmap-foreign td {\r\n      border-collapse: collapse;\r\n      border: var(--markmap-table-border);\r\n    }\r\n\r\n  .markmap-foreign img {\r\n      display: inline-block;\r\n    }\r\n\r\n  .markmap-foreign svg {\r\n      fill: currentColor;\r\n    }\r\n\r\n  .markmap-foreign > div {\r\n      width: var(--markmap-max-width);\r\n      text-align: left;\r\n    }\r\n\r\n  .markmap-foreign > div > div {\r\n        display: inline-block;\r\n      }\r\n\r\n.markmap-dark .markmap {\r\n  --markmap-code-bg: #1a1b26;\r\n  --markmap-code-color: #ddd;\r\n  --markmap-circle-open-bg: #444;\r\n  --markmap-text-color: #eee;\r\n}\r\n";
   const globalCSS = css;
   const SELECTOR_NODE = "g.markmap-node";
   const SELECTOR_LINK = "path.markmap-link";
   const SELECTOR_HIGHLIGHT = "g.markmap-highlight";
-  const linkShape = d32.linkVertical();
   function minBy(numbers, by) {
     const index = d32.minIndex(numbers, by);
     return numbers[index];
@@ -1137,7 +1138,6 @@ html {
       });
       return node;
     }
-    // 修改 _relayout 方法中的布局配置
     _relayout() {
       if (!this.state.data) return;
       this.g.selectAll(childSelector(SELECTOR_NODE)).selectAll(
@@ -1148,32 +1148,52 @@ html {
         const newSize = [el.scrollWidth, el.scrollHeight];
         d.state.size = newSize;
       });
-      const { lineWidth, paddingX, spacingHorizontal, spacingVertical } = this.options;
+      const { lineWidth, paddingX, spacingHorizontal, spacingVertical, ttd } = this.options;
       const layout = flextree({}).children((d) => {
         var _a;
         if (!((_a = d.payload) == null ? void 0 : _a.fold)) return d.children;
-      }).nodeSize((node) => {
-        const [width, height] = node.data.state.size;
-        return [
-          width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5,
-          // 减少水平间距
-          height + spacingVertical * 20
-          // 增加垂直间距
-        ];
-      }).spacing((a, b) => {
-        return (a.parent === b.parent ? spacingVertical * 1.5 : spacingVertical * 2) + lineWidth(a.data);
       });
+      if (ttd) {
+        layout.nodeSize((node) => {
+          const [width, height] = node.data.state.size;
+          return [
+            width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5,
+            height + spacingVertical * 20
+          ];
+        }).spacing((a, b) => {
+          return (a.parent === b.parent ? spacingVertical * 1.5 : spacingVertical * 2) + lineWidth(a.data);
+        });
+      } else {
+        layout.nodeSize((node) => {
+          const [width, height] = node.data.state.size;
+          return [
+            height,
+            width + (width ? paddingX * 2 : 0) + spacingHorizontal
+          ];
+        }).spacing((a, b) => {
+          return (a.parent === b.parent ? spacingVertical : spacingVertical * 2) + lineWidth(a.data);
+        });
+      }
       const tree = layout.hierarchy(this.state.data);
       layout(tree);
       const fnodes = tree.descendants();
       fnodes.forEach((fnode) => {
         const node = fnode.data;
-        node.state.rect = {
-          x: fnode.x - fnode.xSize / 2,
-          y: fnode.y,
-          width: fnode.xSize,
-          height: fnode.ySize - spacingVertical * 1.5
-        };
+        if (ttd) {
+          node.state.rect = {
+            x: fnode.x - fnode.xSize / 2,
+            y: fnode.y,
+            width: fnode.xSize,
+            height: fnode.ySize - spacingVertical * 1.5
+          };
+        } else {
+          node.state.rect = {
+            x: fnode.y,
+            y: fnode.x - fnode.xSize / 2,
+            width: fnode.ySize - spacingHorizontal,
+            height: fnode.xSize
+          };
+        }
       });
       this.state.rect = {
         x1: d32.min(fnodes, (fnode) => fnode.data.state.rect.x) || 0,
@@ -1229,7 +1249,7 @@ html {
       return rect;
     }
     async renderData(originData) {
-      const { paddingX, autoFit, color, maxWidth, lineWidth } = this.options;
+      const { paddingX, autoFit, color, maxWidth, lineWidth, ttd } = this.options;
       const rootNode = this.state.data;
       if (!rootNode) return;
       const nodeMap = {};
@@ -1258,6 +1278,7 @@ html {
       const getOriginTargetRect = (node) => (nodeMap[originMap[node.state.id]] || rootNode).state.rect;
       sourceRectMap[rootNode.state.id] = rootNode.state.rect;
       if (originData) setOriginNode(originData);
+      const linkShape = ttd ? d32.linkVertical() : d32.linkHorizontal();
       let { highlight } = this.state;
       if (highlight && !nodeMap[highlight.state.id]) highlight = void 0;
       let highlightNodes = this.g.selectAll(childSelector(SELECTOR_HIGHLIGHT)).selectAll(childSelector("rect")).data(highlight ? [this._getHighlightRect(highlight)] : []).join("rect").attr("x", (d) => d.x).attr("y", (d) => d.y).attr("width", (d) => d.width).attr("height", (d) => d.height);
@@ -1304,7 +1325,11 @@ html {
         (d) => d.state.key
       );
       const mmFoEnter = mmFo.enter().append("foreignObject").attr("class", "markmap-foreign").attr("x", paddingX).attr("y", 0).style("opacity", 0).on("mousedown", stopPropagation).on("dblclick", stopPropagation);
-      mmFoEnter.append("xhtml:div").append("xhtml:div").style("transform", "translate(30px, 90px)").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
+      if (ttd) {
+        mmFoEnter.append("xhtml:div").append("xhtml:div").style("transform", "translate(30px, 90px)").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
+      } else {
+        mmFoEnter.append("xhtml:div").append("xhtml:div").html((d) => d.content).attr("xmlns", "http://www.w3.org/1999/xhtml");
+      }
       mmFoEnter.each(function() {
         var _a;
         const el = (_a = this.firstChild) == null ? void 0 : _a.firstChild;
@@ -1327,14 +1352,26 @@ html {
       );
       const mmPath = this.g.selectAll(childSelector(SELECTOR_LINK)).data(links, (d) => d.target.state.key);
       const mmPathExit = mmPath.exit();
-      const mmPathEnter = mmPath.enter().insert("path", "g").attr("class", "markmap-link").attr("data-depth", (d) => d.target.state.depth).attr("data-path", (d) => d.target.state.path).attr("d", (d) => {
-        const originRect = getOriginSourceRect(d.target);
-        const pathOrigin = [
-          originRect.x + originRect.width + lineWidth(d.target) / 2,
-          originRect.y + originRect.height
-        ];
-        return linkShape({ source: pathOrigin, target: pathOrigin });
-      }).attr("stroke-width", 0);
+      const mmPathEnter = mmPath.enter().insert("path", "g").attr("class", "markmap-link").attr("data-depth", (d) => d.target.state.depth).attr("data-path", (d) => d.target.state.path).attr("stroke-width", 0);
+      if (ttd) {
+        mmPathEnter.attr("d", (d) => {
+          const originRect = getOriginSourceRect(d.target);
+          const pathOrigin = [
+            originRect.x + originRect.width + lineWidth(d.target) / 2,
+            originRect.y + originRect.height
+          ];
+          return linkShape({ source: pathOrigin, target: pathOrigin });
+        });
+      } else {
+        mmPathEnter.attr("d", (d) => {
+          const originRect = getOriginSourceRect(d.target);
+          const pathOrigin = [
+            originRect.x + originRect.width,
+            originRect.y + originRect.height
+          ];
+          return linkShape({ source: pathOrigin, target: pathOrigin });
+        });
+      }
       const mmPathMerge = mmPathEnter.merge(mmPath);
       this.svg.style(
         "--markmap-max-width",
@@ -1361,40 +1398,78 @@ html {
       const mmLineExit = mmGExit.selectAll(
         childSelector("line")
       );
-      this.transition(mmLineExit).attr("x1", (d) => d.state.rect.width).attr("stroke-width", 0);
-      mmLineEnter.attr("x1", (d) => d.state.rect.width).attr("x2", (d) => d.state.rect.width);
-      mmLineMerge.attr("x1", (d) => d.state.rect.width + lineWidth(d) / 2).attr("x2", (d) => d.state.rect.width + lineWidth(d) / 2).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2);
-      this.transition(mmLineMerge).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2).attr("stroke", (d) => color(d)).attr("stroke-width", lineWidth);
+      if (ttd) {
+        this.transition(mmLineExit).attr("x1", (d) => d.state.rect.width).attr("stroke-width", 0);
+        mmLineEnter.attr("x1", (d) => d.state.rect.width).attr("x2", (d) => d.state.rect.width);
+        mmLineMerge.attr("x1", (d) => d.state.rect.width + lineWidth(d) / 2).attr("x2", (d) => d.state.rect.width + lineWidth(d) / 2).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2);
+        this.transition(mmLineMerge).attr("y1", 70).attr("y2", (d) => d.state.rect.height + 2).attr("stroke", (d) => color(d)).attr("stroke-width", lineWidth);
+      } else {
+        this.transition(mmLineExit).attr("x1", (d) => d.state.rect.width).attr("stroke-width", 0);
+        mmLineEnter.attr("x1", (d) => d.state.rect.width).attr("x2", (d) => d.state.rect.width);
+        mmLineMerge.attr("y1", (d) => d.state.rect.height + lineWidth(d) / 2).attr("y2", (d) => d.state.rect.height + lineWidth(d) / 2);
+        this.transition(mmLineMerge).attr("x1", -1).attr("x2", (d) => d.state.rect.width + 2).attr("stroke", (d) => color(d)).attr("stroke-width", lineWidth);
+      }
       const mmCircleExit = mmGExit.selectAll(
         childSelector("circle")
       );
       this.transition(mmCircleExit).attr("r", 0).attr("stroke-width", 0);
-      mmCircleMerge.attr("cx", (d) => d.state.rect.width + lineWidth(d) / 2).attr("cy", (d) => d.state.rect.height);
+      if (ttd) {
+        mmCircleMerge.attr("cx", (d) => d.state.rect.width + lineWidth(d) / 2).attr("cy", (d) => d.state.rect.height);
+      } else {
+        mmCircleMerge.attr("cx", (d) => d.state.rect.width).attr("cy", (d) => d.state.rect.height + lineWidth(d) / 2);
+      }
       this.transition(mmCircleMerge).attr("r", 6).attr("stroke-width", "1.5");
       this.transition(mmFoExit).style("opacity", 0);
       mmFoMerge.attr("width", (d) => Math.max(0, d.state.rect.width - paddingX * 2)).attr("height", (d) => d.state.rect.height);
       this.transition(mmFoMerge).style("opacity", 1);
-      this.transition(mmPathExit).attr("d", (d) => {
-        const targetRect = getOriginTargetRect(d.target);
-        const pathTarget = [
-          targetRect.x + targetRect.width + lineWidth(d.target) / 2,
-          targetRect.y
-        ];
-        return linkShape({ source: pathTarget, target: pathTarget });
-      }).attr("stroke-width", 0).remove();
-      this.transition(mmPathMerge).attr("stroke", (d) => color(d.target)).attr("stroke-width", (d) => lineWidth(d.target)).attr("d", (d) => {
-        const origSource = d.source;
-        const origTarget = d.target;
-        const source = [
-          origSource.state.rect.x + origSource.state.rect.width + lineWidth(origSource) / 2,
-          origSource.state.rect.y + origSource.state.rect.height
-        ];
-        const target = [
-          origTarget.state.rect.x + origTarget.state.rect.width + lineWidth(origTarget) / 2,
-          origTarget.state.rect.y + 70
-        ];
-        return linkShape({ source, target });
-      });
+      if (ttd) {
+        this.transition(mmPathExit).attr("d", (d) => {
+          const targetRect = getOriginTargetRect(d.target);
+          const pathTarget = [
+            targetRect.x + targetRect.width + lineWidth(d.target) / 2,
+            targetRect.y
+          ];
+          return linkShape({ source: pathTarget, target: pathTarget });
+        }).attr("stroke-width", 0).remove();
+      } else {
+        this.transition(mmPathExit).attr("d", (d) => {
+          const targetRect = getOriginTargetRect(d.target);
+          const pathTarget = [
+            targetRect.x + targetRect.width,
+            targetRect.y + targetRect.height + lineWidth(d.target) / 2
+          ];
+          return linkShape({ source: pathTarget, target: pathTarget });
+        }).attr("stroke-width", 0).remove();
+      }
+      if (ttd) {
+        this.transition(mmPathMerge).attr("stroke", (d) => color(d.target)).attr("stroke-width", (d) => lineWidth(d.target)).attr("d", (d) => {
+          const origSource = d.source;
+          const origTarget = d.target;
+          const source = [
+            origSource.state.rect.x + origSource.state.rect.width + lineWidth(origSource) / 2,
+            origSource.state.rect.y + origSource.state.rect.height
+          ];
+          const target = [
+            origTarget.state.rect.x + origTarget.state.rect.width + lineWidth(origTarget) / 2,
+            origTarget.state.rect.y + 70
+          ];
+          return linkShape({ source, target });
+        });
+      } else {
+        this.transition(mmPathMerge).attr("stroke", (d) => color(d.target)).attr("stroke-width", (d) => lineWidth(d.target)).attr("d", (d) => {
+          const origSource = d.source;
+          const origTarget = d.target;
+          const source = [
+            origSource.state.rect.x + origSource.state.rect.width,
+            origSource.state.rect.y + origSource.state.rect.height + lineWidth(origSource) / 2
+          ];
+          const target = [
+            origTarget.state.rect.x,
+            origTarget.state.rect.y + origTarget.state.rect.height + lineWidth(origTarget) / 2
+          ];
+          return linkShape({ source, target });
+        });
+      }
       if (autoFit) this.fit();
     }
     transition(sel) {
@@ -1407,17 +1482,24 @@ html {
     async fit(maxScale = this.options.maxInitialScale) {
       const svgNode = this.svg.node();
       const { width: offsetWidth, height: offsetHeight } = svgNode.getBoundingClientRect();
-      const { fitRatio } = this.options;
+      const { fitRatio, ttd } = this.options;
       const { x1, y1, x2, y2 } = this.state.rect;
       const naturalWidth = x2 - x1;
       const naturalHeight = y2 - y1;
-      const scale = Math.min(
-        offsetWidth / naturalWidth * fitRatio * 0.8,
-        // 减少缩放比例
-        offsetHeight / naturalHeight * fitRatio * 1.2,
-        // 增加垂直缩放
-        maxScale
-      );
+      let scale;
+      if (ttd) {
+        scale = Math.min(
+          offsetWidth / naturalWidth * fitRatio * 0.8,
+          offsetHeight / naturalHeight * fitRatio * 1.2,
+          maxScale
+        );
+      } else {
+        scale = Math.min(
+          offsetWidth / naturalWidth * fitRatio,
+          offsetHeight / naturalHeight * fitRatio,
+          maxScale
+        );
+      }
       const initialZoom = d32.zoomIdentity.translate(
         (offsetWidth - naturalWidth * scale) / 2 - x1 * scale,
         (offsetHeight - naturalHeight * scale) / 2 - y1 * scale
@@ -1892,6 +1974,6 @@ g,0<d.length&&(d=za[d[0]])&&(a.c[e]=d))}a.c[e]||(d=za[e])&&(a.c[e]=d);for(d=0;d<
               if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
                 document.documentElement.classList.add("markmap-dark");
               }
-            })(() => window.markmap,null,{"content":"markmap","children":[{"content":"Links","children":[{"content":"<a href=\"https://markmap.js.org/\">Website</a>","children":[],"payload":{"tag":"li","lines":"8,9"}},{"content":"<a href=\"https://github.com/gera2ld/markmap\">GitHub</a>","children":[],"payload":{"tag":"li","lines":"9,11"}}],"payload":{"tag":"h2","lines":"6,7"}},{"content":"Related Projects","children":[{"content":"<a href=\"https://github.com/gera2ld/coc-markmap\">coc-markmap</a> for Neovim","children":[],"payload":{"tag":"li","lines":"13,14"}},{"content":"<a href=\"https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode\">markmap-vscode</a> for VSCode","children":[],"payload":{"tag":"li","lines":"14,15"}},{"content":"<a href=\"https://github.com/emacs-eaf/eaf-markmap\">eaf-markmap</a> for Emacs","children":[],"payload":{"tag":"li","lines":"15,17"}}],"payload":{"tag":"h2","lines":"11,12"}},{"content":"Features","children":[{"content":"Lists","children":[{"content":"<strong>strong</strong> <s>del</s> <em>italic</em> <mark>highlight</mark>","children":[],"payload":{"tag":"li","lines":"23,24"}},{"content":"<code>inline code</code>","children":[],"payload":{"tag":"li","lines":"24,25"}},{"content":"<svg width=\"16\" height=\"16\" viewBox=\"0 -3 24 24\"><path d=\"M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z\"/></svg> checkbox","children":[],"payload":{"tag":"li","lines":"25,26"}},{"content":"Katex: <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>&#x2212;</mo><mi>b</mi><mo>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>&#x2212;</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></mrow><annotation encoding=\"application/x-tex\">x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.3845em;vertical-align:-0.345em;\"></span><span class=\"mord\"><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.0395em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">2</span><span class=\"mord mathnormal mtight\">a</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">&#x2212;</span><span class=\"mord mathnormal mtight\">b</span><span class=\"mbin mtight\">&#xb1;</span><span class=\"mord sqrt mtight\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9221em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mtight\" style=\"padding-left:0.833em;\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7463em;\"><span style=\"top:-2.786em;margin-right:0.0714em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"sizing reset-size3 size1 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mbin mtight\">&#x2212;</span><span class=\"mord mtight\">4</span><span class=\"mord mathnormal mtight\">a</span><span class=\"mord mathnormal mtight\">c</span></span></span><span style=\"top:-2.8821em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail mtight\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">&#x200b;</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1179em;\"><span></span></span></span></span></span></span></span></span></span><span class=\"vlist-s\">&#x200b;</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span>","children":[{"content":"<a href=\"#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md\">More Katex Examples</a>","children":[],"payload":{"tag":"li","lines":"27,28"}}],"payload":{"tag":"li","lines":"26,28","fold":1}},{"content":"Now we can wrap very very very very long text with the <code>maxWidth</code> option","children":[],"payload":{"tag":"li","lines":"28,29"}},{"content":"Ordered list","children":[{"content":"1. item 1","children":[],"payload":{"tag":"li","lines":"30,31","listIndex":1}},{"content":"2. item 2","children":[],"payload":{"tag":"li","lines":"31,33","listIndex":2}}],"payload":{"tag":"li","lines":"29,33"}}],"payload":{"tag":"h3","lines":"21,22"}},{"content":"Blocks","children":[{"content":"<pre data-lines=\"35,38\"><code class=\"language-js\"><span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">&apos;hello, JavaScript&apos;</span>)\n</code></pre>","children":[],"payload":{"tag":"pre","lines":"35,38"}},{"content":"<table data-lines=\"39,43\">\n<thead data-lines=\"39,40\">\n<tr data-lines=\"39,40\">\n<th>Products</th>\n<th>Price</th>\n</tr>\n</thead>\n<tbody data-lines=\"41,43\">\n<tr data-lines=\"41,42\">\n<td>Apple</td>\n<td>4</td>\n</tr>\n<tr data-lines=\"42,43\">\n<td>Banana</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>","children":[],"payload":{"tag":"table","lines":"39,43"}},{"content":"<img src=\"https://markmap.js.org/favicon.png\" alt>","children":[],"payload":{"tag":"img","lines":"44,45"}}],"payload":{"tag":"h3","lines":"33,34"}}],"payload":{"tag":"h2","lines":"17,18"}}]},{"colorFreezeLevel":2})</script>
+            })(() => window.markmap,null,{"content":"markmap","children":[{"content":"Links","children":[{"content":"<a href=\"https://markmap.js.org/\">Website</a>","children":[],"payload":{"tag":"li","lines":"9,10"}},{"content":"<a href=\"https://github.com/gera2ld/markmap\">GitHub</a>","children":[],"payload":{"tag":"li","lines":"10,12"}}],"payload":{"tag":"h2","lines":"7,8"}},{"content":"Related Projects","children":[{"content":"<a href=\"https://github.com/gera2ld/coc-markmap\">coc-markmap</a> for Neovim","children":[],"payload":{"tag":"li","lines":"14,15"}},{"content":"<a href=\"https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode\">markmap-vscode</a> for VSCode","children":[],"payload":{"tag":"li","lines":"15,16"}},{"content":"<a href=\"https://github.com/emacs-eaf/eaf-markmap\">eaf-markmap</a> for Emacs","children":[],"payload":{"tag":"li","lines":"16,18"}}],"payload":{"tag":"h2","lines":"12,13"}},{"content":"Features","children":[{"content":"Lists","children":[{"content":"<strong>strong</strong> <s>del</s> <em>italic</em> <mark>highlight</mark>","children":[],"payload":{"tag":"li","lines":"24,25"}},{"content":"<code>inline code</code>","children":[],"payload":{"tag":"li","lines":"25,26"}},{"content":"<svg width=\"16\" height=\"16\" viewBox=\"0 -3 24 24\"><path d=\"M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m-9 14-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z\"/></svg> checkbox","children":[],"payload":{"tag":"li","lines":"26,27"}},{"content":"Katex: <span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>=</mo><mfrac><mrow><mo>&#x2212;</mo><mi>b</mi><mo>&#xb1;</mo><msqrt><mrow><msup><mi>b</mi><mn>2</mn></msup><mo>&#x2212;</mo><mn>4</mn><mi>a</mi><mi>c</mi></mrow></msqrt></mrow><mrow><mn>2</mn><mi>a</mi></mrow></mfrac></mrow><annotation encoding=\"application/x-tex\">x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.3845em;vertical-align:-0.345em;\"></span><span class=\"mord\"><span class=\"mord\"><span class=\"mopen nulldelimiter\"></span><span class=\"mfrac\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:1.0395em;\"><span style=\"top:-2.655em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">2</span><span class=\"mord mathnormal mtight\">a</span></span></span></span><span style=\"top:-3.23em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"frac-line\" style=\"border-bottom-width:0.04em;\"></span></span><span style=\"top:-3.394em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">&#x2212;</span><span class=\"mord mathnormal mtight\">b</span><span class=\"mbin mtight\">&#xb1;</span><span class=\"mord sqrt mtight\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.9221em;\"><span class=\"svg-align\" style=\"top:-3em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"mord mtight\" style=\"padding-left:0.833em;\"><span class=\"mord mtight\"><span class=\"mord mathnormal mtight\">b</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7463em;\"><span style=\"top:-2.786em;margin-right:0.0714em;\"><span class=\"pstrut\" style=\"height:2.5em;\"></span><span class=\"sizing reset-size3 size1 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mbin mtight\">&#x2212;</span><span class=\"mord mtight\">4</span><span class=\"mord mathnormal mtight\">a</span><span class=\"mord mathnormal mtight\">c</span></span></span><span style=\"top:-2.8821em;\"><span class=\"pstrut\" style=\"height:3em;\"></span><span class=\"hide-tail mtight\" style=\"min-width:0.853em;height:1.08em;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400em\" height=\"1.08em\" viewBox=\"0 0 400000 1080\" preserveAspectRatio=\"xMinYMin slice\"><path d=\"M95,702\nc-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14\nc0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54\nc44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10\ns173,378,173,378c0.7,0,35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429\nc69,-144,104.5,-217.7,106.5,-221\nl0 -0\nc5.3,-9.3,12,-14,20,-14\nH400000v40H845.2724\ns-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7\nc-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z\nM834 80h400000v40h-400000z\"/></svg></span></span></span><span class=\"vlist-s\">&#x200b;</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.1179em;\"><span></span></span></span></span></span></span></span></span></span><span class=\"vlist-s\">&#x200b;</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.345em;\"><span></span></span></span></span></span><span class=\"mclose nulldelimiter\"></span></span></span></span></span></span>","children":[{"content":"<a href=\"#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md\">More Katex Examples</a>","children":[],"payload":{"tag":"li","lines":"28,29"}}],"payload":{"tag":"li","lines":"27,29","fold":1}},{"content":"Now we can wrap very very very very long text with the <code>maxWidth</code> option","children":[],"payload":{"tag":"li","lines":"29,30"}},{"content":"Ordered list","children":[{"content":"1. item 1","children":[],"payload":{"tag":"li","lines":"31,32","listIndex":1}},{"content":"2. item 2","children":[],"payload":{"tag":"li","lines":"32,34","listIndex":2}}],"payload":{"tag":"li","lines":"30,34"}}],"payload":{"tag":"h3","lines":"22,23"}},{"content":"Blocks","children":[{"content":"<pre data-lines=\"36,39\"><code class=\"language-js\"><span class=\"hljs-variable language_\">console</span>.<span class=\"hljs-title function_\">log</span>(<span class=\"hljs-string\">&apos;hello, JavaScript&apos;</span>)\n</code></pre>","children":[],"payload":{"tag":"pre","lines":"36,39"}},{"content":"<table data-lines=\"40,44\">\n<thead data-lines=\"40,41\">\n<tr data-lines=\"40,41\">\n<th>Products</th>\n<th>Price</th>\n</tr>\n</thead>\n<tbody data-lines=\"42,44\">\n<tr data-lines=\"42,43\">\n<td>Apple</td>\n<td>4</td>\n</tr>\n<tr data-lines=\"43,44\">\n<td>Banana</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>","children":[],"payload":{"tag":"table","lines":"40,44"}},{"content":"<img src=\"https://markmap.js.org/favicon.png\" alt>","children":[],"payload":{"tag":"img","lines":"45,46"}}],"payload":{"tag":"h3","lines":"34,35"}}],"payload":{"tag":"h2","lines":"18,19"}}]},{"colorFreezeLevel":2,"ttd":true})</script>
 </body>
 </html>
