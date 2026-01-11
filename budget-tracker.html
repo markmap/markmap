@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biweekly Budget & Bill Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .period-selector {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .period-selector input {
+            padding: 8px 15px;
+            border: 2px solid white;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .period-selector button {
+            padding: 8px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .period-selector button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .summary-card.income .amount {
+            color: #10b981;
+        }
+
+        .summary-card.expenses .amount {
+            color: #ef4444;
+        }
+
+        .summary-card.remaining .amount {
+            color: #3b82f6;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .item-list {
+            margin-top: 20px;
+        }
+
+        .item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .item-amount {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .item-amount.income {
+            color: #10b981;
+        }
+
+        .item-amount.expense {
+            color: #ef4444;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .bill-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .bill-status.paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .bill-status.unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .bill-status.upcoming {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .btn, .actions, .form-group {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Biweekly Budget & Bill Tracker</h1>
+            <div class="period-selector">
+                <label style="color: white; font-weight: 600;">Period:</label>
+                <input type="date" id="periodStart" />
+                <span style="color: white;">to</span>
+                <input type="date" id="periodEnd" />
+                <button onclick="app.updatePeriod()">Set Period</button>
+                <button onclick="app.setCurrentBiweekly()">Current Biweekly</button>
+            </div>
+        </header>
+
+        <div class="summary">
+            <div class="summary-card income">
+                <h3>Total Income</h3>
+                <div class="amount" id="totalIncome">$0.00</div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="incomeProgress"></div>
+                </div>
+            </div>
+            <div class="summary-card expenses">
+                <h3>Total Expenses</h3>
+                <div class="amount" id="totalExpenses">$0.00</div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="expensesProgress"></div>
+                </div>
+            </div>
+            <div class="summary-card remaining">
+                <h3>Remaining</h3>
+                <div class="amount" id="remaining">$0.00</div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="remainingProgress"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>💵 Income</h2>
+                <div class="form-group">
+                    <label for="incomeSource">Source</label>
+                    <input type="text" id="incomeSource" placeholder="e.g., Salary, Freelance">
+                </div>
+                <div class="form-group">
+                    <label for="incomeAmount">Amount</label>
+                    <input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <button class="btn btn-primary" onclick="app.addIncome()">Add Income</button>
+
+                <div class="item-list" id="incomeList"></div>
+            </div>
+
+            <div class="section">
+                <h2>💳 Expenses</h2>
+                <div class="form-group">
+                    <label for="expenseCategory">Category</label>
+                    <select id="expenseCategory">
+                        <option value="Housing">🏠 Housing</option>
+                        <option value="Utilities">⚡ Utilities</option>
+                        <option value="Food">🍔 Food</option>
+                        <option value="Transportation">🚗 Transportation</option>
+                        <option value="Healthcare">🏥 Healthcare</option>
+                        <option value="Entertainment">🎮 Entertainment</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expenseName">Description</label>
+                    <input type="text" id="expenseName" placeholder="e.g., Groceries">
+                </div>
+                <div class="form-group">
+                    <label for="expenseAmount">Amount</label>
+                    <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <button class="btn btn-primary" onclick="app.addExpense()">Add Expense</button>
+
+                <div class="item-list" id="expenseList"></div>
+            </div>
+
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2>📅 Bills</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="billName">Bill Name</label>
+                        <input type="text" id="billName" placeholder="e.g., Electric Bill">
+                    </div>
+                    <div class="form-group">
+                        <label for="billAmount">Amount</label>
+                        <input type="number" id="billAmount" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="billDueDate">Due Date</label>
+                        <input type="date" id="billDueDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="billCategory">Category</label>
+                        <select id="billCategory">
+                            <option value="Utilities">⚡ Utilities</option>
+                            <option value="Housing">🏠 Housing</option>
+                            <option value="Insurance">🛡️ Insurance</option>
+                            <option value="Subscriptions">📱 Subscriptions</option>
+                            <option value="Loan">💰 Loan</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="app.addBill()">Add Bill</button>
+
+                <div class="item-list" id="billList"></div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="app.exportData()">📥 Export Data</button>
+            <button class="btn btn-secondary" onclick="app.importData()">📤 Import Data</button>
+            <button class="btn btn-secondary" onclick="app.clearAll()">🗑️ Clear All</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+        </div>
+    </div>
+
+    <script>
+        const app = {
+            data: {
+                period: {
+                    start: null,
+                    end: null
+                },
+                income: [],
+                expenses: [],
+                bills: []
+            },
+
+            init() {
+                this.loadData();
+                this.setCurrentBiweekly();
+                this.render();
+            },
+
+            setCurrentBiweekly() {
+                const today = new Date();
+                const currentDay = today.getDate();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+
+                let start, end;
+
+                if (currentDay <= 15) {
+                    start = new Date(currentYear, currentMonth, 1);
+                    end = new Date(currentYear, currentMonth, 15);
+                } else {
+                    start = new Date(currentYear, currentMonth, 16);
+                    end = new Date(currentYear, currentMonth + 1, 0);
+                }
+
+                this.data.period.start = start.toISOString().split('T')[0];
+                this.data.period.end = end.toISOString().split('T')[0];
+
+                document.getElementById('periodStart').value = this.data.period.start;
+                document.getElementById('periodEnd').value = this.data.period.end;
+
+                this.saveData();
+                this.render();
+            },
+
+            updatePeriod() {
+                const start = document.getElementById('periodStart').value;
+                const end = document.getElementById('periodEnd').value;
+
+                if (start && end) {
+                    this.data.period.start = start;
+                    this.data.period.end = end;
+                    this.saveData();
+                    this.render();
+                }
+            },
+
+            addIncome() {
+                const source = document.getElementById('incomeSource').value;
+                const amount = parseFloat(document.getElementById('incomeAmount').value);
+
+                if (source && amount > 0) {
+                    this.data.income.push({
+                        id: Date.now(),
+                        source,
+                        amount,
+                        date: new Date().toISOString()
+                    });
+
+                    document.getElementById('incomeSource').value = '';
+                    document.getElementById('incomeAmount').value = '';
+
+                    this.saveData();
+                    this.render();
+                }
+            },
+
+            addExpense() {
+                const category = document.getElementById('expenseCategory').value;
+                const name = document.getElementById('expenseName').value;
+                const amount = parseFloat(document.getElementById('expenseAmount').value);
+
+                if (name && amount > 0) {
+                    this.data.expenses.push({
+                        id: Date.now(),
+                        category,
+                        name,
+                        amount,
+                        date: new Date().toISOString()
+                    });
+
+                    document.getElementById('expenseName').value = '';
+                    document.getElementById('expenseAmount').value = '';
+
+                    this.saveData();
+                    this.render();
+                }
+            },
+
+            addBill() {
+                const name = document.getElementById('billName').value;
+                const amount = parseFloat(document.getElementById('billAmount').value);
+                const dueDate = document.getElementById('billDueDate').value;
+                const category = document.getElementById('billCategory').value;
+
+                if (name && amount > 0 && dueDate) {
+                    this.data.bills.push({
+                        id: Date.now(),
+                        name,
+                        amount,
+                        dueDate,
+                        category,
+                        paid: false
+                    });
+
+                    document.getElementById('billName').value = '';
+                    document.getElementById('billAmount').value = '';
+                    document.getElementById('billDueDate').value = '';
+
+                    this.saveData();
+                    this.render();
+                }
+            },
+
+            deleteItem(type, id) {
+                this.data[type] = this.data[type].filter(item => item.id !== id);
+                this.saveData();
+                this.render();
+            },
+
+            toggleBillPaid(id) {
+                const bill = this.data.bills.find(b => b.id === id);
+                if (bill) {
+                    bill.paid = !bill.paid;
+                    this.saveData();
+                    this.render();
+                }
+            },
+
+            getBillStatus(bill) {
+                if (bill.paid) return 'paid';
+
+                const today = new Date();
+                const dueDate = new Date(bill.dueDate);
+                const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+                if (daysUntilDue < 0) return 'unpaid';
+                if (daysUntilDue <= 7) return 'upcoming';
+                return 'unpaid';
+            },
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD'
+                }).format(amount);
+            },
+
+            formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            },
+
+            render() {
+                // Calculate totals
+                const totalIncome = this.data.income.reduce((sum, item) => sum + item.amount, 0);
+                const totalExpenses = this.data.expenses.reduce((sum, item) => sum + item.amount, 0);
+                const totalBills = this.data.bills.filter(b => !b.paid).reduce((sum, item) => sum + item.amount, 0);
+                const totalSpent = totalExpenses + totalBills;
+                const remaining = totalIncome - totalSpent;
+
+                // Update summary
+                document.getElementById('totalIncome').textContent = this.formatCurrency(totalIncome);
+                document.getElementById('totalExpenses').textContent = this.formatCurrency(totalSpent);
+                document.getElementById('remaining').textContent = this.formatCurrency(remaining);
+
+                // Update progress bars
+                const incomePercent = totalIncome > 0 ? 100 : 0;
+                const expensePercent = totalIncome > 0 ? (totalSpent / totalIncome * 100) : 0;
+                const remainingPercent = totalIncome > 0 ? (remaining / totalIncome * 100) : 0;
+
+                document.getElementById('incomeProgress').style.width = incomePercent + '%';
+                document.getElementById('expensesProgress').style.width = Math.min(expensePercent, 100) + '%';
+                document.getElementById('remainingProgress').style.width = Math.max(remainingPercent, 0) + '%';
+
+                // Render income list
+                this.renderIncomeList();
+                this.renderExpenseList();
+                this.renderBillList();
+            },
+
+            renderIncomeList() {
+                const container = document.getElementById('incomeList');
+
+                if (this.data.income.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No income added yet</p></div>';
+                    return;
+                }
+
+                container.innerHTML = this.data.income
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map(item => `
+                        <div class="item">
+                            <div class="item-info">
+                                <div class="item-name">${item.source}</div>
+                                <div class="item-details">${this.formatDate(item.date)}</div>
+                            </div>
+                            <div class="item-amount income">${this.formatCurrency(item.amount)}</div>
+                            <button class="btn-delete" onclick="app.deleteItem('income', ${item.id})">Delete</button>
+                        </div>
+                    `).join('');
+            },
+
+            renderExpenseList() {
+                const container = document.getElementById('expenseList');
+
+                if (this.data.expenses.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No expenses added yet</p></div>';
+                    return;
+                }
+
+                container.innerHTML = this.data.expenses
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .map(item => `
+                        <div class="item">
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-details">${item.category} • ${this.formatDate(item.date)}</div>
+                            </div>
+                            <div class="item-amount expense">${this.formatCurrency(item.amount)}</div>
+                            <button class="btn-delete" onclick="app.deleteItem('expenses', ${item.id})">Delete</button>
+                        </div>
+                    `).join('');
+            },
+
+            renderBillList() {
+                const container = document.getElementById('billList');
+
+                if (this.data.bills.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No bills added yet</p></div>';
+                    return;
+                }
+
+                container.innerHTML = this.data.bills
+                    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+                    .map(bill => {
+                        const status = this.getBillStatus(bill);
+                        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+                        return `
+                            <div class="item">
+                                <div class="item-info">
+                                    <div class="item-name">
+                                        ${bill.name}
+                                        <span class="bill-status ${status}">${statusText}</span>
+                                    </div>
+                                    <div class="item-details">
+                                        ${bill.category} • Due: ${this.formatDate(bill.dueDate)}
+                                    </div>
+                                </div>
+                                <div class="item-amount expense">${this.formatCurrency(bill.amount)}</div>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" ${bill.paid ? 'checked' : ''}
+                                           onchange="app.toggleBillPaid(${bill.id})">
+                                    <span>Paid</span>
+                                </label>
+                                <button class="btn-delete" onclick="app.deleteItem('bills', ${bill.id})">Delete</button>
+                            </div>
+                        `;
+                    }).join('');
+            },
+
+            saveData() {
+                localStorage.setItem('budgetTrackerData', JSON.stringify(this.data));
+            },
+
+            loadData() {
+                const saved = localStorage.getItem('budgetTrackerData');
+                if (saved) {
+                    this.data = JSON.parse(saved);
+                }
+            },
+
+            exportData() {
+                const dataStr = JSON.stringify(this.data, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `budget-tracker-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            },
+
+            importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            this.data = JSON.parse(event.target.result);
+                            this.saveData();
+                            this.render();
+
+                            if (this.data.period.start && this.data.period.end) {
+                                document.getElementById('periodStart').value = this.data.period.start;
+                                document.getElementById('periodEnd').value = this.data.period.end;
+                            }
+
+                            alert('Data imported successfully!');
+                        } catch (error) {
+                            alert('Error importing data. Please check the file format.');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            },
+
+            clearAll() {
+                if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                    this.data = {
+                        period: { start: null, end: null },
+                        income: [],
+                        expenses: [],
+                        bills: []
+                    };
+                    this.saveData();
+                    this.setCurrentBiweekly();
+                    this.render();
+                }
+            }
+        };
+
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
