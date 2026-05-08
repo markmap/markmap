@@ -40,6 +40,9 @@
     "build:js": "pnpm -r build:js",
     "build:docs": "typedoc --out api --titleLink / --name markmap"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "nx"]
+  },
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix",

@@ -1,2 +1,4 @@
 packages:
-  - "packages/*"
+  - packages/*
+
+approveBuilds: esbuild,nx
