@@ -18,6 +18,9 @@ import type {
 type MindmapUpdateResult = Parameters<
   NonNullable<MindmapEmbedOptions['onUpdate']>
 >[0];
+type MindmapNodeEvent = Parameters<
+  NonNullable<MindmapEmbedOptions['onNodeClick']>
+>[0];
 
 export interface MarkmapExpose {
   getEmbed(): MindmapEmbed | undefined;
@@ -62,6 +65,14 @@ export const Markmap = defineComponent({
     },
     destroy: (embed: MindmapEmbed) => {
       void embed;
+      return true;
+    },
+    nodeClick: (event: MindmapNodeEvent) => {
+      void event;
+      return true;
+    },
+    nodeToggle: (event: MindmapNodeEvent) => {
+      void event;
       return true;
     },
   },
@@ -111,6 +122,8 @@ export const Markmap = defineComponent({
         onUpdate: (result) => emit('update', result),
         onError: (error) => emit('error', error),
         onDestroy: (nextEmbed) => emit('destroy', nextEmbed),
+        onNodeClick: (event) => emit('nodeClick', event),
+        onNodeToggle: (event) => emit('nodeToggle', event),
       })
         .then((nextEmbed) => {
           if (!mounted) {

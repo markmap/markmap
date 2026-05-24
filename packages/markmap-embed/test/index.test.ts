@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from 'vitest';
-import type { IPureNode } from 'markmap-common';
+import type { INode, IPureNode } from 'markmap-common';
 
 const transformMock = vi.fn();
 const setDataMock = vi.fn();
@@ -48,6 +48,49 @@ function createContainer() {
       },
     },
   } as unknown as HTMLElement;
+}
+
+function createEventContainer() {
+  const listeners: Record<string, EventListener> = {};
+  const svg = {
+    tagName: 'svg',
+    addEventListener: vi.fn((type: string, listener: EventListener) => {
+      listeners[type] = listener;
+    }),
+    removeEventListener: vi.fn((type: string, listener: EventListener) => {
+      if (listeners[type] === listener) delete listeners[type];
+    }),
+  };
+  const container = {
+    firstChild: null as unknown,
+    replaceChildren(...children: unknown[]) {
+      this.firstChild = children[0] || null;
+    },
+    ownerDocument: {
+      createElementNS() {
+        return svg;
+      },
+    },
+  } as unknown as HTMLElement;
+  return { container, listeners, svg };
+}
+
+function createNodeTarget(node: INode, tagName = 'div') {
+  const group = {
+    __data__: node,
+    parentNode: null,
+    getAttribute(name: string) {
+      return name === 'class' ? 'markmap-node' : '';
+    },
+  };
+  const target = {
+    tagName,
+    parentNode: group,
+    getAttribute(name: string) {
+      return name === 'class' ? '' : '';
+    },
+  };
+  return target as unknown as EventTarget;
 }
 
 test('createMindmap mounts an SVG and renders markdown content', async () => {
@@ -133,6 +176,51 @@ test('fits on host resize when autoResize is enabled', async () => {
   expect(observeMock).toHaveBeenCalledWith(container, undefined);
   expect(fitMock).toHaveBeenCalledOnce();
   expect(disconnectMock).toHaveBeenCalledOnce();
+});
+
+test('emits node click and toggle events from delegated SVG clicks', async () => {
+  const root = {
+    content: 'Root',
+    children: [],
+    state: {
+      id: 1,
+      key: '1-root',
+      path: '1',
+      depth: 1,
+      size: [0, 0],
+      rect: { x: 0, y: 0, width: 0, height: 0 },
+    },
+  } satisfies INode;
+  const onNodeClick = vi.fn();
+  const onNodeToggle = vi.fn();
+  const { container, listeners, svg } = createEventContainer();
+  transformMock.mockReturnValue({ root });
+
+  const { createMindmap } = await import('../src/index');
+  const embed = await createMindmap(container, {
+    content: '# Root',
+    onNodeClick,
+    onNodeToggle,
+  });
+  listeners.click({ target: createNodeTarget(root) } as unknown as Event);
+  listeners.click({
+    target: createNodeTarget(root, 'circle'),
+  } as unknown as Event);
+  embed.destroy();
+
+  expect(onNodeClick).toHaveBeenCalledTimes(2);
+  expect(onNodeClick).toHaveBeenCalledWith(
+    expect.objectContaining({ node: root, embed }),
+  );
+  expect(onNodeToggle).toHaveBeenCalledOnce();
+  expect(onNodeToggle).toHaveBeenCalledWith(
+    expect.objectContaining({ node: root, embed }),
+  );
+  expect(svg.addEventListener).toHaveBeenCalledWith('click', expect.anything());
+  expect(svg.removeEventListener).toHaveBeenCalledWith(
+    'click',
+    expect.anything(),
+  );
 });
 
 test('abort signal destroys the embedded markmap', async () => {

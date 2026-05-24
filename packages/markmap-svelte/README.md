@@ -28,6 +28,7 @@ npm install markmap-svelte
     autoFit: true,
     autoResize: true,
     onReady: (embed) => console.log(embed.element),
+    onNodeClick: ({ node }) => console.log(node.content),
     onError: (error) => console.error(error),
   }}
 />

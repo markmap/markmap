@@ -18,14 +18,21 @@
       const app = document.querySelector('#app');
 
       try {
+        let clickedNodeContent = '';
         const embed = await createMindmap(app, {
           content: '# Root\n\n## Child',
           autoFit: true,
+          onNodeClick: ({ node }) => {
+            clickedNodeContent = node.content;
+          },
         });
         await new Promise(requestAnimationFrame);
 
         const svgCount = app.querySelectorAll('svg').length;
         const initialText = app.textContent || '';
+        app
+          .querySelector('g.markmap-node[data-depth="1"] foreignObject div')
+          .dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
         await embed.update('# Next\n\n## Item');
         await new Promise(requestAnimationFrame);
@@ -38,6 +45,7 @@
           svgCount,
           initialText,
           updatedText,
+          clickedNodeContent,
           afterDestroyChildCount: app.childElementCount,
         };
       } catch (error) {

@@ -1,4 +1,4 @@
-import type { IPureNode } from 'markmap-common';
+import type { INode, IPureNode } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
 import type { ITransformResult } from 'markmap-lib';
 import type { IHtmlParserOptions } from 'markmap-html-parser';
@@ -38,6 +38,14 @@ export interface MindmapEmbedOptions {
   onUpdate?: (result: ITransformResult) => void;
   onError?: (error: unknown) => void;
   onDestroy?: (embed: MindmapEmbed) => void;
+  onNodeClick?: (event: MindmapNodeEvent) => void;
+  onNodeToggle?: (event: MindmapNodeEvent) => void;
+}
+
+export interface MindmapNodeEvent {
+  embed: MindmapEmbed;
+  node: INode;
+  nativeEvent: MouseEvent;
 }
 
 export interface MindmapEmbed {
@@ -78,6 +86,29 @@ function getResizeObserverOptions(
   return typeof autoResize === 'object' ? autoResize : undefined;
 }
 
+function getClassName(element: unknown) {
+  return String(
+    (element as Element | undefined)?.getAttribute?.('class') || '',
+  );
+}
+
+function isMarkmapNode(element: unknown) {
+  return getClassName(element).split(/\s+/).includes('markmap-node');
+}
+
+function isCircle(element: unknown) {
+  return (element as Element | undefined)?.tagName?.toLowerCase() === 'circle';
+}
+
+function closestNodeElement(target: EventTarget | null) {
+  let element: unknown = target;
+  while (element) {
+    if (isMarkmapNode(element))
+      return element as Element & { __data__?: INode };
+    element = (element as Node | undefined)?.parentNode;
+  }
+}
+
 export async function createMindmap(
   container: HTMLElement,
   options: MindmapEmbedOptions = {},
@@ -93,6 +124,8 @@ export async function createMindmap(
     onUpdate,
     onError,
     onDestroy,
+    onNodeClick,
+    onNodeToggle,
   } = options;
   const transformer = options.transformer || new Transformer();
   const element = createSvg(container);
@@ -102,6 +135,7 @@ export async function createMindmap(
   let destroyed = false;
   let resizeObserver: ResizeObserver | undefined;
   let resizePending = false;
+  let listeningForNodeClicks = false;
 
   function emitError(error: unknown) {
     onError?.(error);
@@ -151,6 +185,14 @@ export async function createMindmap(
       .catch(emitError);
   }
 
+  function handleNodeClick(nativeEvent: MouseEvent) {
+    const node = closestNodeElement(nativeEvent.target)?.__data__;
+    if (!node) return;
+    const event = { embed, node, nativeEvent };
+    onNodeClick?.(event);
+    if (isCircle(nativeEvent.target)) onNodeToggle?.(event);
+  }
+
   const embed: MindmapEmbed = {
     element,
     markmap,
@@ -165,6 +207,9 @@ export async function createMindmap(
       if (destroyed) return;
       destroyed = true;
       signal?.removeEventListener('abort', embed.destroy);
+      if (listeningForNodeClicks) {
+        element.removeEventListener('click', handleNodeClick);
+      }
       resizeObserver?.disconnect();
       resizeObserver = undefined;
       markmap.destroy();
@@ -179,6 +224,11 @@ export async function createMindmap(
       resizeObserver = new ResizeObserverCtor(queueResizeFit);
       resizeObserver.observe(container, getResizeObserverOptions(autoResize));
     }
+  }
+
+  if (onNodeClick || onNodeToggle) {
+    element.addEventListener('click', handleNodeClick);
+    listeningForNodeClicks = true;
   }
 
   signal?.addEventListener('abort', embed.destroy, { once: true });

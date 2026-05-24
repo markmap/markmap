@@ -30,6 +30,7 @@ export function MindmapPanel() {
       autoResize
       className="mindmap"
       onReady={(embed) => console.log(embed.element)}
+      onNodeClick={({ node }) => console.log(node.content)}
       onError={(error) => console.error(error)}
     />
   );

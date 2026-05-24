@@ -75,6 +75,38 @@ test('passes autoResize to the embed', async () => {
   );
 });
 
+test('passes node event callbacks to the embed', async () => {
+  const onNodeClick = vi.fn();
+  const onNodeToggle = vi.fn();
+  const { Markmap } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+
+  createApp({
+    render: () =>
+      h(Markmap, {
+        content: '# Root',
+        onNodeClick,
+        onNodeToggle,
+      }),
+  }).mount(host);
+  await flush();
+
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.any(HTMLElement),
+    expect.objectContaining({
+      onNodeClick: expect.any(Function),
+      onNodeToggle: expect.any(Function),
+    }),
+  );
+  const options = createMindmapMock.mock.calls[0][1];
+  const event = { node: { content: 'Root' } };
+  options.onNodeClick(event);
+  options.onNodeToggle(event);
+  expect(onNodeClick).toHaveBeenCalledWith(event);
+  expect(onNodeToggle).toHaveBeenCalledWith(event);
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const content = ref('# First');
   const { Markmap } = await import('../src/index');

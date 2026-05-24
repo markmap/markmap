@@ -26,6 +26,12 @@ const embed = await createMindmap(document.querySelector('#mindmap')!, {
   onReady: (embed) => {
     console.log(embed.element);
   },
+  onNodeClick: ({ node }) => {
+    console.log(node.content);
+  },
+  onNodeToggle: ({ node }) => {
+    console.log(node.payload?.fold);
+  },
   onError: (error) => {
     console.error(error);
   },

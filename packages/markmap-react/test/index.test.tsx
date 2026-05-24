@@ -104,6 +104,35 @@ test('passes autoResize to the embed without rendering it as a div prop', async 
   );
 });
 
+test('passes node event callbacks without rendering them as div props', async () => {
+  const onNodeClick = vi.fn();
+  const onNodeToggle = vi.fn();
+  const { Markmap } = await import('../src/index');
+  let renderer: ReturnType<typeof create>;
+
+  await act(async () => {
+    renderer = create(
+      <Markmap
+        content="# Root"
+        onNodeClick={onNodeClick}
+        onNodeToggle={onNodeToggle}
+      />,
+      { createNodeMock },
+    );
+  });
+
+  const div = renderer.root.findByType('div');
+  expect(div.props.onNodeClick).toBeUndefined();
+  expect(div.props.onNodeToggle).toBeUndefined();
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      onNodeClick,
+      onNodeToggle,
+    }),
+  );
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const { Markmap } = await import('../src/index');
   let renderer: ReturnType<typeof create>;
