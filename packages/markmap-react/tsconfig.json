@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*", "../../shim.d.ts"]
+}

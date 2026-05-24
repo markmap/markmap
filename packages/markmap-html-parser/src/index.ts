@@ -50,7 +50,101 @@ export type IHtmlParserSelectorRules = Record<
 export interface IHtmlParserOptions {
   selector: string;
   selectorRules: IHtmlParserSelectorRules;
+  sanitize: boolean | IHtmlSanitizeOptions;
 }
+
+export interface IHtmlSanitizeOptions {
+  allowedTags?: string[];
+  allowedAttributes?: Record<string, string[]>;
+  allowedSchemes?: string[];
+  allowedSchemesByTag?: Record<string, string[]>;
+}
+
+const defaultSanitizeOptions: Required<IHtmlSanitizeOptions> = {
+  allowedTags: [
+    'a',
+    'abbr',
+    'b',
+    'blockquote',
+    'br',
+    'caption',
+    'code',
+    'col',
+    'colgroup',
+    'dd',
+    'del',
+    'div',
+    'dl',
+    'dt',
+    'em',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'hr',
+    'i',
+    'img',
+    'ins',
+    'kbd',
+    'li',
+    'mark',
+    'math',
+    'ol',
+    'p',
+    'path',
+    'pre',
+    's',
+    'samp',
+    'small',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'svg',
+    'annotation',
+    'semantics',
+    'mrow',
+    'mi',
+    'mo',
+    'mn',
+    'mfrac',
+    'msqrt',
+    'msup',
+    'table',
+    'tbody',
+    'td',
+    'tfoot',
+    'th',
+    'thead',
+    'tr',
+    'u',
+    'ul',
+    'var',
+  ],
+  allowedAttributes: {
+    '*': ['class', 'id', 'title', 'style', 'data-*', 'aria-*'],
+    a: ['href', 'name', 'target', 'rel'],
+    img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
+    math: ['xmlns'],
+    annotation: ['encoding'],
+    svg: [
+      'width',
+      'height',
+      'viewBox',
+      'viewbox',
+      'xmlns',
+      'preserveAspectRatio',
+      'preserveaspectratio',
+    ],
+    path: ['d', 'fill', 'fill-rule', 'clip-rule', 'stroke'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  allowedSchemesByTag: {
+    img: ['http', 'https', 'data'],
+  },
+};
 
 const defaultSelectorRules: IHtmlParserSelectorRules = {
   'div,p': ({ $node }) => ({
@@ -88,6 +182,7 @@ const defaultSelectorRules: IHtmlParserSelectorRules = {
 export const defaultOptions: IHtmlParserOptions = {
   selector: 'h1,h2,h3,h4,h5,h6,ul,ol,li,table,pre,p>img:only-child',
   selectorRules: defaultSelectorRules,
+  sanitize: true,
 };
 
 const MARKMAP_COMMENT_PREFIX = 'markmap: ';
@@ -102,11 +197,114 @@ function getLevel(tagName: string) {
   return Levels.Block;
 }
 
+function getSanitizeOptions(
+  option: IHtmlParserOptions['sanitize'],
+): Required<IHtmlSanitizeOptions> | null {
+  if (option === false) return null;
+  if (option === true) return defaultSanitizeOptions;
+  return {
+    ...defaultSanitizeOptions,
+    ...option,
+    allowedAttributes: {
+      ...defaultSanitizeOptions.allowedAttributes,
+      ...option.allowedAttributes,
+    },
+    allowedSchemesByTag: {
+      ...defaultSanitizeOptions.allowedSchemesByTag,
+      ...option.allowedSchemesByTag,
+    },
+  };
+}
+
+function isAllowedAttribute(
+  tagName: string,
+  attrName: string,
+  allowedAttributes: Record<string, string[]>,
+) {
+  const lowerAttr = attrName.toLowerCase();
+  const allowed = [
+    ...(allowedAttributes['*'] || []),
+    ...(allowedAttributes[tagName] || []),
+  ];
+  return allowed.some((item) => {
+    if (item.endsWith('*')) return lowerAttr.startsWith(item.slice(0, -1));
+    return lowerAttr === item.toLowerCase();
+  });
+}
+
+function getUrlScheme(value: string) {
+  const normalizedValue = Array.from(value.trim())
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 0x20 && code !== 0x7f;
+    })
+    .join('');
+  const match = normalizedValue.match(/^([^:/?#]+):/);
+  return match?.[1].toLowerCase();
+}
+
+function isSafeUrl(
+  tagName: string,
+  attrName: string,
+  value: string,
+  options: Required<IHtmlSanitizeOptions>,
+) {
+  const schemes =
+    options.allowedSchemesByTag[tagName] || options.allowedSchemes;
+  if (attrName === 'srcset') {
+    return value
+      .split(',')
+      .map((item) => item.trim().split(/\s+/)[0])
+      .every(
+        (url) => !getUrlScheme(url) || schemes.includes(getUrlScheme(url)!),
+      );
+  }
+  const scheme = getUrlScheme(value);
+  return !scheme || schemes.includes(scheme);
+}
+
+function isSafeStyle(value: string) {
+  return !/\b(?:expression|url)\s*\(/i.test(value);
+}
+
+function sanitizeContent(
+  html: string,
+  options: Required<IHtmlSanitizeOptions>,
+) {
+  const $ = load(html, null, false);
+  const blockedTags = 'script,style,iframe,object,embed,link,meta';
+  $(blockedTags).remove();
+  $('*').each((_, el) => {
+    const node = el as { tagName?: string; attribs?: Record<string, string> };
+    const tagName = node.tagName?.toLowerCase();
+    if (!tagName) return;
+    if (!options.allowedTags.includes(tagName)) {
+      $(el).replaceWith($(el).contents());
+      return;
+    }
+    Object.keys(node.attribs || {}).forEach((attrName) => {
+      const lowerAttr = attrName.toLowerCase();
+      const value = node.attribs?.[attrName] || '';
+      if (
+        lowerAttr.startsWith('on') ||
+        !isAllowedAttribute(tagName, lowerAttr, options.allowedAttributes) ||
+        (lowerAttr === 'style' && !isSafeStyle(value)) ||
+        (['href', 'src', 'srcset'].includes(lowerAttr) &&
+          !isSafeUrl(tagName, lowerAttr, value, options))
+      ) {
+        $(el).removeAttr(attrName);
+      }
+    });
+  });
+  return $.root().html() || '';
+}
+
 export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
   const options = {
     ...defaultOptions,
     ...opts,
   };
+  const sanitizeOptions = getSanitizeOptions(options.sanitize);
   const $ = load(html);
   let $root: Cheerio<any> = $('body');
   if (!$root.length) $root = $.root();
@@ -178,7 +376,8 @@ export function parseHtml(html: string, opts?: Partial<IHtmlParserOptions>) {
 
   function getContent($node: Cheerio<any>) {
     const result = extractMagicComments($node);
-    const html = $.html(result.$node)?.trimEnd();
+    let html = $.html(result.$node)?.trimEnd();
+    if (html && sanitizeOptions) html = sanitizeContent(html, sanitizeOptions);
     return { comments: result.comments, html };
   }
 

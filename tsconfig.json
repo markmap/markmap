@@ -4,10 +4,14 @@
     { "path": "./packages/markmap-autoloader" },
     { "path": "./packages/markmap-cli" },
     { "path": "./packages/markmap-common" },
+    { "path": "./packages/markmap-embed" },
     { "path": "./packages/markmap-html-parser" },
     { "path": "./packages/markmap-lib" },
+    { "path": "./packages/markmap-react" },
     { "path": "./packages/markmap-render" },
+    { "path": "./packages/markmap-svelte" },
     { "path": "./packages/markmap-toolbar" },
+    { "path": "./packages/markmap-vue" },
     { "path": "./packages/markmap-view" }
   ]
 }
