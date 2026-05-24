@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>markmap-embed smoke</title>
+    <style>
+      #app {
+        width: 800px;
+        height: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      import { createMindmap } from '/packages/markmap-embed/src/index.ts';
+
+      const app = document.querySelector('#app');
+
+      try {
+        const embed = await createMindmap(app, {
+          content: '# Root\n\n## Child',
+          autoFit: true,
+        });
+        await new Promise(requestAnimationFrame);
+
+        const svgCount = app.querySelectorAll('svg').length;
+        const initialText = app.textContent || '';
+
+        await embed.update('# Next\n\n## Item');
+        await new Promise(requestAnimationFrame);
+        const updatedText = app.textContent || '';
+
+        embed.destroy();
+
+        window.__markmapSmoke = {
+          ready: true,
+          svgCount,
+          initialText,
+          updatedText,
+          afterDestroyChildCount: app.childElementCount,
+        };
+      } catch (error) {
+        window.__markmapSmoke = {
+          ready: false,
+          error: String(error?.stack || error),
+        };
+        throw error;
+      }
+    </script>
+  </body>
+</html>
