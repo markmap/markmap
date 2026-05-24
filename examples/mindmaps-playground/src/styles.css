@@ -1,0 +1,302 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  background: #eef2f7;
+  color: #142033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  min-height: 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #142033;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #2563eb;
+}
+
+button:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.app {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #d8e0eb;
+}
+
+.brand {
+  min-width: 0;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.brand p {
+  margin: 4px 0 0;
+  color: #52627a;
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.toolbar button,
+.toolbar select {
+  height: 40px;
+  padding: 0 12px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) 8px minmax(420px, 1.6fr) minmax(
+      260px,
+      0.7fr
+    );
+  min-height: 0;
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid #d8e0eb;
+  background: #f8fafc;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.paneHeader {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #d8e0eb;
+  background: #ffffff;
+}
+
+.paneHeader h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.status {
+  color: #52627a;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.editor {
+  width: 100%;
+  min-height: 0;
+  resize: none;
+  border: 0;
+  padding: 14px;
+  color: #172033;
+  background: #fbfdff;
+  line-height: 1.5;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+}
+
+.resizer {
+  background: #d8e0eb;
+  cursor: col-resize;
+  min-width: 8px;
+}
+
+.resizer:hover,
+.resizer.active {
+  background: #2563eb;
+}
+
+.mapPane {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: #eef2f7;
+}
+
+.mapHost {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mapHost svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.side {
+  min-width: 0;
+  min-height: 0;
+  background: #ffffff;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #d8e0eb;
+}
+
+.themeButton {
+  text-align: left;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.themeButton.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+.swatches {
+  display: flex;
+  gap: 4px;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 1px #cbd5e1;
+}
+
+.details {
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+}
+
+.details h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.detailsText {
+  margin: 0 0 16px;
+  color: #52627a;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metric {
+  padding: 10px;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.metric span {
+  display: block;
+  color: #52627a;
+  font-size: 11px;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+.codeBlock {
+  margin: 14px 0 0;
+  padding: 10px;
+  overflow: auto;
+  border-radius: 8px;
+  background: #111827;
+  color: #dbeafe;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 980px) {
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar {
+    justify-content: flex-start;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(260px, 38dvh) auto minmax(360px, 1fr) auto;
+  }
+
+  .resizer {
+    height: 8px;
+    cursor: row-resize;
+  }
+
+  .pane,
+  .mapPane,
+  .side {
+    border-right: 0;
+    border-bottom: 1px solid #d8e0eb;
+  }
+}

@@ -3,6 +3,7 @@ node_modules
 /.idea
 /api
 packages/*/dist
+examples/*/dist
 .nyc_output/
 packages/*/coverage
 packages/*/types
