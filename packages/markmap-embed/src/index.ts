@@ -27,6 +27,10 @@ export interface MindmapEmbedOptions {
    */
   autoFit?: boolean;
   /**
+   * Fit when the host container is resized.
+   */
+  autoResize?: boolean | ResizeObserverOptions;
+  /**
    * Destroy the embedded mindmap when the host lifecycle is aborted.
    */
   signal?: AbortSignal;
@@ -61,6 +65,19 @@ function createSvg(container: HTMLElement) {
   return container.ownerDocument.createElementNS(SVG_NS, 'svg');
 }
 
+function getResizeObserver(container: HTMLElement) {
+  return (
+    container.ownerDocument.defaultView?.ResizeObserver ||
+    globalThis.ResizeObserver
+  );
+}
+
+function getResizeObserverOptions(
+  autoResize: MindmapEmbedOptions['autoResize'],
+) {
+  return typeof autoResize === 'object' ? autoResize : undefined;
+}
+
 export async function createMindmap(
   container: HTMLElement,
   options: MindmapEmbedOptions = {},
@@ -70,6 +87,7 @@ export async function createMindmap(
     parserOptions,
     viewOptions = {},
     autoFit = false,
+    autoResize = false,
     signal,
     onReady,
     onUpdate,
@@ -82,6 +100,8 @@ export async function createMindmap(
 
   const markmap = Markmap.create(element, viewOptions, null);
   let destroyed = false;
+  let resizeObserver: ResizeObserver | undefined;
+  let resizePending = false;
 
   function emitError(error: unknown) {
     onError?.(error);
@@ -120,6 +140,17 @@ export async function createMindmap(
     }
   }
 
+  function queueResizeFit() {
+    if (destroyed || resizePending) return;
+    resizePending = true;
+    Promise.resolve()
+      .then(async () => {
+        resizePending = false;
+        if (!destroyed) await markmap.fit();
+      })
+      .catch(emitError);
+  }
+
   const embed: MindmapEmbed = {
     element,
     markmap,
@@ -134,11 +165,21 @@ export async function createMindmap(
       if (destroyed) return;
       destroyed = true;
       signal?.removeEventListener('abort', embed.destroy);
+      resizeObserver?.disconnect();
+      resizeObserver = undefined;
       markmap.destroy();
       container.replaceChildren();
       onDestroy?.(embed);
     },
   };
+
+  if (autoResize) {
+    const ResizeObserverCtor = getResizeObserver(container);
+    if (ResizeObserverCtor) {
+      resizeObserver = new ResizeObserverCtor(queueResizeFit);
+      resizeObserver.observe(container, getResizeObserverOptions(autoResize));
+    }
+  }
 
   signal?.addEventListener('abort', embed.destroy, { once: true });
   if (signal?.aborted) {

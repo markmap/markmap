@@ -84,6 +84,26 @@ test('passes embed lifecycle callbacks without rendering them as div props', asy
   );
 });
 
+test('passes autoResize to the embed without rendering it as a div prop', async () => {
+  const { Markmap } = await import('../src/index');
+  let renderer: ReturnType<typeof create>;
+
+  await act(async () => {
+    renderer = create(<Markmap content="# Root" autoResize />, {
+      createNodeMock,
+    });
+  });
+
+  const div = renderer.root.findByType('div');
+  expect(div.props.autoResize).toBeUndefined();
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      autoResize: true,
+    }),
+  );
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const { Markmap } = await import('../src/index');
   let renderer: ReturnType<typeof create>;

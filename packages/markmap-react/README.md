@@ -27,6 +27,7 @@ export function MindmapPanel() {
       ref={ref}
       content={content}
       autoFit
+      autoResize
       className="mindmap"
       onReady={(embed) => console.log(embed.element)}
       onError={(error) => console.error(error)}
@@ -36,4 +37,3 @@ export function MindmapPanel() {
 ```
 
 The component creates and destroys the embed with React lifecycle. Use `ref.current?.getEmbed()` when the host app needs direct access.
-
