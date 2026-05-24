@@ -57,6 +57,24 @@ test('mounts an embedded markmap and emits ready', async () => {
   );
 });
 
+test('passes autoResize to the embed', async () => {
+  const { Markmap } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+
+  createApp({
+    render: () => h(Markmap, { content: '# Root', autoResize: true }),
+  }).mount(host);
+  await flush();
+
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.any(HTMLElement),
+    expect.objectContaining({
+      autoResize: true,
+    }),
+  );
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const content = ref('# First');
   const { Markmap } = await import('../src/index');

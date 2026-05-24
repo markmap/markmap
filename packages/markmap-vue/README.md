@@ -27,6 +27,7 @@ const content = ref('# Strategy\n\n- Market\n- Product');
     class="mindmap"
     :content="content"
     auto-fit
+    auto-resize
     @ready="(embed) => console.log(embed.element)"
     @error="(error) => console.error(error)"
   />
@@ -34,4 +35,3 @@ const content = ref('# Strategy\n\n- Market\n- Product');
 ```
 
 The component creates and destroys the embed with Vue lifecycle. Use a template ref and `getEmbed()` when the host app needs direct access.
-

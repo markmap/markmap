@@ -102,6 +102,39 @@ test('destroy clears renderer and container', async () => {
   expect(container.firstChild).toBeNull();
 });
 
+test('fits on host resize when autoResize is enabled', async () => {
+  const root: IPureNode = { content: 'Root', children: [] };
+  const container = createContainer();
+  const observeMock = vi.fn();
+  const disconnectMock = vi.fn();
+  let resizeCallback: ResizeObserverCallback | undefined;
+  transformMock.mockReturnValue({ root });
+  Object.assign(container.ownerDocument, {
+    defaultView: {
+      ResizeObserver: vi.fn((callback: ResizeObserverCallback) => {
+        resizeCallback = callback;
+        return {
+          observe: observeMock,
+          disconnect: disconnectMock,
+        };
+      }),
+    },
+  });
+
+  const { createMindmap } = await import('../src/index');
+  const embed = await createMindmap(container, {
+    content: '# Root',
+    autoResize: true,
+  });
+  resizeCallback?.([], {} as ResizeObserver);
+  await Promise.resolve();
+  embed.destroy();
+
+  expect(observeMock).toHaveBeenCalledWith(container, undefined);
+  expect(fitMock).toHaveBeenCalledOnce();
+  expect(disconnectMock).toHaveBeenCalledOnce();
+});
+
 test('abort signal destroys the embedded markmap', async () => {
   const root: IPureNode = { content: 'Root', children: [] };
   const container = createContainer();

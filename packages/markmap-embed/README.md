@@ -21,6 +21,7 @@ const controller = new AbortController();
 const embed = await createMindmap(document.querySelector('#mindmap')!, {
   content: '# Strategy\n\n- Market\n- Product\n- Operations',
   autoFit: true,
+  autoResize: true,
   signal: controller.signal,
   onReady: (embed) => {
     console.log(embed.element);
@@ -34,5 +35,4 @@ await embed.update('# Updated\n\n- New branch');
 controller.abort();
 ```
 
-`createMindmap` owns the SVG inside the host element and removes it on `destroy` or `AbortSignal` abort.
-
+`createMindmap` owns the SVG inside the host element and removes it on `destroy` or `AbortSignal` abort. Use `autoResize` when the host layout can resize the mindmap panel after mount.

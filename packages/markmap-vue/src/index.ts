@@ -29,6 +29,7 @@ export interface MarkmapProps {
   parserOptions?: MindmapUpdateOptions['parserOptions'];
   viewOptions?: MindmapUpdateOptions['viewOptions'];
   autoFit?: boolean;
+  autoResize?: MindmapEmbedOptions['autoResize'];
 }
 
 export const Markmap = defineComponent({
@@ -42,6 +43,9 @@ export const Markmap = defineComponent({
     parserOptions: Object as PropType<MindmapUpdateOptions['parserOptions']>,
     viewOptions: Object as PropType<MindmapUpdateOptions['viewOptions']>,
     autoFit: Boolean,
+    autoResize: [Boolean, Object] as PropType<
+      MindmapEmbedOptions['autoResize']
+    >,
   },
   emits: {
     ready: (embed: MindmapEmbed) => {
@@ -102,6 +106,7 @@ export const Markmap = defineComponent({
         parserOptions: props.parserOptions,
         viewOptions: props.viewOptions,
         autoFit: props.autoFit,
+        autoResize: props.autoResize,
         signal: controller.signal,
         onUpdate: (result) => emit('update', result),
         onError: (error) => emit('error', error),

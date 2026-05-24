@@ -26,6 +26,7 @@ npm install markmap-svelte
   use:markmap={{
     content,
     autoFit: true,
+    autoResize: true,
     onReady: (embed) => console.log(embed.element),
     onError: (error) => console.error(error),
   }}
@@ -33,4 +34,3 @@ npm install markmap-svelte
 ```
 
 The action creates and destroys the embed with Svelte lifecycle. The action return value exposes `getEmbed()` for direct host-app access.
-
