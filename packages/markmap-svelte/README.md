@@ -19,12 +19,18 @@ npm install markmap-svelte
   import { markmap } from 'markmap-svelte';
 
   let content = '# Strategy\n\n- Market\n- Product';
+  const theme = {
+    colors: ['#0f766e', '#2563eb', '#9333ea'],
+    textColor: '#172554',
+    spacingHorizontal: 64,
+  };
 </script>
 
 <div
   class="mindmap"
   use:markmap={{
     content,
+    theme,
     autoFit: true,
     autoResize: true,
     onReady: (embed) => console.log(embed.element),

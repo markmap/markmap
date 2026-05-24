@@ -107,6 +107,25 @@ test('passes node event callbacks to the embed', async () => {
   expect(onNodeToggle).toHaveBeenCalledWith(event);
 });
 
+test('passes theme to the embed', async () => {
+  const theme = { textColor: '#111' };
+  const { Markmap } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+
+  createApp({
+    render: () => h(Markmap, { content: '# Root', theme }),
+  }).mount(host);
+  await flush();
+
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.any(HTMLElement),
+    expect.objectContaining({
+      theme,
+    }),
+  );
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const content = ref('# First');
   const { Markmap } = await import('../src/index');

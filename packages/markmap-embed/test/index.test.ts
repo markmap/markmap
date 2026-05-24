@@ -6,6 +6,7 @@ const setDataMock = vi.fn();
 const fitMock = vi.fn();
 const destroyMock = vi.fn();
 const createMock = vi.fn();
+const deriveOptionsMock = vi.fn();
 
 vi.mock('markmap-lib', () => ({
   Transformer: vi.fn(() => ({
@@ -14,6 +15,7 @@ vi.mock('markmap-lib', () => ({
 }));
 
 vi.mock('markmap-view', () => ({
+  deriveOptions: deriveOptionsMock,
   Markmap: {
     create: createMock,
   },
@@ -25,11 +27,27 @@ beforeEach(() => {
   fitMock.mockReset();
   destroyMock.mockReset();
   createMock.mockReset();
+  deriveOptionsMock.mockReset();
   createMock.mockReturnValue({
     setData: setDataMock,
     fit: fitMock,
     destroy: destroyMock,
   });
+  deriveOptionsMock.mockImplementation((options) => ({
+    ...(options.maxWidth == null ? {} : { maxWidth: options.maxWidth }),
+    ...(options.nodeMinHeight == null
+      ? {}
+      : { nodeMinHeight: options.nodeMinHeight }),
+    ...(options.paddingX == null ? {} : { paddingX: options.paddingX }),
+    ...(options.spacingHorizontal == null
+      ? {}
+      : { spacingHorizontal: options.spacingHorizontal }),
+    ...(options.spacingVertical == null
+      ? {}
+      : { spacingVertical: options.spacingVertical }),
+    ...(options.color?.length ? { color: vi.fn() } : {}),
+    ...(options.lineWidth == null ? {} : { lineWidth: vi.fn() }),
+  }));
 });
 
 function createContainer() {
@@ -73,6 +91,28 @@ function createEventContainer() {
     },
   } as unknown as HTMLElement;
   return { container, listeners, svg };
+}
+
+function createStyledContainer() {
+  const svg = {
+    tagName: 'svg',
+    style: {
+      setProperty: vi.fn(),
+      removeProperty: vi.fn(),
+    },
+  };
+  const container = {
+    firstChild: null as unknown,
+    replaceChildren(...children: unknown[]) {
+      this.firstChild = children[0] || null;
+    },
+    ownerDocument: {
+      createElementNS() {
+        return svg;
+      },
+    },
+  } as unknown as HTMLElement;
+  return { container, svg };
 }
 
 function createNodeTarget(node: INode, tagName = 'div') {
@@ -176,6 +216,79 @@ test('fits on host resize when autoResize is enabled', async () => {
   expect(observeMock).toHaveBeenCalledWith(container, undefined);
   expect(fitMock).toHaveBeenCalledOnce();
   expect(disconnectMock).toHaveBeenCalledOnce();
+});
+
+test('applies theme CSS variables and derived view options on mount', async () => {
+  const root: IPureNode = { content: 'Root', children: [] };
+  const { container, svg } = createStyledContainer();
+  transformMock.mockReturnValue({ root });
+
+  const { createMindmap } = await import('../src/index');
+  await createMindmap(container, {
+    content: '# Root',
+    theme: {
+      colors: ['#f00', '#0f0'],
+      font: '500 14px/18px Inter, sans-serif',
+      textColor: '#111',
+      linkColor: '#06c',
+      codeBackground: '#f7f7f7',
+      circleOpenBackground: '#fff',
+      maxWidth: 420,
+      spacingHorizontal: 48,
+      lineWidth: [2, 2, 2],
+    },
+  });
+
+  expect(svg.style.setProperty).toHaveBeenCalledWith(
+    '--markmap-font',
+    '500 14px/18px Inter, sans-serif',
+  );
+  expect(svg.style.setProperty).toHaveBeenCalledWith(
+    '--markmap-text-color',
+    '#111',
+  );
+  expect(svg.style.setProperty).toHaveBeenCalledWith(
+    '--markmap-a-color',
+    '#06c',
+  );
+  expect(svg.style.setProperty).toHaveBeenCalledWith(
+    '--markmap-code-bg',
+    '#f7f7f7',
+  );
+  expect(createMock).toHaveBeenCalledWith(
+    svg,
+    expect.objectContaining({
+      maxWidth: 420,
+      spacingHorizontal: 48,
+      color: expect.any(Function),
+      lineWidth: expect.any(Function),
+    }),
+    null,
+  );
+});
+
+test('updates theme at runtime and rerenders current data', async () => {
+  const root: IPureNode = { content: 'Root', children: [] };
+  const { container, svg } = createStyledContainer();
+  transformMock.mockReturnValue({ root });
+
+  const { createMindmap } = await import('../src/index');
+  const embed = await createMindmap(container, {
+    content: '# Root',
+  });
+  await embed.setTheme({
+    textColor: '#222',
+    spacingVertical: 12,
+  });
+
+  expect(svg.style.setProperty).toHaveBeenCalledWith(
+    '--markmap-text-color',
+    '#222',
+  );
+  expect(setDataMock).toHaveBeenLastCalledWith(
+    undefined,
+    expect.objectContaining({ spacingVertical: 12 }),
+  );
 });
 
 test('emits node click and toggle events from delegated SVG clicks', async () => {

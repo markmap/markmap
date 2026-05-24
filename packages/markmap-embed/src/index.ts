@@ -2,8 +2,28 @@ import type { INode, IPureNode } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
 import type { ITransformResult } from 'markmap-lib';
 import type { IHtmlParserOptions } from 'markmap-html-parser';
-import { Markmap } from 'markmap-view';
+import { Markmap, deriveOptions } from 'markmap-view';
 import type { IMarkmapOptions } from 'markmap-view';
+
+export interface MindmapTheme {
+  colors?: string[];
+  colorFreezeLevel?: number;
+  lineWidth?: number | number[];
+  maxWidth?: number;
+  nodeMinHeight?: number;
+  paddingX?: number;
+  spacingHorizontal?: number;
+  spacingVertical?: number;
+  font?: string;
+  textColor?: string;
+  linkColor?: string;
+  linkHoverColor?: string;
+  codeBackground?: string;
+  codeColor?: string;
+  highlightBackground?: string;
+  highlightNodeBackground?: string;
+  circleOpenBackground?: string;
+}
 
 export interface MindmapEmbedOptions {
   /**
@@ -22,6 +42,10 @@ export interface MindmapEmbedOptions {
    * Options passed to markmap-view.
    */
   viewOptions?: Partial<IMarkmapOptions>;
+  /**
+   * Host-app visual theme. Applies safe CSS variables and view layout options.
+   */
+  theme?: MindmapTheme;
   /**
    * Fit after initial render and updates.
    */
@@ -57,6 +81,7 @@ export interface MindmapEmbed {
     options?: MindmapUpdateOptions,
   ): Promise<ITransformResult>;
   setData(root: IPureNode, options?: MindmapUpdateOptions): Promise<void>;
+  setTheme(theme: MindmapTheme): Promise<void>;
   fit(): Promise<void>;
   destroy(): void;
 }
@@ -64,6 +89,7 @@ export interface MindmapEmbed {
 export interface MindmapUpdateOptions {
   parserOptions?: Partial<IHtmlParserOptions>;
   viewOptions?: Partial<IMarkmapOptions>;
+  theme?: MindmapTheme;
   autoFit?: boolean;
 }
 
@@ -84,6 +110,52 @@ function getResizeObserverOptions(
   autoResize: MindmapEmbedOptions['autoResize'],
 ) {
   return typeof autoResize === 'object' ? autoResize : undefined;
+}
+
+const THEME_CSS_VARIABLES: [keyof MindmapTheme, string][] = [
+  ['font', '--markmap-font'],
+  ['textColor', '--markmap-text-color'],
+  ['linkColor', '--markmap-a-color'],
+  ['linkHoverColor', '--markmap-a-hover-color'],
+  ['codeBackground', '--markmap-code-bg'],
+  ['codeColor', '--markmap-code-color'],
+  ['highlightBackground', '--markmap-highlight-bg'],
+  ['highlightNodeBackground', '--markmap-highlight-node-bg'],
+  ['circleOpenBackground', '--markmap-circle-open-bg'],
+];
+
+function getThemeViewOptions(theme?: MindmapTheme) {
+  if (!theme) return {};
+  return deriveOptions({
+    color: theme.colors,
+    colorFreezeLevel: theme.colorFreezeLevel,
+    lineWidth: theme.lineWidth,
+    maxWidth: theme.maxWidth,
+    nodeMinHeight: theme.nodeMinHeight,
+    paddingX: theme.paddingX,
+    spacingHorizontal: theme.spacingHorizontal,
+    spacingVertical: theme.spacingVertical,
+  });
+}
+
+function applyTheme(element: SVGElement, theme?: MindmapTheme) {
+  if (!theme) return;
+  THEME_CSS_VARIABLES.forEach(([key, variable]) => {
+    const value = theme[key];
+    if (value == null) return;
+    element.style.setProperty(variable, String(value));
+  });
+}
+
+function getViewOptions(
+  theme?: MindmapTheme,
+  viewOptions?: Partial<IMarkmapOptions>,
+) {
+  if (!theme && !viewOptions) return undefined;
+  return {
+    ...getThemeViewOptions(theme),
+    ...viewOptions,
+  };
 }
 
 function getClassName(element: unknown) {
@@ -116,7 +188,8 @@ export async function createMindmap(
   const {
     content = '',
     parserOptions,
-    viewOptions = {},
+    viewOptions,
+    theme,
     autoFit = false,
     autoResize = false,
     signal,
@@ -130,8 +203,13 @@ export async function createMindmap(
   const transformer = options.transformer || new Transformer();
   const element = createSvg(container);
   container.replaceChildren(element);
+  applyTheme(element, theme);
 
-  const markmap = Markmap.create(element, viewOptions, null);
+  const markmap = Markmap.create(
+    element,
+    getViewOptions(theme, viewOptions) || {},
+    null,
+  );
   let destroyed = false;
   let resizeObserver: ResizeObserver | undefined;
   let resizePending = false;
@@ -152,7 +230,11 @@ export async function createMindmap(
     updateOptions: MindmapUpdateOptions = {},
   ) {
     assertActive();
-    await markmap.setData(root, updateOptions.viewOptions);
+    applyTheme(element, updateOptions.theme);
+    await markmap.setData(
+      root,
+      getViewOptions(updateOptions.theme, updateOptions.viewOptions),
+    );
     if (updateOptions.autoFit ?? autoFit) await markmap.fit();
   }
 
@@ -199,6 +281,11 @@ export async function createMindmap(
     transformer,
     update,
     setData,
+    async setTheme(nextTheme: MindmapTheme) {
+      assertActive();
+      applyTheme(element, nextTheme);
+      await markmap.setData(undefined, getThemeViewOptions(nextTheme));
+    },
     async fit() {
       assertActive();
       await markmap.fit();

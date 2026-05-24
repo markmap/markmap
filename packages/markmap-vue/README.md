@@ -20,12 +20,18 @@ import { ref } from 'vue';
 import { Markmap } from 'markmap-vue';
 
 const content = ref('# Strategy\n\n- Market\n- Product');
+const theme = {
+  colors: ['#0f766e', '#2563eb', '#9333ea'],
+  textColor: '#172554',
+  spacingHorizontal: 64,
+};
 </script>
 
 <template>
   <Markmap
     class="mindmap"
     :content="content"
+    :theme="theme"
     auto-fit
     auto-resize
     @ready="(embed) => console.log(embed.element)"

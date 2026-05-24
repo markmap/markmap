@@ -28,6 +28,11 @@ export function MindmapPanel() {
       content={content}
       autoFit
       autoResize
+      theme={{
+        colors: ['#0f766e', '#2563eb', '#9333ea'],
+        textColor: '#172554',
+        spacingHorizontal: 64,
+      }}
       className="mindmap"
       onReady={(embed) => console.log(embed.element)}
       onNodeClick={({ node }) => console.log(node.content)}
