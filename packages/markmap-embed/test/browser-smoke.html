@@ -22,6 +22,11 @@
         const embed = await createMindmap(app, {
           content: '# Root\n\n## Child',
           autoFit: true,
+          theme: {
+            textColor: '#123456',
+            linkColor: '#0066cc',
+            colors: ['#0f766e', '#2563eb'],
+          },
           onNodeClick: ({ node }) => {
             clickedNodeContent = node.content;
           },
@@ -37,6 +42,11 @@
         await embed.update('# Next\n\n## Item');
         await new Promise(requestAnimationFrame);
         const updatedText = app.textContent || '';
+        await embed.setTheme({ textColor: '#654321' });
+        const themedTextColor =
+          getComputedStyle(app.querySelector('svg')).getPropertyValue(
+            '--markmap-text-color',
+          );
 
         embed.destroy();
 
@@ -46,6 +56,7 @@
           initialText,
           updatedText,
           clickedNodeContent,
+          themedTextColor,
           afterDestroyChildCount: app.childElementCount,
         };
       } catch (error) {

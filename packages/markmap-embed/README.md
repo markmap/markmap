@@ -22,6 +22,13 @@ const embed = await createMindmap(document.querySelector('#mindmap')!, {
   content: '# Strategy\n\n- Market\n- Product\n- Operations',
   autoFit: true,
   autoResize: true,
+  theme: {
+    colors: ['#0f766e', '#2563eb', '#9333ea'],
+    font: '400 15px/20px Inter, sans-serif',
+    textColor: '#172554',
+    maxWidth: 520,
+    spacingHorizontal: 64,
+  },
   signal: controller.signal,
   onReady: (embed) => {
     console.log(embed.element);
@@ -38,6 +45,7 @@ const embed = await createMindmap(document.querySelector('#mindmap')!, {
 });
 
 await embed.update('# Updated\n\n- New branch');
+await embed.setTheme({ textColor: '#111827', linkColor: '#2563eb' });
 controller.abort();
 ```
 

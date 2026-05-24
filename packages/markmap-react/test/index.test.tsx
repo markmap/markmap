@@ -133,6 +133,27 @@ test('passes node event callbacks without rendering them as div props', async ()
   );
 });
 
+test('passes theme without rendering it as a div prop', async () => {
+  const theme = { textColor: '#111' };
+  const { Markmap } = await import('../src/index');
+  let renderer: ReturnType<typeof create>;
+
+  await act(async () => {
+    renderer = create(<Markmap content="# Root" theme={theme} />, {
+      createNodeMock,
+    });
+  });
+
+  const div = renderer.root.findByType('div');
+  expect(div.props.theme).toBeUndefined();
+  expect(createMindmapMock).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      theme,
+    }),
+  );
+});
+
 test('updates the embedded markmap when content changes', async () => {
   const { Markmap } = await import('../src/index');
   let renderer: ReturnType<typeof create>;

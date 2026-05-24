@@ -42,5 +42,6 @@ test('mounts updates and destroys a real embedded markmap', async ({
   expect(result.clickedNodeContent).toContain('Root');
   expect(result.updatedText).toContain('Next');
   expect(result.updatedText).toContain('Item');
+  expect(result.themedTextColor.trim()).toBe('#654321');
   expect(result.afterDestroyChildCount).toBe(0);
 });
