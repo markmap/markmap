@@ -32,6 +32,8 @@ export const Markmap = forwardRef<MarkmapHandle, MarkmapProps>(
       onUpdate,
       onError,
       onDestroy,
+      onNodeClick,
+      onNodeToggle,
       ...containerProps
     },
     ref,
@@ -58,6 +60,8 @@ export const Markmap = forwardRef<MarkmapHandle, MarkmapProps>(
         signal: controller.signal,
         onUpdate,
         onDestroy,
+        onNodeClick,
+        onNodeToggle,
       })
         .then((embed) => {
           if (!mounted) {

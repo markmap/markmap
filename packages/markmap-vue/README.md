@@ -29,6 +29,7 @@ const content = ref('# Strategy\n\n- Market\n- Product');
     auto-fit
     auto-resize
     @ready="(embed) => console.log(embed.element)"
+    @node-click="({ node }) => console.log(node.content)"
     @error="(error) => console.error(error)"
   />
 </template>

@@ -39,6 +39,7 @@ test('mounts updates and destroys a real embedded markmap', async ({
   expect(result.svgCount).toBe(1);
   expect(result.initialText).toContain('Root');
   expect(result.initialText).toContain('Child');
+  expect(result.clickedNodeContent).toContain('Root');
   expect(result.updatedText).toContain('Next');
   expect(result.updatedText).toContain('Item');
   expect(result.afterDestroyChildCount).toBe(0);
