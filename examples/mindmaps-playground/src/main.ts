@@ -1,6 +1,7 @@
 import type {
   MindmapEmbed,
   MindmapHostConnection,
+  MindmapPersistenceAdapter,
   MindmapTheme,
 } from '../../../packages/markmap-embed/src/index';
 import './styles.css';
@@ -424,7 +425,7 @@ function renderApp() {
             <div class="embedHelpNotes">
               <div>
                 <h2>Persistence</h2>
-                <p>The host app provides a load/save adapter, so maps can live in your DB, CRM, tenant workspace, or browser storage.</p>
+                <p>The host app provides a load/save adapter, so maps can live in your DB, CRM, tenant workspace, or browser storage. Test HTTP mode with <code>?host=1&persistence=http&apiBase=/api/mindmaps</code>.</p>
               </div>
               <div>
                 <h2>Autosave</h2>
@@ -1269,6 +1270,73 @@ function getHostStorageKey(id: string) {
   return `capa:mindmap:${id}`;
 }
 
+function getHostPersistenceMode() {
+  return params.get('persistence') === 'http' ? 'http' : 'local';
+}
+
+function getHostApiBase() {
+  const value = params.get('apiBase') || '/api/mindmaps';
+  const url = new URL(value, window.location.origin);
+  if (url.origin !== window.location.origin) {
+    throw new Error('Mindmap persistence API must be same-origin.');
+  }
+  url.pathname = url.pathname.replace(/\/+$/, '');
+  return url;
+}
+
+function getHostMapApiUrl(base: URL, id: string) {
+  const url = new URL(`${base.pathname}/${encodeURIComponent(id)}`, base);
+  url.search = '';
+  return url;
+}
+
+function createHostPersistence(): MindmapPersistenceAdapter {
+  if (getHostPersistenceMode() !== 'http') {
+    return {
+      load(id) {
+        return (
+          window.localStorage.getItem(getHostStorageKey(id)) ||
+          getSample(selectedSample)
+        );
+      },
+      save(id, markdown) {
+        window.localStorage.setItem(getHostStorageKey(id), markdown);
+      },
+    };
+  }
+
+  const apiBase = getHostApiBase();
+  return {
+    async load(id) {
+      const response = await fetch(getHostMapApiUrl(apiBase, id), {
+        headers: { Accept: 'application/json' },
+      });
+      if (response.status === 404) return getSample(selectedSample);
+      if (!response.ok) {
+        throw new Error(`Load failed: ${response.status}`);
+      }
+      const result = await response.json();
+      if (!result || typeof result.markdown !== 'string') {
+        throw new Error('Load response must include markdown.');
+      }
+      return result.markdown;
+    },
+    async save(id, markdown) {
+      const response = await fetch(getHostMapApiUrl(apiBase, id), {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ markdown }),
+      });
+      if (!response.ok) {
+        throw new Error(`Save failed: ${response.status}`);
+      }
+    },
+  };
+}
+
 function saveHostMap(id: string, status = 'Saved map') {
   setHostStatus('Saving map');
   return hostConnection
@@ -1311,17 +1379,7 @@ async function wireHostSdkExample() {
     autoResize: true,
     queueUntilReady: true,
     readyTimeoutMs: 10000,
-    persistence: {
-      load(id) {
-        return (
-          window.localStorage.getItem(getHostStorageKey(id)) ||
-          getSample(selectedSample)
-        );
-      },
-      save(id, markdown) {
-        window.localStorage.setItem(getHostStorageKey(id), markdown);
-      },
-    },
+    persistence: createHostPersistence(),
   });
   hostConnection.onReady(() => {
     setHostStatus('Ready');

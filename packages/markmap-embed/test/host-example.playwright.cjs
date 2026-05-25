@@ -108,6 +108,66 @@ test('host SDK example autosaves dirty changes after node edits', async ({
   await expect(errors).toEqual([]);
 });
 
+test('host SDK example can persist maps through an HTTP API adapter', async ({
+  page,
+}) => {
+  const errors = [];
+  const apiWrites = [];
+  const maps = new Map([['server-acme', '# Server Map\n\n## Restored']]);
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.route('**/api/mindmaps/*', async (route) => {
+    const url = new URL(route.request().url());
+    const id = decodeURIComponent(url.pathname.split('/').pop() || '');
+    if (route.request().method() === 'GET') {
+      const markdown = maps.get(id);
+      if (!markdown) {
+        await route.fulfill({ status: 404, body: 'Not found' });
+        return;
+      }
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ id, markdown }),
+      });
+      return;
+    }
+    if (route.request().method() === 'PUT') {
+      const body = route.request().postDataJSON();
+      apiWrites.push({ id, markdown: body.markdown });
+      maps.set(id, body.markdown);
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ id, markdown: body.markdown }),
+      });
+      return;
+    }
+    await route.fulfill({ status: 405, body: 'Method not allowed' });
+  });
+
+  await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
+  await expect(page.locator('#hostStatus')).toContainText('Ready');
+  await page.locator('#hostMapId').fill('server-acme');
+  await page.locator('#hostLoadMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Loaded map');
+
+  const frame = page.frameLocator('#hostMindmapFrame');
+  await expect(frame.locator('text=Restored').first()).toBeVisible();
+  await frame.locator('text=Restored').first().click();
+  await page.locator('#hostNodeText').fill('HTTP Saved');
+  await page.locator('#hostSaveNode').click();
+  await expect(page.locator('#hostStatus')).toContainText('Saved line');
+  await page.locator('#hostSaveMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Saved map');
+
+  expect(apiWrites.at(-1)).toEqual({
+    id: 'server-acme',
+    markdown: expect.stringContaining('HTTP Saved'),
+  });
+  await expect(errors).toEqual([]);
+});
+
 test('embed help page shows integration snippets and iframe preview', async ({
   page,
 }) => {
