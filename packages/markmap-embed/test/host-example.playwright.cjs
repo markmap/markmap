@@ -107,3 +107,41 @@ test('host SDK example autosaves dirty changes after node edits', async ({
   await expect(frame.locator('text=Assessment').first()).toBeVisible();
   await expect(errors).toEqual([]);
 });
+
+test('embed help page shows integration snippets and iframe preview', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+
+  await page.goto(`${baseUrl}embed-help`);
+
+  await expect(page.locator('h1')).toContainText('Embed CAPA Mindmaps');
+  await expect(page.locator('#embedHelpPreview')).toHaveAttribute(
+    'src',
+    /embed=1/,
+  );
+  await expect(page.locator('[data-snippet-tab="web-component"]')).toHaveClass(
+    /active/,
+  );
+  await expect(page.locator('#embedHelpSnippet')).toContainText(
+    '<markmap-host-frame',
+  );
+
+  await page.locator('[data-snippet-tab="react"]').click();
+  await expect(page.locator('#embedHelpSnippet')).toContainText(
+    'MindmapHostFrame',
+  );
+
+  await page.locator('[data-snippet-tab="vue"]').click();
+  await expect(page.locator('#embedHelpSnippet')).toContainText(
+    'MarkmapHostFrame',
+  );
+  await expect(page.locator('#embedHelpCsp')).toContainText(
+    "frame-ancestors 'self' https://capaholdings.com",
+  );
+  await expect(errors).toEqual([]);
+});

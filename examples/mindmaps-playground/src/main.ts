@@ -119,6 +119,9 @@ type MindmapHostMessage = {
 const params = new URLSearchParams(window.location.search);
 const isEmbedMode = params.get('embed') === '1';
 const isHostMode = params.get('host') === '1';
+const isEmbedHelpMode =
+  window.location.pathname.replace(/\/$/, '') === '/embed-help' ||
+  params.get('embedHelp') === '1';
 
 if (params.get('theme') && themes[params.get('theme') || '']) {
   selectedTheme = params.get('theme') || selectedTheme;
@@ -131,7 +134,7 @@ if (
 }
 
 function getEmbedUrl() {
-  const url = new URL(window.location.pathname, window.location.origin);
+  const url = new URL('/', window.location.origin);
   url.searchParams.set('embed', '1');
   url.searchParams.set('theme', selectedTheme);
   url.searchParams.set('sample', selectedSample);
@@ -139,7 +142,7 @@ function getEmbedUrl() {
 }
 
 function getHostExampleUrl() {
-  const url = new URL(window.location.pathname, window.location.origin);
+  const url = new URL('/', window.location.origin);
   url.searchParams.set('host', '1');
   url.searchParams.set('theme', selectedTheme);
   url.searchParams.set('sample', selectedSample);
@@ -212,6 +215,102 @@ function getScriptSnippet() {
   }
   document.querySelector('#mindmap-frame').append(frame);
 </script>`;
+}
+
+const embedHelpSnippets = {
+  'web-component': () => `<markmap-host-frame
+  id="client-map"
+  src="${getEmbedUrl()}"
+  target-origin="${window.location.origin}"
+  queue-until-ready
+  auto-resize
+  autosave
+  map-id="client-123"
+  autosave-debounce-ms="800"
+></markmap-host-frame>
+
+<script type="module">
+  import { defineMindmapHostFrame } from 'markmap-embed';
+
+  defineMindmapHostFrame();
+
+  const frame = document.querySelector('#client-map');
+  frame.persistence = {
+    load: (id) => localStorage.getItem(\`mindmap:\${id}\`) || '# Strategy',
+    save: (id, markdown) => {
+      localStorage.setItem(\`mindmap:\${id}\`, markdown);
+    },
+  };
+  frame.addEventListener('ready', (event) => {
+    event.detail.connection.loadMap('client-123');
+  });
+  frame.addEventListener('autosave', (event) => {
+    console.log('saved', event.detail.id);
+  });
+</script>`,
+  react: () => `import { useMemo, useRef } from 'react';
+import {
+  MindmapHostFrame,
+  type MindmapHostFrameHandle,
+} from 'markmap-react';
+
+export function ClientMindmapFrame() {
+  const ref = useRef<MindmapHostFrameHandle>(null);
+  const persistence = useMemo(
+    () => ({
+      load: (id: string) => localStorage.getItem(\`mindmap:\${id}\`) || '# Strategy',
+      save: (id: string, markdown: string) => {
+        localStorage.setItem(\`mindmap:\${id}\`, markdown);
+      },
+    }),
+    [],
+  );
+
+  return (
+    <MindmapHostFrame
+      ref={ref}
+      src="${getEmbedUrl()}"
+      targetOrigin="${window.location.origin}"
+      queueUntilReady
+      autoResize
+      autosave
+      mapId="client-123"
+      persistence={persistence}
+      onReady={(connection) => connection.loadMap('client-123')}
+      onAutosave={(map) => console.log('saved', map.id)}
+    />
+  );
+}`,
+  vue: () => `<script setup lang="ts">
+import { MarkmapHostFrame } from 'markmap-vue';
+
+const persistence = {
+  load: (id: string) => localStorage.getItem(\`mindmap:\${id}\`) || '# Strategy',
+  save: (id: string, markdown: string) => {
+    localStorage.setItem(\`mindmap:\${id}\`, markdown);
+  },
+};
+</script>
+
+<template>
+  <MarkmapHostFrame
+    src="${getEmbedUrl()}"
+    target-origin="${window.location.origin}"
+    queue-until-ready
+    auto-resize
+    autosave
+    map-id="client-123"
+    :persistence="persistence"
+    @ready="(connection) => connection.loadMap('client-123')"
+    @autosave="(map) => console.log('saved', map.id)"
+  />
+</template>`,
+};
+
+type EmbedHelpSnippetKey = keyof typeof embedHelpSnippets;
+
+function getEmbedHelpSnippet(key: EmbedHelpSnippetKey) {
+  return embedHelpSnippets[key]();
 }
 
 function syncThemeChrome() {
@@ -301,6 +400,56 @@ function renderApp() {
     app.innerHTML = `
       <main class="embedApp">
         <div id="mapHost" class="mapHost"></div>
+      </main>
+    `;
+    return;
+  }
+  if (isEmbedHelpMode) {
+    app.innerHTML = `
+      <main class="embedHelpApp">
+        <header class="embedHelpHero">
+          <div>
+            <h1>Embed CAPA Mindmaps</h1>
+            <p>Copy a host integration, preview the iframe, and verify autosave wiring before embedding in a client app.</p>
+          </div>
+          <a class="hostLinkButton" href="${escapeHtml(getHostExampleUrl())}">Open Host Test</a>
+        </header>
+        <section class="embedHelpLayout">
+          <section class="embedHelpMain" aria-label="Embed integration snippets">
+            <div class="embedHelpToolbar" role="tablist" aria-label="Snippet type">
+              <button class="snippetTab active" type="button" role="tab" aria-selected="true" data-snippet-tab="web-component">Web Component</button>
+              <button class="snippetTab" type="button" role="tab" aria-selected="false" data-snippet-tab="react">React</button>
+              <button class="snippetTab" type="button" role="tab" aria-selected="false" data-snippet-tab="vue">Vue</button>
+              <button id="embedHelpCopy" class="smallButton" type="button">Copy</button>
+            </div>
+            <pre id="embedHelpSnippet" class="embedHelpSnippet"><code>${escapeHtml(getEmbedHelpSnippet('web-component'))}</code></pre>
+            <div class="embedHelpNotes">
+              <div>
+                <h2>Persistence</h2>
+                <p>The host app provides a load/save adapter, so maps can live in your DB, CRM, tenant workspace, or browser storage.</p>
+              </div>
+              <div>
+                <h2>Autosave</h2>
+                <p>Dirty iframe changes debounce into <code>saveMap(mapId)</code>. Keep the map id aligned with the host record id.</p>
+              </div>
+              <div>
+                <h2>CSP</h2>
+                <p id="embedHelpCsp">Current frame policy: <code>frame-ancestors 'self' https://capaholdings.com https://*.capaholdings.com http://localhost:* http://127.0.0.1:*</code></p>
+              </div>
+            </div>
+          </section>
+          <aside class="embedHelpPreviewPane" aria-label="Iframe preview">
+            <div class="paneHeader">
+              <h2>Iframe Preview</h2>
+              <span class="status">embed=1</span>
+            </div>
+            <iframe id="embedHelpPreview" src="${escapeHtml(getEmbedUrl())}" title="CAPA Mindmaps embed preview" loading="lazy"></iframe>
+            <div class="copyRow embedHelpUrlRow">
+              <input id="embedHelpUrl" class="snippetInput" value="${escapeHtml(getEmbedUrl())}" readonly aria-label="Embed URL" />
+              <button id="embedHelpCopyUrl" class="copyButton" type="button">Copy URL</button>
+            </div>
+          </aside>
+        </section>
       </main>
     `;
     return;
@@ -997,6 +1146,51 @@ function wireEmbedTools() {
     });
 }
 
+function wireEmbedHelp() {
+  let selectedSnippet: EmbedHelpSnippetKey = 'web-component';
+  const snippet = document.querySelector<HTMLElement>('#embedHelpSnippet code');
+  const copyButton =
+    document.querySelector<HTMLButtonElement>('#embedHelpCopy');
+  const copyUrlButton =
+    document.querySelector<HTMLButtonElement>('#embedHelpCopyUrl');
+
+  const copyText = async (button: HTMLButtonElement, text: string) => {
+    await navigator.clipboard.writeText(text);
+    const label = button.textContent || 'Copy';
+    button.textContent = 'Copied';
+    window.setTimeout(() => {
+      button.textContent = label;
+    }, 1400);
+  };
+
+  const setSnippet = (key: EmbedHelpSnippetKey) => {
+    selectedSnippet = key;
+    if (snippet) snippet.textContent = getEmbedHelpSnippet(key);
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-snippet-tab]')
+      .forEach((button) => {
+        const active = button.dataset.snippetTab === key;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+  };
+
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-snippet-tab]')
+    .forEach((button) => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.snippetTab as EmbedHelpSnippetKey;
+        if (key in embedHelpSnippets) setSnippet(key);
+      });
+    });
+  copyButton?.addEventListener('click', () => {
+    void copyText(copyButton, getEmbedHelpSnippet(selectedSnippet));
+  });
+  copyUrlButton?.addEventListener('click', () => {
+    void copyText(copyUrlButton, getEmbedUrl());
+  });
+}
+
 function setHostStatus(value: string) {
   const status = document.querySelector<HTMLElement>('#hostStatus');
   if (status) status.textContent = value;
@@ -1220,6 +1414,11 @@ function wireHostSdkExample() {
 async function boot() {
   syncThemeChrome();
   renderApp();
+
+  if (isEmbedHelpMode) {
+    wireEmbedHelp();
+    return;
+  }
 
   if (isHostMode) {
     wireHostSdkExample();

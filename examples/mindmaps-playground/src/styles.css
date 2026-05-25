@@ -530,6 +530,165 @@ body[data-map-theme='dark'] .mapPane {
   color: #c2410c;
 }
 
+.embedHelpApp {
+  min-height: 100dvh;
+  background: #eef2f7;
+  color: #172033;
+}
+
+.embedHelpHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid #cbd5e1;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.embedHelpHero h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.embedHelpHero p {
+  max-width: 760px;
+  margin: 6px 0 0;
+  color: #52627a;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hostLinkButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #142033;
+  padding: 0 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hostLinkButton:hover {
+  border-color: #2563eb;
+}
+
+.hostLinkButton:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.embedHelpLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 40vw);
+  gap: 14px;
+  padding: 14px;
+}
+
+.embedHelpMain,
+.embedHelpPreviewPane {
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.embedHelpMain {
+  padding: 14px;
+}
+
+.embedHelpToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.snippetTab {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.snippetTab.active {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.embedHelpSnippet {
+  min-height: 360px;
+  max-height: calc(100dvh - 330px);
+  margin: 0;
+  overflow: auto;
+  border-radius: 8px;
+  background: #111827;
+  color: #dbeafe;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.embedHelpNotes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.embedHelpNotes > div {
+  min-width: 0;
+  border: 1px solid #d8e0eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.embedHelpNotes h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.embedHelpNotes p {
+  margin: 0;
+  color: #52627a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.embedHelpNotes code {
+  color: #172033;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.embedHelpPreviewPane {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(420px, 1fr) auto;
+}
+
+.embedHelpPreviewPane iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border: 0;
+  background: #eef2f7;
+}
+
+.embedHelpUrlRow {
+  border-top: 1px solid #d8e0eb;
+  padding: 12px;
+}
+
 @media (max-width: 980px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -570,5 +729,19 @@ body[data-map-theme='dark'] .mapPane {
   .hostPreview iframe,
   .hostPanel {
     min-height: 420px;
+  }
+
+  .embedHelpHero,
+  .embedHelpLayout,
+  .embedHelpNotes {
+    grid-template-columns: 1fr;
+  }
+
+  .embedHelpHero {
+    align-items: flex-start;
+  }
+
+  .hostLinkButton {
+    width: fit-content;
   }
 }
