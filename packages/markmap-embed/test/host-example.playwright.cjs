@@ -118,7 +118,14 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('capa:mindmaps:apiToken', 'test-api-token');
+  });
   await page.route('**/api/mindmaps/*', async (route) => {
+    if (route.request().headers().authorization !== 'Bearer test-api-token') {
+      await route.fulfill({ status: 401, body: 'Unauthorized' });
+      return;
+    }
     const url = new URL(route.request().url());
     const id = decodeURIComponent(url.pathname.split('/').pop() || '');
     if (route.request().method() === 'GET') {

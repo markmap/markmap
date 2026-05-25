@@ -1290,6 +1290,14 @@ function getHostMapApiUrl(base: URL, id: string) {
   return url;
 }
 
+function getHostApiHeaders(extra: Record<string, string> = {}) {
+  const token = window.sessionStorage.getItem('capa:mindmaps:apiToken');
+  return {
+    ...extra,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 function createHostPersistence(): MindmapPersistenceAdapter {
   if (getHostPersistenceMode() !== 'http') {
     return {
@@ -1309,7 +1317,7 @@ function createHostPersistence(): MindmapPersistenceAdapter {
   return {
     async load(id) {
       const response = await fetch(getHostMapApiUrl(apiBase, id), {
-        headers: { Accept: 'application/json' },
+        headers: getHostApiHeaders({ Accept: 'application/json' }),
       });
       if (response.status === 404) return getSample(selectedSample);
       if (!response.ok) {
@@ -1324,10 +1332,10 @@ function createHostPersistence(): MindmapPersistenceAdapter {
     async save(id, markdown) {
       const response = await fetch(getHostMapApiUrl(apiBase, id), {
         method: 'PUT',
-        headers: {
+        headers: getHostApiHeaders({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify({ markdown }),
       });
       if (!response.ok) {
