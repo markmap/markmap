@@ -1,4 +1,15 @@
-import { expect, test, vi } from 'vitest';
+// @vitest-environment happy-dom
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+
+let customElementCounter = 0;
+
+beforeEach(() => {
+  document.body.replaceChildren();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function createHostHarness(src = 'https://mindmaps.capaholdings.com/?embed=1') {
   let messageHandler: ((event: MessageEvent) => void) | undefined;
@@ -33,6 +44,25 @@ function createHostHarness(src = 'https://mindmaps.capaholdings.com/?embed=1') {
       } as unknown as MessageEvent);
     },
   };
+}
+
+function createCustomElementName() {
+  customElementCounter += 1;
+  return `markmap-host-frame-test-${customElementCounter}`;
+}
+
+function sendFrameMessage(
+  iframe: HTMLIFrameElement,
+  data: unknown,
+  origin = 'https://mindmaps.capaholdings.com',
+) {
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      data,
+      origin,
+      source: iframe.contentWindow,
+    }),
+  );
 }
 
 test('connectMindmap posts host commands to the iframe origin', async () => {
@@ -444,4 +474,124 @@ test('connectMindmap saves current maps by id', async () => {
     'https://mindmaps.capaholdings.com',
   );
   expect(save).toHaveBeenCalledWith('client-123', '# Current Map');
+});
+
+test('defineMindmapHostFrame registers a custom element that exposes the host connection', async () => {
+  const tagName = createCustomElementName();
+  const { defineMindmapHostFrame } = await import('../src/host');
+
+  defineMindmapHostFrame(tagName);
+  const element = document.createElement(tagName) as HTMLElement & {
+    getConnection(): unknown;
+  };
+  const ready = vi.fn();
+  element.setAttribute('src', 'about:blank');
+  element.setAttribute('target-origin', '*');
+  element.addEventListener('ready', (event) => {
+    ready((event as CustomEvent).detail.connection);
+  });
+  document.body.append(element);
+
+  const iframe = element.shadowRoot?.querySelector('iframe');
+  expect(iframe?.getAttribute('src')).toBe('about:blank');
+  expect(element.getConnection()).toBeDefined();
+  sendFrameMessage(iframe!, { type: 'capa:mindmap:ready' });
+  await (element.getConnection() as { ready(): Promise<void> }).ready();
+
+  expect(ready).toHaveBeenCalledWith(element.getConnection());
+});
+
+test('markmap host custom element autosaves dirty changes', async () => {
+  vi.useFakeTimers();
+  const tagName = createCustomElementName();
+  const { defineMindmapHostFrame } = await import('../src/host');
+  const save = vi.fn().mockResolvedValue(undefined);
+  const change = vi.fn();
+  const autosave = vi.fn();
+
+  defineMindmapHostFrame(tagName);
+  const element = document.createElement(tagName) as HTMLElement & {
+    persistence: {
+      load: () => string;
+      save: (id: string, markdown: string) => Promise<void>;
+    };
+  };
+  element.persistence = {
+    load: () => '# Current Map',
+    save,
+  };
+  element.setAttribute('src', 'about:blank');
+  element.setAttribute('target-origin', '*');
+  element.setAttribute('autosave', '');
+  element.setAttribute('map-id', 'client-123');
+  element.setAttribute('autosave-debounce-ms', '25');
+  element.addEventListener('change', (event) => {
+    change((event as CustomEvent).detail);
+  });
+  element.addEventListener('autosave', (event) => {
+    autosave((event as CustomEvent).detail);
+  });
+  document.body.append(element);
+
+  const iframe = element.shadowRoot!.querySelector('iframe')!;
+  const postMessage = vi.spyOn(iframe.contentWindow!, 'postMessage');
+  sendFrameMessage(iframe, {
+    type: 'capa:mindmap:change',
+    dirty: true,
+    markdown: '# Current Map',
+    reason: 'nodeEdit',
+  });
+  await vi.advanceTimersByTimeAsync(25);
+  const exportMessage = postMessage.mock.calls.at(-1)?.[0] as {
+    requestId: string;
+  };
+  sendFrameMessage(iframe, {
+    type: 'capa:mindmap:export',
+    requestId: exportMessage.requestId,
+    markdown: '# Saved Map',
+    svg: '<svg />',
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(change).toHaveBeenCalledWith({
+    dirty: true,
+    markdown: '# Current Map',
+    reason: 'nodeEdit',
+    requestId: undefined,
+  });
+  expect(save).toHaveBeenCalledWith('client-123', '# Saved Map');
+  expect(autosave).toHaveBeenCalledWith({
+    id: 'client-123',
+    markdown: '# Saved Map',
+  });
+});
+
+test('markmap host custom element destroys its connection on disconnect', async () => {
+  const tagName = createCustomElementName();
+  const { defineMindmapHostFrame } = await import('../src/host');
+  const change = vi.fn();
+
+  defineMindmapHostFrame(tagName);
+  const element = document.createElement(tagName) as HTMLElement & {
+    getConnection(): unknown;
+  };
+  element.setAttribute('src', 'about:blank');
+  element.setAttribute('target-origin', '*');
+  element.addEventListener('change', change);
+  document.body.append(element);
+  const iframe = element.shadowRoot!.querySelector('iframe')!;
+
+  element.remove();
+  sendFrameMessage(iframe, {
+    type: 'capa:mindmap:change',
+    dirty: true,
+    markdown: '# Ignored',
+  });
+
+  expect(element.getConnection()).toBeUndefined();
+  expect(change).not.toHaveBeenCalled();
 });

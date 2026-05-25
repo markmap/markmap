@@ -108,6 +108,16 @@ export interface ConnectMindmapOptions {
   window?: Pick<Window, 'addEventListener' | 'removeEventListener'>;
 }
 
+export interface DefineMindmapHostFrameOptions {
+  customElements?: CustomElementRegistry;
+  HTMLElement?: typeof HTMLElement;
+}
+
+export interface MarkmapHostFrameElement extends HTMLElement {
+  persistence?: MindmapPersistenceAdapter;
+  getConnection(): MindmapHostConnection | undefined;
+}
+
 type HostWindow = Pick<Window, 'addEventListener' | 'removeEventListener'>;
 type Listener<T> = (value: T) => void;
 type PendingExport = {
@@ -130,6 +140,16 @@ const ERROR_MESSAGE_TYPE = 'capa:mindmap:error';
 const NODE_CLICK_MESSAGE_TYPE = 'capa:mindmap:nodeClick';
 const NODE_EDIT_MESSAGE_TYPE = 'capa:mindmap:nodeEdit';
 const RESIZE_MESSAGE_TYPE = 'capa:mindmap:resize';
+const DEFAULT_HOST_FRAME_TAG_NAME = 'markmap-host-frame';
+
+const IFRAME_ATTRIBUTE_NAMES = [
+  'allow',
+  'loading',
+  'referrerpolicy',
+  'sandbox',
+  'src',
+  'title',
+] as const;
 
 function getWindow(options: ConnectMindmapOptions): HostWindow {
   if (options.window) return options.window;
@@ -240,6 +260,42 @@ function requirePersistence(
     throw new Error('Mindmap persistence adapter is not configured');
   }
   return persistence;
+}
+
+function getBooleanAttribute(element: Element, name: string) {
+  return element.hasAttribute(name);
+}
+
+function getNumberAttribute(element: Element, name: string) {
+  const rawValue = element.getAttribute(name);
+  if (rawValue == null || rawValue === '') return undefined;
+  const value = Number(rawValue);
+  return Number.isFinite(value) ? value : undefined;
+}
+
+function dispatchHostFrameEvent<T>(
+  element: HTMLElement,
+  type: string,
+  detail: T,
+) {
+  element.dispatchEvent(
+    new CustomEvent(type, {
+      bubbles: true,
+      composed: true,
+      detail,
+    }),
+  );
+}
+
+function syncIframeAttributes(element: Element, iframe: HTMLIFrameElement) {
+  IFRAME_ATTRIBUTE_NAMES.forEach((name) => {
+    const value = element.getAttribute(name);
+    if (value == null) {
+      iframe.removeAttribute(name);
+    } else {
+      iframe.setAttribute(name, value);
+    }
+  });
 }
 
 export function connectMindmap(
@@ -481,4 +537,115 @@ export function connectMindmap(
       queuedMessages.length = 0;
     },
   };
+}
+
+export function defineMindmapHostFrame(
+  tagName = DEFAULT_HOST_FRAME_TAG_NAME,
+  options: DefineMindmapHostFrameOptions = {},
+) {
+  const registry = options.customElements ?? globalThis.customElements;
+  const BaseElement = options.HTMLElement ?? globalThis.HTMLElement;
+  if (!registry || !BaseElement) {
+    throw new Error('Custom elements are not available in this environment');
+  }
+
+  const existing = registry.get(tagName);
+  if (existing) return existing;
+
+  class MarkmapHostFrameElementImpl
+    extends BaseElement
+    implements MarkmapHostFrameElement
+  {
+    static get observedAttributes() {
+      return [...IFRAME_ATTRIBUTE_NAMES];
+    }
+
+    persistence?: MindmapPersistenceAdapter;
+    #connection?: MindmapHostConnection;
+    #iframe?: HTMLIFrameElement;
+    #removeChangeListener?: () => void;
+    #removeErrorListener?: () => void;
+    #removeReadyListener?: () => void;
+    #autosaveTimer?: ReturnType<typeof setTimeout>;
+
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
+
+    connectedCallback() {
+      if (this.#connection) return;
+      const iframe = document.createElement('iframe');
+      syncIframeAttributes(this, iframe);
+      this.shadowRoot?.replaceChildren(iframe);
+      this.#iframe = iframe;
+
+      const connection = connectMindmap(iframe, {
+        autoResize: getBooleanAttribute(this, 'auto-resize'),
+        persistence: this.persistence,
+        queueUntilReady: getBooleanAttribute(this, 'queue-until-ready'),
+        readyTimeoutMs: getNumberAttribute(this, 'ready-timeout-ms'),
+        targetOrigin: this.getAttribute('target-origin') || undefined,
+      });
+      this.#connection = connection;
+      this.#removeReadyListener = connection.onReady(() => {
+        dispatchHostFrameEvent(this, 'ready', { connection });
+      });
+      this.#removeChangeListener = connection.onChange((result) => {
+        dispatchHostFrameEvent(this, 'change', result);
+        this.#scheduleAutosave(result);
+      });
+      this.#removeErrorListener = connection.onError((error) => {
+        dispatchHostFrameEvent(this, 'error', error);
+      });
+    }
+
+    disconnectedCallback() {
+      this.#clearAutosave();
+      this.#removeReadyListener?.();
+      this.#removeChangeListener?.();
+      this.#removeErrorListener?.();
+      this.#connection?.destroy();
+      this.#connection = undefined;
+      this.#iframe = undefined;
+    }
+
+    attributeChangedCallback() {
+      if (this.#iframe) syncIframeAttributes(this, this.#iframe);
+    }
+
+    getConnection() {
+      return this.#connection;
+    }
+
+    #clearAutosave() {
+      if (!this.#autosaveTimer) return;
+      clearTimeout(this.#autosaveTimer);
+      this.#autosaveTimer = undefined;
+    }
+
+    #scheduleAutosave(result: MindmapChangeResult) {
+      const mapId = this.getAttribute('map-id');
+      if (!this.#connection || !getBooleanAttribute(this, 'autosave') || !mapId)
+        return;
+      if (!result.dirty) return;
+      this.#clearAutosave();
+      this.#autosaveTimer = setTimeout(
+        () => {
+          void this.#connection
+            ?.saveMap(mapId)
+            .then((map) => {
+              dispatchHostFrameEvent(this, 'autosave', map);
+            })
+            .catch((error: unknown) => {
+              dispatchHostFrameEvent(this, 'error', error);
+            });
+        },
+        getNumberAttribute(this, 'autosave-debounce-ms') ?? 600,
+      );
+    }
+  }
+
+  registry.define(tagName, MarkmapHostFrameElementImpl);
+  return MarkmapHostFrameElementImpl;
 }
