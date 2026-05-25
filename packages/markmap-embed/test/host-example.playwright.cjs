@@ -112,9 +112,13 @@ test('embed help page shows integration snippets and iframe preview', async ({
   page,
 }) => {
   const errors = [];
+  const requestedUrls = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('request', (request) => {
+    if (request.frame() === page.mainFrame()) requestedUrls.push(request.url());
   });
 
   await page.goto(`${baseUrl}embed-help`);
@@ -143,5 +147,13 @@ test('embed help page shows integration snippets and iframe preview', async ({
   await expect(page.locator('#embedHelpCsp')).toContainText(
     "frame-ancestors 'self' https://capaholdings.com",
   );
+  expect(
+    requestedUrls.some((url) =>
+      url.includes('/packages/markmap-embed/src/index.ts'),
+    ),
+  ).toBe(false);
+  expect(
+    requestedUrls.some((url) => url.includes('/packages/markmap-lib/')),
+  ).toBe(false);
   await expect(errors).toEqual([]);
 });

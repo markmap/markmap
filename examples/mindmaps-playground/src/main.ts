@@ -1,7 +1,3 @@
-import {
-  connectMindmap,
-  createMindmap,
-} from '../../../packages/markmap-embed/src/index';
 import type {
   MindmapEmbed,
   MindmapHostConnection,
@@ -1268,9 +1264,12 @@ function queueHostAutosave() {
   }, 600);
 }
 
-function wireHostSdkExample() {
+async function wireHostSdkExample() {
   const iframe = document.querySelector<HTMLIFrameElement>('#hostMindmapFrame');
   if (!iframe) return;
+  const { connectMindmap } = await import(
+    '../../../packages/markmap-embed/src/index'
+  );
 
   hostConnection = connectMindmap(iframe, {
     autoResize: true,
@@ -1421,7 +1420,7 @@ async function boot() {
   }
 
   if (isHostMode) {
-    wireHostSdkExample();
+    await wireHostSdkExample();
     return;
   }
 
@@ -1432,6 +1431,9 @@ async function boot() {
   const content = getSample(selectedSample);
   currentContent = content;
   if (editor) editor.value = content;
+  const { createMindmap } = await import(
+    '../../../packages/markmap-embed/src/index'
+  );
   embed = await createMindmap(host, {
     content,
     autoFit: true,
