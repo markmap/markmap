@@ -45,7 +45,7 @@ The component creates and destroys the embed with Vue lifecycle. Use a template 
 
 ## Host iframe
 
-Use `MarkmapHostFrame` when Vue embeds the hosted mindmap app at `https://mindmaps.capaholdings.com/?embed=1`.
+Use `MarkmapHostFrame` when Vue embeds the hosted mindmap app. Set `parentOrigin` to your host app origin.
 
 ```vue
 <script setup lang="ts">
@@ -61,7 +61,7 @@ const persistence = {
 
 <template>
   <MarkmapHostFrame
-    src="https://mindmaps.capaholdings.com/?embed=1"
+    src="https://mindmaps.capaholdings.com/?embed=1&parentOrigin=https%3A%2F%2Fapp.example.com"
     target-origin="https://mindmaps.capaholdings.com"
     queue-until-ready
     auto-resize

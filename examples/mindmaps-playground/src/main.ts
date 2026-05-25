@@ -118,6 +118,7 @@ const isHostMode = params.get('host') === '1';
 const isEmbedHelpMode =
   window.location.pathname.replace(/\/$/, '') === '/embed-help' ||
   params.get('embedHelp') === '1';
+const parentOrigin = getAllowedParentOrigin();
 
 if (params.get('theme') && themes[params.get('theme') || '']) {
   selectedTheme = params.get('theme') || selectedTheme;
@@ -134,6 +135,7 @@ function getEmbedUrl() {
   url.searchParams.set('embed', '1');
   url.searchParams.set('theme', selectedTheme);
   url.searchParams.set('sample', selectedSample);
+  url.searchParams.set('parentOrigin', window.location.origin);
   return url.toString();
 }
 
@@ -791,6 +793,40 @@ function isHostMessage(data: unknown): data is MindmapHostMessage {
   );
 }
 
+function isLocalhostOrigin(origin: string) {
+  try {
+    const url = new URL(origin);
+    return (
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      (url.hostname === 'localhost' || url.hostname === '127.0.0.1')
+    );
+  } catch {
+    return false;
+  }
+}
+
+function normalizeAllowedOrigin(value: string | null) {
+  if (!value) return window.location.origin;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' && !isLocalhostOrigin(url.origin)) {
+      return window.location.origin;
+    }
+    return url.origin;
+  } catch {
+    return window.location.origin;
+  }
+}
+
+function getAllowedParentOrigin() {
+  return normalizeAllowedOrigin(params.get('parentOrigin'));
+}
+
+function isAllowedHostMessageOrigin(origin: string) {
+  if (origin === parentOrigin) return true;
+  return isLocalhostOrigin(parentOrigin) && isLocalhostOrigin(origin);
+}
+
 function resolveTheme(value: unknown) {
   if (typeof value === 'string' && themes[value]) return themes[value];
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -801,7 +837,7 @@ function resolveTheme(value: unknown) {
 
 function postParentMessage(message: Record<string, unknown>) {
   if (window.parent === window) return;
-  window.parent.postMessage(message, '*');
+  window.parent.postMessage(message, parentOrigin);
 }
 
 function getErrorMessage(error: unknown) {
@@ -974,10 +1010,10 @@ function wireHostMessages() {
   window.addEventListener('message', async (event) => {
     const message = event.data;
     if (!isHostMessage(message)) return;
+    if (!isAllowedHostMessageOrigin(event.origin)) return;
 
     if (message.action === 'export') {
       try {
-        const targetOrigin = event.origin === 'null' ? '*' : event.origin;
         const payload = {
           type: 'capa:mindmap:export',
           requestId: message.requestId,
@@ -990,7 +1026,7 @@ function wireHostMessages() {
         }
         (event.source as WindowProxy | null)?.postMessage(
           payload,
-          targetOrigin,
+          parentOrigin,
         );
       } catch (error) {
         postEmbedError('export', error, message.requestId);

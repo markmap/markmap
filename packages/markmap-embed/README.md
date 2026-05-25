@@ -59,6 +59,8 @@ Use `connectMindmap` when the mindmap runs inside an iframe and the host app own
 import { connectMindmap } from 'markmap-embed';
 
 const iframe = document.querySelector<HTMLIFrameElement>('#mindmap-frame')!;
+iframe.src =
+  'https://mindmaps.capaholdings.com/?embed=1&parentOrigin=https%3A%2F%2Fapp.example.com';
 
 const connection = connectMindmap(iframe, {
   targetOrigin: 'https://mindmaps.capaholdings.com',
@@ -89,7 +91,7 @@ Use the custom element when the host app is plain HTML, Angular, Rails, Laravel,
 ```html
 <markmap-host-frame
   id="client-map"
-  src="https://mindmaps.capaholdings.com/?embed=1"
+  src="https://mindmaps.capaholdings.com/?embed=1&parentOrigin=https%3A%2F%2Fapp.example.com"
   target-origin="https://mindmaps.capaholdings.com"
   queue-until-ready
   auto-resize
@@ -121,3 +123,5 @@ Use the custom element when the host app is plain HTML, Angular, Rails, Laravel,
   });
 </script>
 ```
+
+Set `parentOrigin` to the exact origin of the host app. The iframe ignores host commands from other origins and sends replies only to that configured origin.

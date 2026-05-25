@@ -46,7 +46,7 @@ The component creates and destroys the embed with React lifecycle. Use `ref.curr
 
 ## Host iframe
 
-Use `MindmapHostFrame` when React embeds the hosted mindmap app at `https://mindmaps.capaholdings.com/?embed=1`.
+Use `MindmapHostFrame` when React embeds the hosted mindmap app. Set `parentOrigin` to your host app origin.
 
 ```tsx
 import { useMemo, useRef } from 'react';
@@ -68,7 +68,7 @@ export function ClientMindmapFrame() {
   return (
     <MindmapHostFrame
       ref={ref}
-      src="https://mindmaps.capaholdings.com/?embed=1"
+      src="https://mindmaps.capaholdings.com/?embed=1&parentOrigin=https%3A%2F%2Fapp.example.com"
       targetOrigin="https://mindmaps.capaholdings.com"
       queueUntilReady
       autoResize

@@ -157,3 +157,48 @@ test('embed help page shows integration snippets and iframe preview', async ({
   ).toBe(false);
   await expect(errors).toEqual([]);
 });
+
+test('embed mode ignores host commands from unconfigured origins', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+
+  await page.goto(
+    `${baseUrl}?embed=1&parentOrigin=${encodeURIComponent('https://app.example.com')}`,
+  );
+  await expect(page.locator('text=Discovery').first()).toBeVisible();
+
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: 'https://evil.example',
+        data: {
+          type: 'capa:mindmap',
+          action: 'setContent',
+          content: '# Evil Map',
+        },
+      }),
+    );
+  });
+  await page.waitForTimeout(250);
+  await expect(page.locator('text=Evil Map')).toHaveCount(0);
+
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        origin: 'https://app.example.com',
+        data: {
+          type: 'capa:mindmap',
+          action: 'setContent',
+          content: '# Trusted Map',
+        },
+      }),
+    );
+  });
+  await expect(page.locator('text=Trusted Map')).toBeVisible();
+  await expect(errors).toEqual([]);
+});
