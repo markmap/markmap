@@ -9,11 +9,15 @@ import { createMindmapsApiServer } from '../src/server.mjs';
 let baseUrl;
 let server;
 let tempDir;
+let nowMs;
 
 before(async () => {
   tempDir = await mkdtemp(path.join(tmpdir(), 'mindmaps-api-'));
   server = createMindmapsApiServer({
     dataFile: path.join(tempDir, 'maps.json'),
+    adminToken: 'admin-token',
+    now: () => nowMs,
+    sessionTtlMs: 1000,
     token: 'test-token',
   });
   await new Promise((resolve) => {
@@ -22,6 +26,14 @@ before(async () => {
   const address = server.address();
   baseUrl = `http://127.0.0.1:${address.port}`;
 });
+
+async function createSession(body = { adminToken: 'admin-token' }) {
+  return fetch(`${baseUrl}/api/session`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
 
 after(async () => {
   await new Promise((resolve, reject) => {
@@ -37,6 +49,13 @@ function authHeaders(extra = {}) {
   };
 }
 
+function sessionAuthHeaders(token, extra = {}) {
+  return {
+    authorization: `Bearer ${token}`,
+    ...extra,
+  };
+}
+
 test('health check does not require auth', async () => {
   const response = await fetch(`${baseUrl}/healthz`);
   assert.equal(response.status, 200);
@@ -45,6 +64,49 @@ test('health check does not require auth', async () => {
 
 test('mindmap API requires bearer auth', async () => {
   const response = await fetch(`${baseUrl}/api/mindmaps/client-123`);
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: 'Unauthorized' });
+});
+
+test('session API rejects invalid admin tokens', async () => {
+  const response = await createSession({ adminToken: 'wrong-token' });
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: 'Unauthorized' });
+});
+
+test('session API issues short-lived bearer tokens for map access', async () => {
+  nowMs = Date.parse('2026-05-25T12:00:00.000Z');
+  const sessionResponse = await createSession();
+  assert.equal(sessionResponse.status, 200);
+  const session = await sessionResponse.json();
+  assert.match(session.token, /^[A-Za-z0-9_-]{32,}$/);
+  assert.equal(session.expiresAt, '2026-05-25T12:00:01.000Z');
+
+  const saveResponse = await fetch(`${baseUrl}/api/mindmaps/session-map`, {
+    method: 'PUT',
+    headers: sessionAuthHeaders(session.token, {
+      'content-type': 'application/json',
+    }),
+    body: JSON.stringify({ markdown: '# Session Map' }),
+  });
+  assert.equal(saveResponse.status, 200);
+
+  const loadResponse = await fetch(`${baseUrl}/api/mindmaps/session-map`, {
+    headers: sessionAuthHeaders(session.token),
+  });
+  assert.equal(loadResponse.status, 200);
+  assert.equal((await loadResponse.json()).markdown, '# Session Map');
+});
+
+test('session API rejects expired bearer tokens', async () => {
+  nowMs = Date.parse('2026-05-25T12:00:00.000Z');
+  const sessionResponse = await createSession();
+  const session = await sessionResponse.json();
+  nowMs = Date.parse('2026-05-25T12:00:01.001Z');
+
+  const response = await fetch(`${baseUrl}/api/mindmaps/session-map`, {
+    headers: sessionAuthHeaders(session.token),
+  });
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: 'Unauthorized' });
 });

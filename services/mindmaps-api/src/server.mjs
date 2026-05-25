@@ -1,9 +1,11 @@
 import { createServer } from 'node:http';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
 const MAP_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const DEFAULT_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 function json(response, statusCode, body, headers = {}) {
   response.writeHead(statusCode, {
@@ -21,8 +23,18 @@ function getBearerToken(request) {
   return match?.[1] || '';
 }
 
-function requireAuth(request, response, token) {
-  if (getBearerToken(request) === token) return true;
+function constantTimeEqual(left, right) {
+  if (!left || !right) return false;
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  return (
+    leftBuffer.length === rightBuffer.length &&
+    timingSafeEqual(leftBuffer, rightBuffer)
+  );
+}
+
+function requireAuth(request, response, isValidToken) {
+  if (isValidToken(getBearerToken(request))) return true;
   json(
     response,
     401,
@@ -32,6 +44,10 @@ function requireAuth(request, response, token) {
     },
   );
   return false;
+}
+
+function createSessionToken() {
+  return randomBytes(32).toString('base64url');
 }
 
 function parseMapId(url) {
@@ -80,15 +96,73 @@ function validateMarkdownBody(body) {
   }
 }
 
-export function createMindmapsApiServer({ dataFile, token }) {
+export function createMindmapsApiServer({
+  adminToken,
+  dataFile,
+  now = Date.now,
+  sessionTtlMs = DEFAULT_SESSION_TTL_MS,
+  token,
+}) {
   if (!dataFile) throw new Error('dataFile is required');
   if (!token) throw new Error('token is required');
+  const sessionAdminToken = adminToken || token;
+  const sessions = new Map();
+
+  function getNowMs() {
+    return Number(now());
+  }
+
+  function isValidSessionToken(value) {
+    const expiresAt = sessions.get(value);
+    if (!expiresAt) return false;
+    if (expiresAt <= getNowMs()) {
+      sessions.delete(value);
+      return false;
+    }
+    return true;
+  }
+
+  function isValidApiToken(value) {
+    return constantTimeEqual(value, token) || isValidSessionToken(value);
+  }
 
   return createServer(async (request, response) => {
     try {
       const url = new URL(request.url || '/', 'http://127.0.0.1');
       if (request.method === 'GET' && url.pathname === '/healthz') {
         json(response, 200, { ok: true });
+        return;
+      }
+
+      if (url.pathname === '/api/session') {
+        if (request.method !== 'POST') {
+          json(
+            response,
+            405,
+            { error: 'Method not allowed' },
+            { allow: 'POST' },
+          );
+          return;
+        }
+        const body = await readJsonBody(request);
+        if (!constantTimeEqual(body.adminToken, sessionAdminToken)) {
+          json(
+            response,
+            401,
+            { error: 'Unauthorized' },
+            {
+              'www-authenticate': 'Bearer',
+            },
+          );
+          return;
+        }
+        const sessionToken = createSessionToken();
+        const expiresAtMs = getNowMs() + Number(sessionTtlMs);
+        sessions.set(sessionToken, expiresAtMs);
+        json(response, 200, {
+          token: sessionToken,
+          expiresAt: new Date(expiresAtMs).toISOString(),
+        });
         return;
       }
 
@@ -101,7 +175,7 @@ export function createMindmapsApiServer({ dataFile, token }) {
         json(response, 400, { error: 'Invalid map id' });
         return;
       }
-      if (!requireAuth(request, response, token)) return;
+      if (!requireAuth(request, response, isValidApiToken)) return;
 
       const store = await loadStore(dataFile);
       const existing = store.maps[id];
@@ -163,7 +237,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const dataFile =
     process.env.MINDMAPS_DATA_FILE || '/var/lib/capa-mindmaps/maps.json';
   const token = process.env.MINDMAPS_API_TOKEN;
-  const server = createMindmapsApiServer({ dataFile, token });
+  const adminToken = process.env.MINDMAPS_ADMIN_TOKEN;
+  const sessionTtlMs = Number(
+    process.env.MINDMAPS_SESSION_TTL_MS || DEFAULT_SESSION_TTL_MS,
+  );
+  const server = createMindmapsApiServer({
+    adminToken,
+    dataFile,
+    sessionTtlMs,
+    token,
+  });
   server.listen(port, '127.0.0.1', () => {
     console.log(`mindmaps-api listening on 127.0.0.1:${port}`);
   });

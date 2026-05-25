@@ -484,6 +484,12 @@ body[data-map-theme='dark'] .mapPane {
   font-size: 15px;
 }
 
+.hostAuth {
+  margin-bottom: 14px;
+  border-bottom: 1px solid #d8e0eb;
+  padding-bottom: 14px;
+}
+
 .hostActionRow {
   display: flex;
   gap: 8px;

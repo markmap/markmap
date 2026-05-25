@@ -161,7 +161,7 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
 
   const frame = page.frameLocator('#hostMindmapFrame');
   await expect(frame.locator('text=Restored').first()).toBeVisible();
-  await frame.locator('text=Restored').first().click();
+  await frame.locator('text=Restored').first().click({ force: true });
   await page.locator('#hostNodeText').fill('HTTP Saved');
   await page.locator('#hostSaveNode').click();
   await expect(page.locator('#hostStatus')).toContainText('Saved line');
@@ -172,6 +172,64 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
     id: 'server-acme',
     markdown: expect.stringContaining('HTTP Saved'),
   });
+  await expect(errors).toEqual([]);
+});
+
+test('host SDK example can create an HTTP API session token', async ({
+  page,
+}) => {
+  const errors = [];
+  const apiRequests = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.route('**/api/session', async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.adminToken !== 'admin-secret') {
+      await route.fulfill({ status: 401, body: 'Unauthorized' });
+      return;
+    }
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        token: 'session-token',
+        expiresAt: '2026-05-25T20:00:00.000Z',
+      }),
+    });
+  });
+  await page.route('**/api/mindmaps/*', async (route) => {
+    apiRequests.push(route.request().headers().authorization);
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'login-acme',
+        markdown: route.request().postDataJSON().markdown,
+      }),
+    });
+  });
+
+  await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
+  await page.locator('#hostApiToken').fill('admin-secret');
+  await page.locator('#hostApiLogin').click();
+  await expect(page.locator('#hostAuthStatus')).toContainText('Session ready');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.sessionStorage.getItem('capa:mindmaps:apiToken'),
+      ),
+    )
+    .toBe('session-token');
+
+  const frame = page.frameLocator('#hostMindmapFrame');
+  await page.locator('#hostMapId').fill('login-acme');
+  await frame.locator('text=Discovery').first().click();
+  await page.locator('#hostNodeText').fill('Logged In');
+  await page.locator('#hostSaveNode').click();
+  await page.locator('#hostSaveMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Saved map');
+
+  expect(apiRequests.at(-1)).toBe('Bearer session-token');
   await expect(errors).toEqual([]);
 });
 

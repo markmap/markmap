@@ -454,6 +454,18 @@ function renderApp() {
     return;
   }
   if (isHostMode) {
+    const hostAuth =
+      getHostPersistenceMode() === 'http'
+        ? `<div class="hostAuth">
+              <h2>API Session</h2>
+              <p id="hostAuthStatus" class="nodeEditStatus">Enter the admin token to create a browser session.</p>
+              <label class="nodeEditLabel" for="hostApiToken">Admin token</label>
+              <div class="nodeEditRow">
+                <input id="hostApiToken" class="nodeEditInput" type="password" autocomplete="off" aria-label="Mindmaps API admin token" />
+                <button id="hostApiLogin" class="smallButton" type="button">Login</button>
+              </div>
+            </div>`
+        : '';
     app.innerHTML = `
       <main class="hostApp">
         <header class="hostTopbar">
@@ -472,6 +484,7 @@ function renderApp() {
             ></iframe>
           </div>
           <aside class="hostPanel">
+            ${hostAuth}
             <h2>Selected Node</h2>
             <p id="hostSelectedNode" class="detailsText">Click a heading or list item in the mindmap.</p>
             <label class="nodeEditLabel" for="hostNodeId">Node ID</label>
@@ -1284,6 +1297,10 @@ function getHostApiBase() {
   return url;
 }
 
+function getHostSessionUrl() {
+  return new URL('/api/session', window.location.origin);
+}
+
 function getHostMapApiUrl(base: URL, id: string) {
   const url = new URL(`${base.pathname}/${encodeURIComponent(id)}`, base);
   url.search = '';
@@ -1296,6 +1313,60 @@ function getHostApiHeaders(extra: Record<string, string> = {}) {
     ...extra,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+function setHostAuthStatus(value: string) {
+  const status = document.querySelector<HTMLElement>('#hostAuthStatus');
+  if (status) status.textContent = value;
+}
+
+function getHostApiToken() {
+  return window.sessionStorage.getItem('capa:mindmaps:apiToken') || '';
+}
+
+function syncHostAuthState() {
+  if (getHostPersistenceMode() !== 'http') return;
+  setHostAuthStatus(
+    getHostApiToken()
+      ? 'Session ready'
+      : 'Enter the admin token to create a browser session.',
+  );
+}
+
+async function createHostApiSession() {
+  const input = document.querySelector<HTMLInputElement>('#hostApiToken');
+  const button = document.querySelector<HTMLButtonElement>('#hostApiLogin');
+  const adminToken = input?.value.trim() || '';
+  if (!adminToken) {
+    setHostAuthStatus('Enter an admin token.');
+    return;
+  }
+  if (button) button.disabled = true;
+  setHostAuthStatus('Creating session');
+  try {
+    const response = await fetch(getHostSessionUrl(), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ adminToken }),
+    });
+    if (!response.ok) {
+      throw new Error(`Session failed: ${response.status}`);
+    }
+    const result = await response.json();
+    if (!result || typeof result.token !== 'string') {
+      throw new Error('Session response must include token.');
+    }
+    window.sessionStorage.setItem('capa:mindmaps:apiToken', result.token);
+    if (input) input.value = '';
+    setHostAuthStatus('Session ready');
+  } catch (error) {
+    setHostAuthStatus(getErrorMessage(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function createHostPersistence(): MindmapPersistenceAdapter {
@@ -1434,6 +1505,21 @@ async function wireHostSdkExample() {
     setHostStatus('Error');
     setHostLog(getErrorMessage(error));
   });
+  syncHostAuthState();
+
+  document
+    .querySelector<HTMLButtonElement>('#hostApiLogin')
+    ?.addEventListener('click', () => {
+      void createHostApiSession();
+    });
+  document
+    .querySelector<HTMLInputElement>('#hostApiToken')
+    ?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void createHostApiSession();
+      }
+    });
 
   document
     .querySelector<HTMLButtonElement>('#hostSaveNode')
