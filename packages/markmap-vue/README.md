@@ -42,3 +42,36 @@ const theme = {
 ```
 
 The component creates and destroys the embed with Vue lifecycle. Use a template ref and `getEmbed()` when the host app needs direct access.
+
+## Host iframe
+
+Use `MarkmapHostFrame` when Vue embeds the hosted mindmap app at `https://mindmaps.capaholdings.com/?embed=1`.
+
+```vue
+<script setup lang="ts">
+import { MarkmapHostFrame } from 'markmap-vue';
+
+const persistence = {
+  load: (id: string) => localStorage.getItem(`mindmap:${id}`) || '# Strategy',
+  save: (id: string, markdown: string) => {
+    localStorage.setItem(`mindmap:${id}`, markdown);
+  },
+};
+</script>
+
+<template>
+  <MarkmapHostFrame
+    src="https://mindmaps.capaholdings.com/?embed=1"
+    target-origin="https://mindmaps.capaholdings.com"
+    queue-until-ready
+    auto-resize
+    autosave
+    map-id="client-123"
+    :persistence="persistence"
+    @ready="(connection) => connection.loadMap('client-123')"
+    @autosave="(map) => console.log('saved', map.id)"
+    @change="(result) => console.log(result.markdown)"
+    @error="(error) => console.error(error)"
+  />
+</template>
+```
