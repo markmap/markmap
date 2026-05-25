@@ -3,17 +3,29 @@ import { createApp, h, nextTick, ref } from 'vue';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 const createMindmapMock = vi.fn();
+const connectMindmapMock = vi.fn();
 const updateMock = vi.fn();
 const destroyMock = vi.fn();
+const saveMapMock = vi.fn();
+const hostDestroyMock = vi.fn();
+let hostListeners: {
+  change?: (result: { dirty: boolean; markdown: string }) => void;
+  error?: (result: { message: string }) => void;
+};
 
 vi.mock('markmap-embed', () => ({
   createMindmap: createMindmapMock,
+  connectMindmap: connectMindmapMock,
 }));
 
 beforeEach(() => {
   createMindmapMock.mockReset();
+  connectMindmapMock.mockReset();
   updateMock.mockReset();
   destroyMock.mockReset();
+  saveMapMock.mockReset();
+  hostDestroyMock.mockReset();
+  hostListeners = {};
   updateMock.mockResolvedValue({});
   createMindmapMock.mockImplementation((_container, options) => {
     const embed = {
@@ -22,6 +34,20 @@ beforeEach(() => {
     };
     options?.signal?.addEventListener('abort', embed.destroy, { once: true });
     return Promise.resolve(embed);
+  });
+  saveMapMock.mockResolvedValue({ id: 'demo', markdown: '# Root' });
+  connectMindmapMock.mockReturnValue({
+    saveMap: saveMapMock,
+    destroy: hostDestroyMock,
+    onChange: vi.fn((listener) => {
+      hostListeners.change = listener;
+      return vi.fn();
+    }),
+    onError: vi.fn((listener) => {
+      hostListeners.error = listener;
+      return vi.fn();
+    }),
+    onReady: vi.fn(() => vi.fn()),
   });
   document.body.replaceChildren();
 });
@@ -175,4 +201,91 @@ test('emits update error', async () => {
   await flush();
 
   expect(onError).toHaveBeenCalledWith(error);
+});
+
+test('renders a host iframe and connects it to the iframe SDK', async () => {
+  const ready = vi.fn();
+  const { MarkmapHostFrame } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+
+  createApp({
+    render: () =>
+      h(MarkmapHostFrame, {
+        src: 'about:blank',
+        targetOrigin: 'https://mindmaps.capaholdings.com',
+        queueUntilReady: true,
+        onReady: ready,
+      }),
+  }).mount(host);
+  await flush();
+
+  expect(host.querySelector('iframe')?.getAttribute('src')).toBe('about:blank');
+  expect(connectMindmapMock).toHaveBeenCalledWith(
+    expect.any(HTMLIFrameElement),
+    expect.objectContaining({
+      queueUntilReady: true,
+      targetOrigin: 'https://mindmaps.capaholdings.com',
+    }),
+  );
+  expect(ready).toHaveBeenCalledWith(
+    expect.objectContaining({ saveMap: saveMapMock }),
+  );
+});
+
+test('autosaves dirty host changes after the debounce delay', async () => {
+  vi.useFakeTimers();
+  const change = vi.fn();
+  const autosave = vi.fn();
+  const { MarkmapHostFrame } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+
+  createApp({
+    render: () =>
+      h(MarkmapHostFrame, {
+        src: 'about:blank',
+        mapId: 'demo',
+        autosave: true,
+        autosaveDebounceMs: 25,
+        onChange: change,
+        onAutosave: autosave,
+      }),
+  }).mount(host);
+  await flush();
+  hostListeners.change?.({ dirty: true, markdown: '# Root' });
+
+  expect(change).toHaveBeenCalledWith({ dirty: true, markdown: '# Root' });
+  expect(saveMapMock).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(25);
+
+  expect(saveMapMock).toHaveBeenCalledWith('demo');
+  expect(autosave).toHaveBeenCalledWith({ id: 'demo', markdown: '# Root' });
+  vi.useRealTimers();
+});
+
+test('destroys the host connection and pending autosave timer on unmount', async () => {
+  vi.useFakeTimers();
+  const { MarkmapHostFrame } = await import('../src/index');
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp({
+    render: () =>
+      h(MarkmapHostFrame, {
+        src: 'about:blank',
+        mapId: 'demo',
+        autosave: true,
+        autosaveDebounceMs: 25,
+      }),
+  });
+
+  app.mount(host);
+  await flush();
+  hostListeners.change?.({ dirty: true, markdown: '# Root' });
+  app.unmount();
+  await vi.advanceTimersByTimeAsync(25);
+
+  expect(hostDestroyMock).toHaveBeenCalledOnce();
+  expect(saveMapMock).not.toHaveBeenCalled();
+  vi.useRealTimers();
 });

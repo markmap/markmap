@@ -8,10 +8,15 @@ import {
   type DefineComponent,
   type PropType,
 } from 'vue';
-import { createMindmap } from 'markmap-embed';
+import { connectMindmap, createMindmap } from 'markmap-embed';
 import type {
+  ConnectMindmapOptions,
+  MindmapChangeResult,
   MindmapEmbed,
   MindmapEmbedOptions,
+  MindmapErrorResult,
+  MindmapHostConnection,
+  MindmapPersistedMap,
   MindmapUpdateOptions,
 } from 'markmap-embed';
 
@@ -26,6 +31,10 @@ export interface MarkmapExpose {
   getEmbed(): MindmapEmbed | undefined;
 }
 
+export interface MarkmapHostFrameExpose {
+  getConnection(): MindmapHostConnection | undefined;
+}
+
 export interface MarkmapProps {
   content?: string;
   transformer?: MindmapEmbedOptions['transformer'];
@@ -34,6 +43,18 @@ export interface MarkmapProps {
   theme?: MindmapEmbedOptions['theme'];
   autoFit?: boolean;
   autoResize?: MindmapEmbedOptions['autoResize'];
+}
+
+export interface MarkmapHostFrameProps {
+  src: string;
+  autoResize?: ConnectMindmapOptions['autoResize'];
+  autosave?: boolean;
+  autosaveDebounceMs?: number;
+  mapId?: string;
+  persistence?: ConnectMindmapOptions['persistence'];
+  queueUntilReady?: ConnectMindmapOptions['queueUntilReady'];
+  readyTimeoutMs?: ConnectMindmapOptions['readyTimeoutMs'];
+  targetOrigin?: ConnectMindmapOptions['targetOrigin'];
 }
 
 export const Markmap = defineComponent({
@@ -151,5 +172,103 @@ export const Markmap = defineComponent({
     return () => h('div', { ...attrs, ref: container });
   },
 }) as DefineComponent<MarkmapProps>;
+
+export const MarkmapHostFrame = defineComponent({
+  name: 'MarkmapHostFrame',
+  props: {
+    src: {
+      type: String,
+      required: true,
+    },
+    autoResize: Boolean,
+    autosave: Boolean,
+    autosaveDebounceMs: {
+      type: Number,
+      default: 600,
+    },
+    mapId: String,
+    persistence: Object as PropType<ConnectMindmapOptions['persistence']>,
+    queueUntilReady: Boolean,
+    readyTimeoutMs: Number,
+    targetOrigin: String,
+  },
+  emits: {
+    ready: (connection: MindmapHostConnection) => {
+      void connection;
+      return true;
+    },
+    change: (result: MindmapChangeResult) => {
+      void result;
+      return true;
+    },
+    autosave: (result: MindmapPersistedMap) => {
+      void result;
+      return true;
+    },
+    error: (error: MindmapErrorResult | unknown) => {
+      void error;
+      return true;
+    },
+  },
+  setup(props, { attrs, emit, expose }) {
+    const iframe = ref<HTMLIFrameElement>();
+    const connection = ref<MindmapHostConnection>();
+    let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+    let removeChangeListener: (() => void) | undefined;
+    let removeErrorListener: (() => void) | undefined;
+
+    function clearAutosave() {
+      if (!autosaveTimer) return;
+      clearTimeout(autosaveTimer);
+      autosaveTimer = undefined;
+    }
+
+    function scheduleAutosave(result: MindmapChangeResult) {
+      if (!props.autosave || !props.mapId || !result.dirty || !connection.value)
+        return;
+      clearAutosave();
+      autosaveTimer = setTimeout(() => {
+        void connection.value
+          ?.saveMap(props.mapId!)
+          .then((map) => emit('autosave', map))
+          .catch((error: unknown) => emit('error', error));
+      }, props.autosaveDebounceMs);
+    }
+
+    expose({
+      getConnection: () => connection.value,
+    } satisfies MarkmapHostFrameExpose);
+
+    onMounted(() => {
+      if (!iframe.value) return;
+      const nextConnection = connectMindmap(iframe.value, {
+        autoResize: props.autoResize,
+        persistence: props.persistence,
+        queueUntilReady: props.queueUntilReady,
+        readyTimeoutMs: props.readyTimeoutMs,
+        targetOrigin: props.targetOrigin,
+      });
+      connection.value = nextConnection;
+      removeChangeListener = nextConnection.onChange((result) => {
+        emit('change', result);
+        scheduleAutosave(result);
+      });
+      removeErrorListener = nextConnection.onError((error) => {
+        emit('error', error);
+      });
+      emit('ready', nextConnection);
+    });
+
+    onBeforeUnmount(() => {
+      clearAutosave();
+      removeChangeListener?.();
+      removeErrorListener?.();
+      connection.value?.destroy();
+      connection.value = undefined;
+    });
+
+    return () => h('iframe', { ...attrs, ref: iframe, src: props.src });
+  },
+}) as DefineComponent<MarkmapHostFrameProps>;
 
 export default Markmap;

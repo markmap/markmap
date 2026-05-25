@@ -4,9 +4,18 @@ import {
   useImperativeHandle,
   useRef,
   type HTMLAttributes,
+  type IframeHTMLAttributes,
 } from 'react';
-import { createMindmap } from 'markmap-embed';
-import type { MindmapEmbed, MindmapEmbedOptions } from 'markmap-embed';
+import { connectMindmap, createMindmap } from 'markmap-embed';
+import type {
+  ConnectMindmapOptions,
+  MindmapChangeResult,
+  MindmapEmbed,
+  MindmapEmbedOptions,
+  MindmapErrorResult,
+  MindmapHostConnection,
+  MindmapPersistedMap,
+} from 'markmap-embed';
 
 export interface MarkmapProps
   extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'onError'>,
@@ -17,6 +26,25 @@ export interface MarkmapProps
 
 export interface MarkmapHandle {
   getEmbed(): MindmapEmbed | undefined;
+}
+
+export interface MindmapHostFrameProps
+  extends Omit<
+      IframeHTMLAttributes<HTMLIFrameElement>,
+      'children' | 'onChange' | 'onError'
+    >,
+    Omit<ConnectMindmapOptions, 'window'> {
+  autosave?: boolean;
+  autosaveDebounceMs?: number;
+  mapId?: string;
+  onAutosave?: (map: MindmapPersistedMap) => void;
+  onChange?: (result: MindmapChangeResult) => void;
+  onError?: (error: MindmapErrorResult | unknown) => void;
+  onReady?: (connection: MindmapHostConnection) => void;
+}
+
+export interface MindmapHostFrameHandle {
+  getConnection(): MindmapHostConnection | undefined;
 }
 
 export const Markmap = forwardRef<MarkmapHandle, MarkmapProps>(
@@ -96,5 +124,84 @@ export const Markmap = forwardRef<MarkmapHandle, MarkmapProps>(
 );
 
 Markmap.displayName = 'Markmap';
+
+export const MindmapHostFrame = forwardRef<
+  MindmapHostFrameHandle,
+  MindmapHostFrameProps
+>(
+  (
+    {
+      autosave,
+      autosaveDebounceMs = 600,
+      autoResize,
+      mapId,
+      onAutosave,
+      onChange,
+      onError,
+      onReady,
+      persistence,
+      queueUntilReady,
+      readyTimeoutMs,
+      targetOrigin,
+      ...iframeProps
+    },
+    ref,
+  ) => {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const connectionRef = useRef<MindmapHostConnection>();
+    const autosaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useImperativeHandle(ref, () => ({
+      getConnection: () => connectionRef.current,
+    }));
+
+    useEffect(() => {
+      if (!iframeRef.current) return;
+
+      const connection = connectMindmap(iframeRef.current, {
+        autoResize,
+        persistence,
+        queueUntilReady,
+        readyTimeoutMs,
+        targetOrigin,
+      });
+      const clearAutosave = () => {
+        if (autosaveTimerRef.current) {
+          clearTimeout(autosaveTimerRef.current);
+          autosaveTimerRef.current = undefined;
+        }
+      };
+      const scheduleAutosave = (result: MindmapChangeResult) => {
+        if (!autosave || !mapId || !result.dirty) return;
+        clearAutosave();
+        autosaveTimerRef.current = setTimeout(() => {
+          void connection.saveMap(mapId).then(onAutosave).catch(onError);
+        }, autosaveDebounceMs);
+      };
+      const removeChangeListener = connection.onChange((result) => {
+        onChange?.(result);
+        scheduleAutosave(result);
+      });
+      const removeErrorListener = connection.onError((error) => {
+        onError?.(error);
+      });
+
+      connectionRef.current = connection;
+      onReady?.(connection);
+
+      return () => {
+        clearAutosave();
+        removeChangeListener();
+        removeErrorListener();
+        connection.destroy();
+        connectionRef.current = undefined;
+      };
+    }, []);
+
+    return <iframe {...iframeProps} ref={iframeRef} />;
+  },
+);
+
+MindmapHostFrame.displayName = 'MindmapHostFrame';
 
 export default Markmap;

@@ -5,6 +5,8 @@ import type { IHtmlParserOptions } from 'markmap-html-parser';
 import { Markmap, deriveOptions } from 'markmap-view';
 import type { IMarkmapOptions } from 'markmap-view';
 
+export * from './host';
+
 export interface MindmapTheme {
   colors?: string[];
   colorFreezeLevel?: number;
