@@ -38,11 +38,16 @@ export interface MindmapChangeResult {
 export interface MindmapPersistedMap {
   id: string;
   markdown: string;
+  title?: string;
 }
 
 export interface MindmapPersistenceAdapter {
   load(id: string): Promise<string> | string;
-  save(id: string, markdown: string): Promise<void> | void;
+  save(
+    id: string,
+    markdown: string,
+    metadata?: MindmapSaveMetadata,
+  ): Promise<void> | void;
 }
 
 export interface MindmapExportResult {
@@ -77,7 +82,7 @@ export interface MindmapHostConnection {
   loadMap(id: string, options?: MindmapSetContentOptions): Promise<string>;
   saveMap(
     id: string,
-    options?: MindmapExportOptions,
+    options?: MindmapSaveMapOptions,
   ): Promise<MindmapPersistedMap>;
   onReady(listener: () => void): () => void;
   onChange(listener: (result: MindmapChangeResult) => void): () => void;
@@ -88,6 +93,14 @@ export interface MindmapHostConnection {
   onResize(listener: (result: MindmapResizeResult) => void): () => void;
   destroy(): void;
 }
+
+export interface MindmapSaveMetadata {
+  title?: string;
+}
+
+export interface MindmapSaveMapOptions
+  extends MindmapExportOptions,
+    MindmapSaveMetadata {}
 
 export interface MindmapSetContentOptions {
   theme?: string | Record<string, unknown>;
@@ -483,10 +496,17 @@ export function connectMindmap(
     async saveMap(id, exportOptions = {}) {
       const persistence = requirePersistence(options.persistence);
       const result = await this.export(['markdown'], exportOptions);
-      await persistence.save(id, result.markdown);
+      if (exportOptions.title) {
+        await persistence.save(id, result.markdown, {
+          title: exportOptions.title,
+        });
+      } else {
+        await persistence.save(id, result.markdown);
+      }
       return {
         id,
         markdown: result.markdown,
+        ...(exportOptions.title ? { title: exportOptions.title } : {}),
       };
     },
     onReady(listener) {

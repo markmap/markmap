@@ -451,6 +451,7 @@ test('connectMindmap saves current maps by id', async () => {
   });
   const pending = connection.saveMap('client-123', {
     requestId: 'save-1',
+    title: 'Client Map',
     timeoutMs: 500,
   });
   send({
@@ -463,6 +464,7 @@ test('connectMindmap saves current maps by id', async () => {
   await expect(pending).resolves.toEqual({
     id: 'client-123',
     markdown: '# Current Map',
+    title: 'Client Map',
   });
   expect(childWindow.postMessage).toHaveBeenCalledWith(
     {
@@ -473,7 +475,9 @@ test('connectMindmap saves current maps by id', async () => {
     },
     'https://mindmaps.capaholdings.com',
   );
-  expect(save).toHaveBeenCalledWith('client-123', '# Current Map');
+  expect(save).toHaveBeenCalledWith('client-123', '# Current Map', {
+    title: 'Client Map',
+  });
 });
 
 test('defineMindmapHostFrame registers a custom element that exposes the host connection', async () => {

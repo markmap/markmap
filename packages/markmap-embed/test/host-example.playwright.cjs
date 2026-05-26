@@ -136,17 +136,32 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
       }
       await route.fulfill({
         contentType: 'application/json',
-        body: JSON.stringify({ id, markdown, version: 7 }),
+        body: JSON.stringify({
+          id,
+          markdown,
+          title: 'Server Strategy',
+          version: 7,
+        }),
       });
       return;
     }
     if (route.request().method() === 'PUT') {
       const body = route.request().postDataJSON();
-      apiWrites.push({ id, markdown: body.markdown, version: body.version });
+      apiWrites.push({
+        id,
+        markdown: body.markdown,
+        title: body.title,
+        version: body.version,
+      });
       maps.set(id, body.markdown);
       await route.fulfill({
         contentType: 'application/json',
-        body: JSON.stringify({ id, markdown: body.markdown, version: 8 }),
+        body: JSON.stringify({
+          id,
+          markdown: body.markdown,
+          title: body.title,
+          version: 8,
+        }),
       });
       return;
     }
@@ -158,6 +173,7 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
   await page.locator('#hostMapId').fill('server-acme');
   await page.locator('#hostLoadMap').click();
   await expect(page.locator('#hostStatus')).toContainText('Loaded map');
+  await expect(page.locator('#hostMapTitle')).toHaveValue('Server Strategy');
 
   const frame = page.frameLocator('#hostMindmapFrame');
   await expect(frame.locator('text=Restored').first()).toBeVisible();
@@ -165,12 +181,14 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
   await page.locator('#hostNodeText').fill('HTTP Saved');
   await page.locator('#hostSaveNode').click();
   await expect(page.locator('#hostStatus')).toContainText('Saved line');
+  await page.locator('#hostMapTitle').fill('HTTP Saved Strategy');
   await page.locator('#hostSaveMap').click();
   await expect(page.locator('#hostStatus')).toContainText('Saved map');
 
   expect(apiWrites.at(-1)).toEqual({
     id: 'server-acme',
     markdown: expect.stringContaining('HTTP Saved'),
+    title: 'HTTP Saved Strategy',
     version: 7,
   });
   await expect(errors).toEqual([]);
@@ -298,6 +316,7 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
   );
   await page.locator('#hostRecentMaps').selectOption('client-alpha');
   await expect(page.locator('#hostMapId')).toHaveValue('client-alpha');
+  await expect(page.locator('#hostMapTitle')).toHaveValue('Alpha Strategy');
   await page.locator('#hostLoadMap').click();
   await expect(page.locator('#hostStatus')).toContainText('Loaded map');
   await expect(

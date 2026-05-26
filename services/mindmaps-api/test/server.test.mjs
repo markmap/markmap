@@ -152,12 +152,13 @@ test('mindmap API saves and loads markdown with metadata', async () => {
   const saveResponse = await fetch(`${baseUrl}/api/mindmaps/client-123`, {
     method: 'PUT',
     headers: authHeaders({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ markdown: '# Strategy' }),
+    body: JSON.stringify({ markdown: '# Strategy', title: 'Client Strategy' }),
   });
   assert.equal(saveResponse.status, 200);
   const saved = await saveResponse.json();
   assert.equal(saved.id, 'client-123');
   assert.equal(saved.markdown, '# Strategy');
+  assert.equal(saved.title, 'Client Strategy');
   assert.equal(saved.version, 1);
   assert.match(saved.createdAt, /^\d{4}-\d{2}-\d{2}T/);
   assert.equal(saved.createdAt, saved.updatedAt);
@@ -190,13 +191,51 @@ test('mindmap API prevents stale version overwrites', async () => {
   const saved = await saveResponse.json();
   assert.equal(saved.version, 2);
   assert.equal(saved.markdown, '# Updated');
+  assert.equal(saved.title, 'Client Strategy');
+});
+
+test('mindmap API validates and clears explicit titles', async () => {
+  const tooLongTitle = 'x'.repeat(257);
+  const invalidResponse = await fetch(`${baseUrl}/api/mindmaps/title-map`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ markdown: '# Title Map', title: tooLongTitle }),
+  });
+  assert.equal(invalidResponse.status, 400);
+  assert.deepEqual(await invalidResponse.json(), {
+    error: 'Title is too large.',
+  });
+
+  const saveResponse = await fetch(`${baseUrl}/api/mindmaps/title-map`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ markdown: '# Title Map', title: 'Roadmap' }),
+  });
+  assert.equal(saveResponse.status, 200);
+  const saved = await saveResponse.json();
+  assert.equal(saved.title, 'Roadmap');
+
+  const clearResponse = await fetch(`${baseUrl}/api/mindmaps/title-map`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({
+      markdown: '# Title Map',
+      title: '',
+      version: saved.version,
+    }),
+  });
+  assert.equal(clearResponse.status, 200);
+  assert.equal('title' in (await clearResponse.json()), false);
 });
 
 test('mindmap API lists saved maps without markdown bodies', async () => {
   const firstResponse = await fetch(`${baseUrl}/api/mindmaps/list-first`, {
     method: 'PUT',
     headers: authHeaders({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ markdown: '# First Client Map\n\n## Discovery' }),
+    body: JSON.stringify({
+      markdown: '# First Client Map\n\n## Discovery',
+      title: 'Explicit First Map',
+    }),
   });
   assert.equal(firstResponse.status, 200);
   const first = await firstResponse.json();
@@ -225,7 +264,7 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
     },
     {
       id: 'list-first',
-      title: 'First Client Map',
+      title: 'Explicit First Map',
       version: first.version,
       createdAt: first.createdAt,
       updatedAt: first.updatedAt,
@@ -234,7 +273,7 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   assert.equal('markdown' in result.maps[0], false);
 
   const filteredResponse = await fetch(
-    `${baseUrl}/api/mindmaps?q=first&limit=1`,
+    `${baseUrl}/api/mindmaps?q=explicit&limit=1`,
     {
       headers: authHeaders(),
     },

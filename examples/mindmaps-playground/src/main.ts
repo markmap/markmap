@@ -100,6 +100,7 @@ let nextNodeId = 1;
 let renderTimer = 0;
 const nodeIdsByLineIndex = new Map<number, string>();
 const lineIndexByNodeId = new Map<string, number>();
+const hostRecentMapSummaries = new Map<string, HostMapSummary>();
 
 type MindmapHostMessage = {
   type?: unknown;
@@ -523,6 +524,10 @@ function renderApp() {
               <label class="nodeEditLabel" for="hostMapId">Map ID</label>
               <div class="nodeEditRow">
                 <input id="hostMapId" class="nodeEditInput" aria-label="Host map ID" value="client-demo" />
+              </div>
+              <label class="nodeEditLabel" for="hostMapTitle">Map title</label>
+              <div class="nodeEditRow">
+                <input id="hostMapTitle" class="nodeEditInput" aria-label="Host map title" placeholder="Client strategy map" />
               </div>
               ${hostRecentMaps}
               <label class="hostAutosaveToggle" for="hostAutosave">
@@ -1301,6 +1306,11 @@ function getHostMapId() {
   return input?.value.trim() || 'client-demo';
 }
 
+function getHostMapTitle() {
+  const input = document.querySelector<HTMLInputElement>('#hostMapTitle');
+  return input?.value.trim() || undefined;
+}
+
 function getHostStorageKey(id: string) {
   return `capa:mindmap:${id}`;
 }
@@ -1405,6 +1415,11 @@ function setHostMapId(value: string) {
   if (input) input.value = value;
 }
 
+function setHostMapTitle(value = '') {
+  const input = document.querySelector<HTMLInputElement>('#hostMapTitle');
+  if (input) input.value = value;
+}
+
 function formatHostMapOption(map: HostMapSummary) {
   const version = typeof map.version === 'number' ? ` v${map.version}` : '';
   const date = map.updatedAt
@@ -1434,6 +1449,12 @@ async function refreshHostRecentMaps() {
     const maps = Array.isArray(result?.maps)
       ? (result.maps as HostMapSummary[])
       : [];
+    hostRecentMapSummaries.clear();
+    for (const map of maps) {
+      if (typeof map.id === 'string' && map.id) {
+        hostRecentMapSummaries.set(map.id, map);
+      }
+    }
     select.innerHTML = [
       '<option value="">Select a saved map</option>',
       ...maps
@@ -1522,10 +1543,12 @@ function createHostPersistence(): MindmapPersistenceAdapter {
       } else {
         versions.delete(id);
       }
+      setHostMapTitle(typeof result.title === 'string' ? result.title : '');
       return result.markdown;
     },
-    async save(id, markdown) {
+    async save(id, markdown, metadata) {
       const version = versions.get(id);
+      const title = metadata?.title;
       const response = await fetch(getHostMapApiUrl(apiBase, id), {
         method: 'PUT',
         headers: getHostApiHeaders({
@@ -1534,6 +1557,7 @@ function createHostPersistence(): MindmapPersistenceAdapter {
         }),
         body: JSON.stringify({
           markdown,
+          ...(title ? { title } : {}),
           ...(version == null ? {} : { version }),
         }),
       });
@@ -1553,10 +1577,12 @@ function createHostPersistence(): MindmapPersistenceAdapter {
 
 function saveHostMap(id: string, status = 'Saved map') {
   setHostStatus('Saving map');
+  const title = getHostMapTitle();
   return hostConnection
     ?.saveMap(id, {
       requestId: `host-save-map-${Date.now()}`,
       timeoutMs: 5000,
+      ...(title ? { title } : {}),
     })
     .then((result) => {
       hostDirty = false;
@@ -1664,7 +1690,10 @@ async function wireHostSdkExample() {
     .querySelector<HTMLSelectElement>('#hostRecentMaps')
     ?.addEventListener('change', (event) => {
       const value = (event.target as HTMLSelectElement).value;
-      if (value) setHostMapId(value);
+      if (value) {
+        setHostMapId(value);
+        setHostMapTitle(hostRecentMapSummaries.get(value)?.title || '');
+      }
     });
   document
     .querySelector<HTMLButtonElement>('#hostDeleteMap')

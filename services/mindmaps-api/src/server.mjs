@@ -4,6 +4,7 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
 
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
+const MAX_TITLE_BYTES = 256;
 const MAP_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const DEFAULT_SESSION_RATE_LIMIT_MAX = 5;
 const DEFAULT_SESSION_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
@@ -115,6 +116,22 @@ function getMarkdownTitle(markdown, fallback) {
   return heading?.trim() || fallback;
 }
 
+function normalizeTitle(value) {
+  if (value == null) return;
+  if (typeof value !== 'string') {
+    throw new Error('Title must be a string.');
+  }
+  const title = value.trim();
+  if (Buffer.byteLength(title) > MAX_TITLE_BYTES) {
+    throw new Error('Title is too large.');
+  }
+  return title || undefined;
+}
+
+function getMapTitle(map) {
+  return map.title || getMarkdownTitle(map.markdown, map.id);
+}
+
 function getListLimit(value) {
   const limit = Number(value || 50);
   if (!Number.isFinite(limit)) return 50;
@@ -124,9 +141,9 @@ function getListLimit(value) {
 function listMapSummaries(store, { limit = 50, query = '' } = {}) {
   const normalizedQuery = String(query).trim().toLowerCase();
   return Object.values(store.maps)
-    .map(({ id, markdown, version, createdAt, updatedAt }) => ({
+    .map(({ id, markdown, title, version, createdAt, updatedAt }) => ({
       id,
-      title: getMarkdownTitle(markdown, id),
+      title: getMapTitle({ id, markdown, title }),
       version,
       createdAt,
       updatedAt,
@@ -308,6 +325,7 @@ export function createMindmapsApiServer({
       if (request.method === 'PUT') {
         const body = await readJsonBody(request);
         validateMarkdownBody(body);
+        const title = normalizeTitle(body.title);
         if (
           existing &&
           body.version != null &&
@@ -324,6 +342,13 @@ export function createMindmapsApiServer({
         const next = {
           id,
           markdown: body.markdown,
+          ...(body.title == null
+            ? existing?.title
+              ? { title: existing.title }
+              : {}
+            : title
+              ? { title }
+              : {}),
           version: existing ? existing.version + 1 : 1,
           createdAt: existing?.createdAt || now,
           updatedAt: now,
