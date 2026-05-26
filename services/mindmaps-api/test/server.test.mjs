@@ -12,11 +12,14 @@ let tempDir;
 let nowMs;
 
 before(async () => {
+  nowMs = Date.parse('2026-05-25T12:00:00.000Z');
   tempDir = await mkdtemp(path.join(tmpdir(), 'mindmaps-api-'));
   server = createMindmapsApiServer({
     dataFile: path.join(tempDir, 'maps.json'),
     adminToken: 'admin-token',
     now: () => nowMs,
+    sessionRateLimitMax: 3,
+    sessionRateLimitWindowMs: 1000,
     sessionTtlMs: 1000,
     token: 'test-token',
   });
@@ -27,10 +30,13 @@ before(async () => {
   baseUrl = `http://127.0.0.1:${address.port}`;
 });
 
-async function createSession(body = { adminToken: 'admin-token' }) {
+async function createSession(
+  body = { adminToken: 'admin-token' },
+  headers = {},
+) {
   return fetch(`${baseUrl}/api/session`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...headers },
     body: JSON.stringify(body),
   });
 }
@@ -72,6 +78,29 @@ test('session API rejects invalid admin tokens', async () => {
   const response = await createSession({ adminToken: 'wrong-token' });
   assert.equal(response.status, 401);
   assert.deepEqual(await response.json(), { error: 'Unauthorized' });
+});
+
+test('session API rate limits repeated invalid admin tokens by client IP', async () => {
+  nowMs = Date.parse('2026-05-25T12:01:00.000Z');
+  const headers = { 'x-forwarded-for': '203.0.113.10' };
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await createSession(
+      { adminToken: 'wrong-token' },
+      headers,
+    );
+    assert.equal(response.status, 401);
+  }
+
+  const limited = await createSession({ adminToken: 'wrong-token' }, headers);
+  assert.equal(limited.status, 429);
+  assert.equal(limited.headers.get('retry-after'), '1');
+  assert.deepEqual(await limited.json(), {
+    error: 'Too many session attempts',
+  });
+
+  nowMs = Date.parse('2026-05-25T12:01:01.001Z');
+  const response = await createSession({ adminToken: 'admin-token' }, headers);
+  assert.equal(response.status, 200);
 });
 
 test('session API issues short-lived bearer tokens for map access', async () => {

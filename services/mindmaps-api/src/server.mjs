@@ -5,6 +5,8 @@ import path from 'node:path';
 
 const MAX_MARKDOWN_BYTES = 1024 * 1024;
 const MAP_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+const DEFAULT_SESSION_RATE_LIMIT_MAX = 5;
+const DEFAULT_SESSION_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000;
 const DEFAULT_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 function json(response, statusCode, body, headers = {}) {
@@ -48,6 +50,14 @@ function requireAuth(request, response, isValidToken) {
 
 function createSessionToken() {
   return randomBytes(32).toString('base64url');
+}
+
+function getClientIp(request) {
+  const forwardedFor = request.headers['x-forwarded-for'];
+  if (typeof forwardedFor === 'string' && forwardedFor.trim()) {
+    return forwardedFor.split(',')[0].trim();
+  }
+  return request.socket.remoteAddress || 'unknown';
 }
 
 function parseMapId(url) {
@@ -100,12 +110,15 @@ export function createMindmapsApiServer({
   adminToken,
   dataFile,
   now = Date.now,
+  sessionRateLimitMax = DEFAULT_SESSION_RATE_LIMIT_MAX,
+  sessionRateLimitWindowMs = DEFAULT_SESSION_RATE_LIMIT_WINDOW_MS,
   sessionTtlMs = DEFAULT_SESSION_TTL_MS,
   token,
 }) {
   if (!dataFile) throw new Error('dataFile is required');
   if (!token) throw new Error('token is required');
   const sessionAdminToken = adminToken || token;
+  const sessionFailures = new Map();
   const sessions = new Map();
 
   function getNowMs() {
@@ -126,6 +139,37 @@ export function createMindmapsApiServer({
     return constantTimeEqual(value, token) || isValidSessionToken(value);
   }
 
+  function getSessionRateLimit(request) {
+    const key = getClientIp(request);
+    const nowMs = getNowMs();
+    const current = sessionFailures.get(key);
+    if (!current || current.resetAt <= nowMs) {
+      return { allowed: true, key, remainingMs: 0 };
+    }
+    return {
+      allowed: current.count < Number(sessionRateLimitMax),
+      key,
+      remainingMs: current.resetAt - nowMs,
+    };
+  }
+
+  function recordSessionFailure(key) {
+    const nowMs = getNowMs();
+    const current = sessionFailures.get(key);
+    if (!current || current.resetAt <= nowMs) {
+      sessionFailures.set(key, {
+        count: 1,
+        resetAt: nowMs + Number(sessionRateLimitWindowMs),
+      });
+      return;
+    }
+    current.count += 1;
+  }
+
+  function clearSessionFailures(key) {
+    sessionFailures.delete(key);
+  }
+
   return createServer(async (request, response) => {
     try {
       const url = new URL(request.url || '/', 'http://127.0.0.1');
@@ -144,8 +188,23 @@ export function createMindmapsApiServer({
           );
           return;
         }
+        const rateLimit = getSessionRateLimit(request);
+        if (!rateLimit.allowed) {
+          json(
+            response,
+            429,
+            { error: 'Too many session attempts' },
+            {
+              'retry-after': String(
+                Math.max(1, Math.ceil(rateLimit.remainingMs / 1000)),
+              ),
+            },
+          );
+          return;
+        }
         const body = await readJsonBody(request);
         if (!constantTimeEqual(body.adminToken, sessionAdminToken)) {
+          recordSessionFailure(rateLimit.key);
           json(
             response,
             401,
@@ -156,6 +215,7 @@ export function createMindmapsApiServer({
           );
           return;
         }
+        clearSessionFailures(rateLimit.key);
         const sessionToken = createSessionToken();
         const expiresAtMs = getNowMs() + Number(sessionTtlMs);
         sessions.set(sessionToken, expiresAtMs);
@@ -241,9 +301,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const sessionTtlMs = Number(
     process.env.MINDMAPS_SESSION_TTL_MS || DEFAULT_SESSION_TTL_MS,
   );
+  const sessionRateLimitMax = Number(
+    process.env.MINDMAPS_SESSION_RATE_LIMIT_MAX ||
+      DEFAULT_SESSION_RATE_LIMIT_MAX,
+  );
+  const sessionRateLimitWindowMs = Number(
+    process.env.MINDMAPS_SESSION_RATE_LIMIT_WINDOW_MS ||
+      DEFAULT_SESSION_RATE_LIMIT_WINDOW_MS,
+  );
   const server = createMindmapsApiServer({
     adminToken,
     dataFile,
+    sessionRateLimitMax,
+    sessionRateLimitWindowMs,
     sessionTtlMs,
     token,
   });
