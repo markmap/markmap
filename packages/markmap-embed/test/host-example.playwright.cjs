@@ -256,6 +256,8 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
       return;
     }
     if (url.pathname === '/api/mindmaps') {
+      expect(url.searchParams.get('q')).toBe('Alpha');
+      expect(url.searchParams.get('limit')).toBe('50');
       await route.fulfill({
         contentType: 'application/json',
         body: JSON.stringify({
@@ -289,6 +291,7 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
 
   await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
   await expect(page.locator('#hostStatus')).toContainText('Ready');
+  await page.locator('#hostMapSearch').fill('Alpha');
   await page.locator('#hostRefreshMaps').click();
   await expect(page.locator('#hostRecentMaps')).toContainText(
     'Alpha Strategy - client-alpha',

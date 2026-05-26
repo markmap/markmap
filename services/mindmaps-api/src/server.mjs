@@ -115,7 +115,14 @@ function getMarkdownTitle(markdown, fallback) {
   return heading?.trim() || fallback;
 }
 
-function listMapSummaries(store) {
+function getListLimit(value) {
+  const limit = Number(value || 50);
+  if (!Number.isFinite(limit)) return 50;
+  return Math.min(100, Math.max(1, Math.trunc(limit)));
+}
+
+function listMapSummaries(store, { limit = 50, query = '' } = {}) {
+  const normalizedQuery = String(query).trim().toLowerCase();
   return Object.values(store.maps)
     .map(({ id, markdown, version, createdAt, updatedAt }) => ({
       id,
@@ -124,9 +131,14 @@ function listMapSummaries(store) {
       createdAt,
       updatedAt,
     }))
+    .filter((map) => {
+      if (!normalizedQuery) return true;
+      return `${map.id} ${map.title}`.toLowerCase().includes(normalizedQuery);
+    })
     .sort((left, right) =>
       String(right.updatedAt || '').localeCompare(String(left.updatedAt || '')),
-    );
+    )
+    .slice(0, limit);
 }
 
 export function createMindmapsApiServer({
@@ -261,7 +273,12 @@ export function createMindmapsApiServer({
         }
         if (!requireAuth(request, response, isValidApiToken)) return;
         const store = await loadStore(dataFile);
-        json(response, 200, { maps: listMapSummaries(store) });
+        json(response, 200, {
+          maps: listMapSummaries(store, {
+            limit: getListLimit(url.searchParams.get('limit')),
+            query: url.searchParams.get('q') || '',
+          }),
+        });
         return;
       }
 

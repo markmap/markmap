@@ -232,6 +232,19 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
     },
   ]);
   assert.equal('markdown' in result.maps[0], false);
+
+  const filteredResponse = await fetch(
+    `${baseUrl}/api/mindmaps?q=first&limit=1`,
+    {
+      headers: authHeaders(),
+    },
+  );
+  assert.equal(filteredResponse.status, 200);
+  const filtered = await filteredResponse.json();
+  assert.deepEqual(
+    filtered.maps.map((map) => map.id),
+    ['list-first'],
+  );
 });
 
 test('mindmap API deletes saved maps', async () => {

@@ -477,6 +477,9 @@ function renderApp() {
     const hostRecentMaps = isHttpPersistence
       ? `<label class="nodeEditLabel" for="hostRecentMaps">Recent maps</label>
               <div class="nodeEditRow">
+                <input id="hostMapSearch" class="nodeEditInput" type="search" aria-label="Search saved maps" placeholder="Search saved maps" />
+              </div>
+              <div class="nodeEditRow">
                 <select id="hostRecentMaps" class="nodeEditInput" aria-label="Recent saved maps">
                   <option value="">Refresh saved maps</option>
                 </select>
@@ -1328,7 +1331,10 @@ function getHostMapApiUrl(base: URL, id: string) {
 
 function getHostMapsApiUrl(base: URL) {
   const url = new URL(base.pathname, base);
-  url.search = '';
+  const search = document.querySelector<HTMLInputElement>('#hostMapSearch');
+  const query = search?.value.trim() || '';
+  if (query) url.searchParams.set('q', query);
+  url.searchParams.set('limit', '50');
   return url;
 }
 
