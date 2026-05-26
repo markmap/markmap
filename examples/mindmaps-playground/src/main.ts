@@ -480,11 +480,12 @@ function renderApp() {
               <div class="nodeEditRow">
                 <input id="hostMapSearch" class="nodeEditInput" type="search" aria-label="Search saved maps" placeholder="Search saved maps" />
               </div>
-              <div class="nodeEditRow">
+              <div class="nodeEditRow hostRecentMapRow">
                 <select id="hostRecentMaps" class="nodeEditInput" aria-label="Recent saved maps">
                   <option value="">Refresh saved maps</option>
                 </select>
                 <button id="hostRefreshMaps" class="smallButton quietButton" type="button">Refresh</button>
+                <button id="hostDuplicateMap" class="smallButton quietButton" type="button">Duplicate</button>
                 <button id="hostDeleteMap" class="smallButton dangerButton" type="button">Delete</button>
               </div>`
       : '';
@@ -1339,6 +1340,12 @@ function getHostMapApiUrl(base: URL, id: string) {
   return url;
 }
 
+function getHostCloneMapApiUrl(base: URL, id: string) {
+  const url = getHostMapApiUrl(base, id);
+  url.pathname = `${url.pathname}/clone`;
+  return url;
+}
+
 function getHostMapsApiUrl(base: URL) {
   const url = new URL(base.pathname, base);
   const search = document.querySelector<HTMLInputElement>('#hostMapSearch');
@@ -1497,6 +1504,60 @@ async function deleteHostMap(id: string) {
     setHostDirtyState('Saved');
     setHostLog(`Deleted saved map ${value}.`);
     await refreshHostRecentMaps();
+  } catch (error) {
+    setHostStatus('Error');
+    setHostLog(getErrorMessage(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function duplicateHostMap(id: string) {
+  if (getHostPersistenceMode() !== 'http') return;
+  const sourceId = id.trim();
+  if (!sourceId) {
+    setHostLog('Enter a map ID before duplicating.');
+    return;
+  }
+  const targetId = window.prompt('New map ID', `${sourceId}-copy`)?.trim();
+  if (!targetId) return;
+  const sourceTitle = getHostMapTitle();
+  const title = `Copy of ${sourceTitle || sourceId}`;
+  const button = document.querySelector<HTMLButtonElement>('#hostDuplicateMap');
+  if (button) button.disabled = true;
+  setHostStatus('Duplicating map');
+  try {
+    const apiBase = getHostApiBase();
+    const response = await fetch(getHostCloneMapApiUrl(apiBase, sourceId), {
+      method: 'POST',
+      headers: getHostApiHeaders({
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify({ id: targetId, title }),
+    });
+    if (!response.ok) {
+      throw new Error(`Duplicate failed: ${response.status}`);
+    }
+    const result = await response.json();
+    if (!result || typeof result.id !== 'string') {
+      throw new Error('Duplicate response must include id.');
+    }
+    setHostMapId(result.id);
+    setHostMapTitle(typeof result.title === 'string' ? result.title : '');
+    await refreshHostRecentMaps();
+    const select = document.querySelector<HTMLSelectElement>('#hostRecentMaps');
+    if (select) select.value = result.id;
+    const markdown = await hostConnection?.loadMap(result.id, {
+      theme: selectedTheme,
+    });
+    if (markdown) {
+      hostDirty = false;
+      hostLatestMarkdown = markdown;
+      setHostDirtyState('Saved');
+    }
+    setHostStatus('Duplicated map');
+    setHostLog(`Duplicated ${sourceId} to ${result.id}.`);
   } catch (error) {
     setHostStatus('Error');
     setHostLog(getErrorMessage(error));
@@ -1699,6 +1760,11 @@ async function wireHostSdkExample() {
     .querySelector<HTMLButtonElement>('#hostDeleteMap')
     ?.addEventListener('click', () => {
       void deleteHostMap(getHostMapId());
+    });
+  document
+    .querySelector<HTMLButtonElement>('#hostDuplicateMap')
+    ?.addEventListener('click', () => {
+      void duplicateHostMap(getHostMapId());
     });
 
   document

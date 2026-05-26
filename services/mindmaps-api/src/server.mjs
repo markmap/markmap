@@ -61,12 +61,14 @@ function getClientIp(request) {
   return request.socket.remoteAddress || 'unknown';
 }
 
-function parseMapId(url) {
+function parseMapRoute(url) {
   const prefix = '/api/mindmaps/';
   if (!url.pathname.startsWith(prefix)) return;
-  const id = decodeURIComponent(url.pathname.slice(prefix.length));
+  const parts = url.pathname.slice(prefix.length).split('/');
+  if (parts.length > 2 || (parts[1] && parts[1] !== 'clone')) return;
+  const id = decodeURIComponent(parts[0]);
   if (!MAP_ID_PATTERN.test(id)) return '';
-  return id;
+  return { action: parts[1] || '', id };
 }
 
 async function readJsonBody(request) {
@@ -130,6 +132,19 @@ function normalizeTitle(value) {
 
 function getMapTitle(map) {
   return map.title || getMarkdownTitle(map.markdown, map.id);
+}
+
+function getDefaultCloneTitle(map) {
+  const title = `Copy of ${getMapTitle(map)}`;
+  if (Buffer.byteLength(title) <= MAX_TITLE_BYTES) return title;
+  return `Copy of ${map.id}`;
+}
+
+function validateMapId(id) {
+  if (typeof id !== 'string' || !MAP_ID_PATTERN.test(id)) {
+    throw new Error('Invalid map id');
+  }
+  return id;
 }
 
 function getListLimit(value) {
@@ -299,19 +314,62 @@ export function createMindmapsApiServer({
         return;
       }
 
-      const id = parseMapId(url);
-      if (id == null) {
+      const route = parseMapRoute(url);
+      if (route == null) {
         json(response, 404, { error: 'Not found' });
         return;
       }
-      if (!id) {
+      if (!route) {
         json(response, 400, { error: 'Invalid map id' });
         return;
       }
+      const { action, id } = route;
       if (!requireAuth(request, response, isValidApiToken)) return;
 
       const store = await loadStore(dataFile);
       const existing = store.maps[id];
+
+      if (action === 'clone') {
+        if (request.method !== 'POST') {
+          json(
+            response,
+            405,
+            { error: 'Method not allowed' },
+            { allow: 'POST' },
+          );
+          return;
+        }
+        if (!existing) {
+          json(response, 404, { error: 'Not found' });
+          return;
+        }
+        const body = await readJsonBody(request);
+        const cloneId = validateMapId(body.id);
+        if (store.maps[cloneId]) {
+          json(response, 409, {
+            error: 'Target map already exists',
+            id: cloneId,
+          });
+          return;
+        }
+        const title =
+          body.title == null
+            ? getDefaultCloneTitle(existing)
+            : normalizeTitle(body.title);
+        const now = new Date().toISOString();
+        const clone = {
+          id: cloneId,
+          markdown: existing.markdown,
+          ...(title ? { title } : {}),
+          version: 1,
+          createdAt: now,
+          updatedAt: now,
+        };
+        store.maps[cloneId] = clone;
+        await saveStore(dataFile, store);
+        json(response, 201, clone);
+        return;
+      }
 
       if (request.method === 'GET') {
         if (!existing) {

@@ -286,6 +286,57 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   );
 });
 
+test('mindmap API clones saved maps to a new id', async () => {
+  const saveResponse = await fetch(`${baseUrl}/api/mindmaps/clone-source`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({
+      markdown: '# Clone Source\n\n## Plan',
+      title: 'Source Strategy',
+    }),
+  });
+  assert.equal(saveResponse.status, 200);
+
+  const cloneResponse = await fetch(
+    `${baseUrl}/api/mindmaps/clone-source/clone`,
+    {
+      method: 'POST',
+      headers: authHeaders({ 'content-type': 'application/json' }),
+      body: JSON.stringify({ id: 'clone-target' }),
+    },
+  );
+  assert.equal(cloneResponse.status, 201);
+  const clone = await cloneResponse.json();
+  assert.equal(clone.id, 'clone-target');
+  assert.equal(clone.markdown, '# Clone Source\n\n## Plan');
+  assert.equal(clone.title, 'Copy of Source Strategy');
+  assert.equal(clone.version, 1);
+
+  const conflictResponse = await fetch(
+    `${baseUrl}/api/mindmaps/clone-source/clone`,
+    {
+      method: 'POST',
+      headers: authHeaders({ 'content-type': 'application/json' }),
+      body: JSON.stringify({ id: 'clone-target' }),
+    },
+  );
+  assert.equal(conflictResponse.status, 409);
+  assert.deepEqual(await conflictResponse.json(), {
+    error: 'Target map already exists',
+    id: 'clone-target',
+  });
+
+  const missingResponse = await fetch(
+    `${baseUrl}/api/mindmaps/missing-source/clone`,
+    {
+      method: 'POST',
+      headers: authHeaders({ 'content-type': 'application/json' }),
+      body: JSON.stringify({ id: 'missing-copy' }),
+    },
+  );
+  assert.equal(missingResponse.status, 404);
+});
+
 test('mindmap API deletes saved maps', async () => {
   const saveResponse = await fetch(`${baseUrl}/api/mindmaps/delete-me`, {
     method: 'PUT',

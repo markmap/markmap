@@ -279,6 +279,10 @@ body[data-map-theme='dark'] .mapPane {
   margin-bottom: 8px;
 }
 
+.hostRecentMapRow {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+}
+
 .nodeEditInput {
   min-width: 0;
   height: 32px;

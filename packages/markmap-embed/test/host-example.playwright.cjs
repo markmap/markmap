@@ -328,6 +328,115 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
   await expect(errors).toEqual([]);
 });
 
+test('host SDK example can duplicate an HTTP map', async ({ page }) => {
+  const errors = [];
+  const maps = new Map([
+    [
+      'duplicate-source',
+      {
+        markdown: '# Duplicate Source\n\n## Original Branch',
+        title: 'Source Strategy',
+        version: 4,
+      },
+    ],
+  ]);
+  const clones = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('New map ID');
+    await dialog.accept('duplicate-copy');
+  });
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('capa:mindmaps:apiToken', 'test-api-token');
+  });
+  await page.route('**/api/mindmaps**', async (route) => {
+    const url = new URL(route.request().url());
+    if (!url.pathname.startsWith('/api/mindmaps')) {
+      await route.continue();
+      return;
+    }
+    if (route.request().headers().authorization !== 'Bearer test-api-token') {
+      await route.fulfill({ status: 401, body: 'Unauthorized' });
+      return;
+    }
+    if (url.pathname === '/api/mindmaps') {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          maps: Array.from(maps.entries()).map(([id, map]) => ({
+            id,
+            title: map.title,
+            version: map.version,
+          })),
+        }),
+      });
+      return;
+    }
+    const parts = url.pathname.split('/').filter(Boolean);
+    const id = decodeURIComponent(parts[2] || '');
+    if (parts[3] === 'clone') {
+      const body = route.request().postDataJSON();
+      const source = maps.get(id);
+      clones.push({ id, targetId: body.id, title: body.title });
+      maps.set(body.id, {
+        markdown: source.markdown,
+        title: body.title,
+        version: 1,
+      });
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: body.id,
+          markdown: source.markdown,
+          title: body.title,
+          version: 1,
+        }),
+      });
+      return;
+    }
+    const map = maps.get(id);
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id,
+        markdown: map.markdown,
+        title: map.title,
+        version: map.version,
+      }),
+    });
+  });
+
+  await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
+  await expect(page.locator('#hostStatus')).toContainText('Ready');
+  await page.locator('#hostRefreshMaps').click();
+  await page.locator('#hostRecentMaps').selectOption('duplicate-source');
+  await expect(page.locator('#hostMapTitle')).toHaveValue('Source Strategy');
+  await page.locator('#hostDuplicateMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Duplicated map');
+  await expect(page.locator('#hostMapId')).toHaveValue('duplicate-copy');
+  await expect(page.locator('#hostMapTitle')).toHaveValue(
+    'Copy of Source Strategy',
+  );
+  await expect(
+    page
+      .frameLocator('#hostMindmapFrame')
+      .locator('text=Original Branch')
+      .first(),
+  ).toBeVisible();
+  expect(clones).toEqual([
+    {
+      id: 'duplicate-source',
+      targetId: 'duplicate-copy',
+      title: 'Copy of Source Strategy',
+    },
+  ]);
+  await expect(errors).toEqual([]);
+});
+
 test('host SDK example can delete an HTTP map after confirmation', async ({
   page,
 }) => {
