@@ -1385,12 +1385,16 @@ function createHostPersistence(): MindmapPersistenceAdapter {
   }
 
   const apiBase = getHostApiBase();
+  const versions = new Map<string, number>();
   return {
     async load(id) {
       const response = await fetch(getHostMapApiUrl(apiBase, id), {
         headers: getHostApiHeaders({ Accept: 'application/json' }),
       });
-      if (response.status === 404) return getSample(selectedSample);
+      if (response.status === 404) {
+        versions.delete(id);
+        return getSample(selectedSample);
+      }
       if (!response.ok) {
         throw new Error(`Load failed: ${response.status}`);
       }
@@ -1398,19 +1402,35 @@ function createHostPersistence(): MindmapPersistenceAdapter {
       if (!result || typeof result.markdown !== 'string') {
         throw new Error('Load response must include markdown.');
       }
+      if (typeof result.version === 'number') {
+        versions.set(id, result.version);
+      } else {
+        versions.delete(id);
+      }
       return result.markdown;
     },
     async save(id, markdown) {
+      const version = versions.get(id);
       const response = await fetch(getHostMapApiUrl(apiBase, id), {
         method: 'PUT',
         headers: getHostApiHeaders({
           Accept: 'application/json',
           'Content-Type': 'application/json',
         }),
-        body: JSON.stringify({ markdown }),
+        body: JSON.stringify({
+          markdown,
+          ...(version == null ? {} : { version }),
+        }),
       });
+      if (response.status === 409) {
+        throw new Error('Save conflict. Load the latest map before saving.');
+      }
       if (!response.ok) {
         throw new Error(`Save failed: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result && typeof result.version === 'number') {
+        versions.set(id, result.version);
       }
     },
   };

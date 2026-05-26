@@ -136,17 +136,17 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
       }
       await route.fulfill({
         contentType: 'application/json',
-        body: JSON.stringify({ id, markdown }),
+        body: JSON.stringify({ id, markdown, version: 7 }),
       });
       return;
     }
     if (route.request().method() === 'PUT') {
       const body = route.request().postDataJSON();
-      apiWrites.push({ id, markdown: body.markdown });
+      apiWrites.push({ id, markdown: body.markdown, version: body.version });
       maps.set(id, body.markdown);
       await route.fulfill({
         contentType: 'application/json',
-        body: JSON.stringify({ id, markdown: body.markdown }),
+        body: JSON.stringify({ id, markdown: body.markdown, version: 8 }),
       });
       return;
     }
@@ -171,6 +171,7 @@ test('host SDK example can persist maps through an HTTP API adapter', async ({
   expect(apiWrites.at(-1)).toEqual({
     id: 'server-acme',
     markdown: expect.stringContaining('HTTP Saved'),
+    version: 7,
   });
   await expect(errors).toEqual([]);
 });
