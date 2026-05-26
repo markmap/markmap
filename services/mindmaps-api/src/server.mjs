@@ -106,6 +106,19 @@ function validateMarkdownBody(body) {
   }
 }
 
+function listMapSummaries(store) {
+  return Object.values(store.maps)
+    .map(({ id, version, createdAt, updatedAt }) => ({
+      id,
+      version,
+      createdAt,
+      updatedAt,
+    }))
+    .sort((left, right) =>
+      String(right.updatedAt || '').localeCompare(String(left.updatedAt || '')),
+    );
+}
+
 export function createMindmapsApiServer({
   adminToken,
   dataFile,
@@ -223,6 +236,22 @@ export function createMindmapsApiServer({
           token: sessionToken,
           expiresAt: new Date(expiresAtMs).toISOString(),
         });
+        return;
+      }
+
+      if (url.pathname === '/api/mindmaps') {
+        if (request.method !== 'GET') {
+          json(
+            response,
+            405,
+            { error: 'Method not allowed' },
+            { allow: 'GET' },
+          );
+          return;
+        }
+        if (!requireAuth(request, response, isValidApiToken)) return;
+        const store = await loadStore(dataFile);
+        json(response, 200, { maps: listMapSummaries(store) });
         return;
       }
 

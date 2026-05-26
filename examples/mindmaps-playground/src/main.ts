@@ -113,6 +113,13 @@ type MindmapHostMessage = {
   theme?: unknown;
 };
 
+type HostMapSummary = {
+  id: string;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 const params = new URLSearchParams(window.location.search);
 const isEmbedMode = params.get('embed') === '1';
 const isHostMode = params.get('host') === '1';
@@ -454,9 +461,9 @@ function renderApp() {
     return;
   }
   if (isHostMode) {
-    const hostAuth =
-      getHostPersistenceMode() === 'http'
-        ? `<div class="hostAuth">
+    const isHttpPersistence = getHostPersistenceMode() === 'http';
+    const hostAuth = isHttpPersistence
+      ? `<div class="hostAuth">
               <h2>API Session</h2>
               <p id="hostAuthStatus" class="nodeEditStatus">Enter the admin token to create a browser session.</p>
               <label class="nodeEditLabel" for="hostApiToken">Admin token</label>
@@ -465,7 +472,16 @@ function renderApp() {
                 <button id="hostApiLogin" class="smallButton" type="button">Login</button>
               </div>
             </div>`
-        : '';
+      : '';
+    const hostRecentMaps = isHttpPersistence
+      ? `<label class="nodeEditLabel" for="hostRecentMaps">Recent maps</label>
+              <div class="nodeEditRow">
+                <select id="hostRecentMaps" class="nodeEditInput" aria-label="Recent saved maps">
+                  <option value="">Refresh saved maps</option>
+                </select>
+                <button id="hostRefreshMaps" class="smallButton quietButton" type="button">Refresh</button>
+              </div>`
+      : '';
     app.innerHTML = `
       <main class="hostApp">
         <header class="hostTopbar">
@@ -503,6 +519,7 @@ function renderApp() {
               <div class="nodeEditRow">
                 <input id="hostMapId" class="nodeEditInput" aria-label="Host map ID" value="client-demo" />
               </div>
+              ${hostRecentMaps}
               <label class="hostAutosaveToggle" for="hostAutosave">
                 <input id="hostAutosave" type="checkbox" />
                 <span>Auto-save edits after 600ms</span>
@@ -1307,6 +1324,12 @@ function getHostMapApiUrl(base: URL, id: string) {
   return url;
 }
 
+function getHostMapsApiUrl(base: URL) {
+  const url = new URL(base.pathname, base);
+  url.search = '';
+  return url;
+}
+
 function getHostApiHeaders(extra: Record<string, string> = {}) {
   const token = window.sessionStorage.getItem('capa:mindmaps:apiToken');
   return {
@@ -1364,6 +1387,55 @@ async function createHostApiSession() {
     setHostAuthStatus('Session ready');
   } catch (error) {
     setHostAuthStatus(getErrorMessage(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+function setHostMapId(value: string) {
+  const input = document.querySelector<HTMLInputElement>('#hostMapId');
+  if (input) input.value = value;
+}
+
+function formatHostMapOption(map: HostMapSummary) {
+  const version = typeof map.version === 'number' ? ` v${map.version}` : '';
+  const date = map.updatedAt
+    ? ` - ${new Date(map.updatedAt).toLocaleString()}`
+    : '';
+  return `${map.id}${version}${date}`;
+}
+
+async function refreshHostRecentMaps() {
+  const select = document.querySelector<HTMLSelectElement>('#hostRecentMaps');
+  const button = document.querySelector<HTMLButtonElement>('#hostRefreshMaps');
+  if (!select) return;
+  if (button) button.disabled = true;
+  setHostLog('Refreshing saved maps.');
+  try {
+    const apiBase = getHostApiBase();
+    const response = await fetch(getHostMapsApiUrl(apiBase), {
+      headers: getHostApiHeaders({ Accept: 'application/json' }),
+    });
+    if (!response.ok) {
+      throw new Error(`Recent maps failed: ${response.status}`);
+    }
+    const result = await response.json();
+    const maps = Array.isArray(result?.maps)
+      ? (result.maps as HostMapSummary[])
+      : [];
+    select.innerHTML = [
+      '<option value="">Select a saved map</option>',
+      ...maps
+        .filter((map) => typeof map.id === 'string' && map.id)
+        .map(
+          (map) =>
+            `<option value="${escapeHtml(map.id)}">${escapeHtml(formatHostMapOption(map))}</option>`,
+        ),
+    ].join('');
+    setHostLog(`Loaded ${maps.length} saved map references.`);
+  } catch (error) {
+    setHostStatus('Error');
+    setHostLog(getErrorMessage(error));
   } finally {
     if (button) button.disabled = false;
   }
@@ -1539,6 +1611,17 @@ async function wireHostSdkExample() {
         event.preventDefault();
         void createHostApiSession();
       }
+    });
+  document
+    .querySelector<HTMLButtonElement>('#hostRefreshMaps')
+    ?.addEventListener('click', () => {
+      void refreshHostRecentMaps();
+    });
+  document
+    .querySelector<HTMLSelectElement>('#hostRecentMaps')
+    ?.addEventListener('change', (event) => {
+      const value = (event.target as HTMLSelectElement).value;
+      if (value) setHostMapId(value);
     });
 
   document

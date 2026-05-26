@@ -234,6 +234,74 @@ test('host SDK example can create an HTTP API session token', async ({
   await expect(errors).toEqual([]);
 });
 
+test('host SDK example can refresh and load recent HTTP maps', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('capa:mindmaps:apiToken', 'test-api-token');
+  });
+  await page.route('**/api/mindmaps**', async (route) => {
+    const url = new URL(route.request().url());
+    if (!url.pathname.startsWith('/api/mindmaps')) {
+      await route.continue();
+      return;
+    }
+    if (route.request().headers().authorization !== 'Bearer test-api-token') {
+      await route.fulfill({ status: 401, body: 'Unauthorized' });
+      return;
+    }
+    if (url.pathname === '/api/mindmaps') {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          maps: [
+            {
+              id: 'client-bravo',
+              version: 3,
+              updatedAt: '2026-05-26T00:00:00.000Z',
+            },
+            {
+              id: 'client-alpha',
+              version: 2,
+              updatedAt: '2026-05-25T00:00:00.000Z',
+            },
+          ],
+        }),
+      });
+      return;
+    }
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 'client-alpha',
+        markdown: '# Alpha Map\n\n## Loaded Recent',
+        version: 2,
+      }),
+    });
+  });
+
+  await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
+  await expect(page.locator('#hostStatus')).toContainText('Ready');
+  await page.locator('#hostRefreshMaps').click();
+  await expect(page.locator('#hostRecentMaps')).toContainText('client-alpha');
+  await page.locator('#hostRecentMaps').selectOption('client-alpha');
+  await expect(page.locator('#hostMapId')).toHaveValue('client-alpha');
+  await page.locator('#hostLoadMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Loaded map');
+  await expect(
+    page
+      .frameLocator('#hostMindmapFrame')
+      .locator('text=Loaded Recent')
+      .first(),
+  ).toBeVisible();
+  await expect(errors).toEqual([]);
+});
+
 test('embed help page shows integration snippets and iframe preview', async ({
   page,
 }) => {

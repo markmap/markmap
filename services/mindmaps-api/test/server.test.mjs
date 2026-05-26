@@ -191,3 +191,43 @@ test('mindmap API prevents stale version overwrites', async () => {
   assert.equal(saved.version, 2);
   assert.equal(saved.markdown, '# Updated');
 });
+
+test('mindmap API lists saved maps without markdown bodies', async () => {
+  const firstResponse = await fetch(`${baseUrl}/api/mindmaps/list-first`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ markdown: '# First' }),
+  });
+  assert.equal(firstResponse.status, 200);
+  const first = await firstResponse.json();
+
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  const secondResponse = await fetch(`${baseUrl}/api/mindmaps/list-second`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ markdown: '# Second' }),
+  });
+  assert.equal(secondResponse.status, 200);
+  const second = await secondResponse.json();
+
+  const response = await fetch(`${baseUrl}/api/mindmaps`, {
+    headers: authHeaders(),
+  });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.deepEqual(result.maps.slice(0, 2), [
+    {
+      id: 'list-second',
+      version: second.version,
+      createdAt: second.createdAt,
+      updatedAt: second.updatedAt,
+    },
+    {
+      id: 'list-first',
+      version: first.version,
+      createdAt: first.createdAt,
+      updatedAt: first.updatedAt,
+    },
+  ]);
+  assert.equal('markdown' in result.maps[0], false);
+});
