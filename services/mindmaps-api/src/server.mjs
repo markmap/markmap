@@ -307,12 +307,23 @@ export function createMindmapsApiServer({
         return;
       }
 
+      if (request.method === 'DELETE') {
+        if (!existing) {
+          json(response, 404, { error: 'Not found' });
+          return;
+        }
+        delete store.maps[id];
+        await saveStore(dataFile, store);
+        json(response, 200, { deleted: true, id });
+        return;
+      }
+
       json(
         response,
         405,
         { error: 'Method not allowed' },
         {
-          allow: 'GET, PUT',
+          allow: 'GET, PUT, DELETE',
         },
       );
     } catch (error) {

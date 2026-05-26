@@ -302,6 +302,78 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
   await expect(errors).toEqual([]);
 });
 
+test('host SDK example can delete an HTTP map after confirmation', async ({
+  page,
+}) => {
+  const errors = [];
+  const maps = new Map([
+    ['delete-acme', '# Delete Map\n\n## Remove Me'],
+    ['keep-acme', '# Keep Map'],
+  ]);
+  const deleted = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('delete-acme');
+    await dialog.accept();
+  });
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('capa:mindmaps:apiToken', 'test-api-token');
+  });
+  await page.route('**/api/mindmaps**', async (route) => {
+    const url = new URL(route.request().url());
+    if (!url.pathname.startsWith('/api/mindmaps')) {
+      await route.continue();
+      return;
+    }
+    if (route.request().headers().authorization !== 'Bearer test-api-token') {
+      await route.fulfill({ status: 401, body: 'Unauthorized' });
+      return;
+    }
+    if (url.pathname === '/api/mindmaps') {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          maps: Array.from(maps.keys()).map((id) => ({ id, version: 1 })),
+        }),
+      });
+      return;
+    }
+    const id = decodeURIComponent(url.pathname.split('/').pop() || '');
+    if (route.request().method() === 'DELETE') {
+      deleted.push(id);
+      maps.delete(id);
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ id, deleted: true }),
+      });
+      return;
+    }
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id,
+        markdown: maps.get(id),
+        version: 1,
+      }),
+    });
+  });
+
+  await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
+  await expect(page.locator('#hostStatus')).toContainText('Ready');
+  await page.locator('#hostRefreshMaps').click();
+  await page.locator('#hostRecentMaps').selectOption('delete-acme');
+  await page.locator('#hostDeleteMap').click();
+  await expect(page.locator('#hostStatus')).toContainText('Deleted map');
+  await expect(page.locator('#hostRecentMaps')).not.toContainText(
+    'delete-acme',
+  );
+  expect(deleted).toEqual(['delete-acme']);
+  await expect(errors).toEqual([]);
+});
+
 test('embed help page shows integration snippets and iframe preview', async ({
   page,
 }) => {

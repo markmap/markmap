@@ -231,3 +231,33 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   ]);
   assert.equal('markdown' in result.maps[0], false);
 });
+
+test('mindmap API deletes saved maps', async () => {
+  const saveResponse = await fetch(`${baseUrl}/api/mindmaps/delete-me`, {
+    method: 'PUT',
+    headers: authHeaders({ 'content-type': 'application/json' }),
+    body: JSON.stringify({ markdown: '# Delete Me' }),
+  });
+  assert.equal(saveResponse.status, 200);
+
+  const deleteResponse = await fetch(`${baseUrl}/api/mindmaps/delete-me`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  assert.equal(deleteResponse.status, 200);
+  assert.deepEqual(await deleteResponse.json(), {
+    deleted: true,
+    id: 'delete-me',
+  });
+
+  const loadResponse = await fetch(`${baseUrl}/api/mindmaps/delete-me`, {
+    headers: authHeaders(),
+  });
+  assert.equal(loadResponse.status, 404);
+
+  const missingResponse = await fetch(`${baseUrl}/api/mindmaps/delete-me`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  assert.equal(missingResponse.status, 404);
+});

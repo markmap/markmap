@@ -480,6 +480,7 @@ function renderApp() {
                   <option value="">Refresh saved maps</option>
                 </select>
                 <button id="hostRefreshMaps" class="smallButton quietButton" type="button">Refresh</button>
+                <button id="hostDeleteMap" class="smallButton dangerButton" type="button">Delete</button>
               </div>`
       : '';
     app.innerHTML = `
@@ -1441,6 +1442,38 @@ async function refreshHostRecentMaps() {
   }
 }
 
+async function deleteHostMap(id: string) {
+  if (getHostPersistenceMode() !== 'http') return;
+  const value = id.trim();
+  if (!value) {
+    setHostLog('Enter a map ID before deleting.');
+    return;
+  }
+  if (!window.confirm(`Delete saved map "${value}"?`)) return;
+  const button = document.querySelector<HTMLButtonElement>('#hostDeleteMap');
+  if (button) button.disabled = true;
+  setHostStatus('Deleting map');
+  try {
+    const apiBase = getHostApiBase();
+    const response = await fetch(getHostMapApiUrl(apiBase, value), {
+      method: 'DELETE',
+      headers: getHostApiHeaders({ Accept: 'application/json' }),
+    });
+    if (!response.ok) {
+      throw new Error(`Delete failed: ${response.status}`);
+    }
+    setHostStatus('Deleted map');
+    setHostDirtyState('Saved');
+    setHostLog(`Deleted saved map ${value}.`);
+    await refreshHostRecentMaps();
+  } catch (error) {
+    setHostStatus('Error');
+    setHostLog(getErrorMessage(error));
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 function createHostPersistence(): MindmapPersistenceAdapter {
   if (getHostPersistenceMode() !== 'http') {
     return {
@@ -1622,6 +1655,11 @@ async function wireHostSdkExample() {
     ?.addEventListener('change', (event) => {
       const value = (event.target as HTMLSelectElement).value;
       if (value) setHostMapId(value);
+    });
+  document
+    .querySelector<HTMLButtonElement>('#hostDeleteMap')
+    ?.addEventListener('click', () => {
+      void deleteHostMap(getHostMapId());
     });
 
   document

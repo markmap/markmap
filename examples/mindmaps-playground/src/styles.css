@@ -300,6 +300,12 @@ body[data-map-theme='dark'] .mapPane {
   color: #334155;
 }
 
+.dangerButton {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .nodeEditStatus {
   margin: 0 0 14px;
   color: #64748b;
