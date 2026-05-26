@@ -115,6 +115,7 @@ type MindmapHostMessage = {
 
 type HostMapSummary = {
   id: string;
+  title?: string;
   version?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -1403,7 +1404,10 @@ function formatHostMapOption(map: HostMapSummary) {
   const date = map.updatedAt
     ? ` - ${new Date(map.updatedAt).toLocaleString()}`
     : '';
-  return `${map.id}${version}${date}`;
+  const title =
+    typeof map.title === 'string' && map.title.trim() ? map.title.trim() : '';
+  const label = title && title !== map.id ? `${title} - ${map.id}` : map.id;
+  return `${label}${version}${date}`;
 }
 
 async function refreshHostRecentMaps() {

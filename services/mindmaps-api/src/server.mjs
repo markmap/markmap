@@ -106,10 +106,20 @@ function validateMarkdownBody(body) {
   }
 }
 
+function getMarkdownTitle(markdown, fallback) {
+  if (typeof markdown !== 'string') return fallback;
+  const heading = markdown
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/)?.[1])
+    .find(Boolean);
+  return heading?.trim() || fallback;
+}
+
 function listMapSummaries(store) {
   return Object.values(store.maps)
-    .map(({ id, version, createdAt, updatedAt }) => ({
+    .map(({ id, markdown, version, createdAt, updatedAt }) => ({
       id,
+      title: getMarkdownTitle(markdown, id),
       version,
       createdAt,
       updatedAt,

@@ -196,7 +196,7 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   const firstResponse = await fetch(`${baseUrl}/api/mindmaps/list-first`, {
     method: 'PUT',
     headers: authHeaders({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ markdown: '# First' }),
+    body: JSON.stringify({ markdown: '# First Client Map\n\n## Discovery' }),
   });
   assert.equal(firstResponse.status, 200);
   const first = await firstResponse.json();
@@ -205,7 +205,7 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   const secondResponse = await fetch(`${baseUrl}/api/mindmaps/list-second`, {
     method: 'PUT',
     headers: authHeaders({ 'content-type': 'application/json' }),
-    body: JSON.stringify({ markdown: '# Second' }),
+    body: JSON.stringify({ markdown: '- No title here' }),
   });
   assert.equal(secondResponse.status, 200);
   const second = await secondResponse.json();
@@ -218,12 +218,14 @@ test('mindmap API lists saved maps without markdown bodies', async () => {
   assert.deepEqual(result.maps.slice(0, 2), [
     {
       id: 'list-second',
+      title: 'list-second',
       version: second.version,
       createdAt: second.createdAt,
       updatedAt: second.updatedAt,
     },
     {
       id: 'list-first',
+      title: 'First Client Map',
       version: first.version,
       createdAt: first.createdAt,
       updatedAt: first.updatedAt,

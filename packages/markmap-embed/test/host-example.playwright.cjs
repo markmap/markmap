@@ -262,11 +262,13 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
           maps: [
             {
               id: 'client-bravo',
+              title: 'Bravo Strategy',
               version: 3,
               updatedAt: '2026-05-26T00:00:00.000Z',
             },
             {
               id: 'client-alpha',
+              title: 'Alpha Strategy',
               version: 2,
               updatedAt: '2026-05-25T00:00:00.000Z',
             },
@@ -288,7 +290,9 @@ test('host SDK example can refresh and load recent HTTP maps', async ({
   await page.goto(`${baseUrl}?host=1&persistence=http&apiBase=/api/mindmaps`);
   await expect(page.locator('#hostStatus')).toContainText('Ready');
   await page.locator('#hostRefreshMaps').click();
-  await expect(page.locator('#hostRecentMaps')).toContainText('client-alpha');
+  await expect(page.locator('#hostRecentMaps')).toContainText(
+    'Alpha Strategy - client-alpha',
+  );
   await page.locator('#hostRecentMaps').selectOption('client-alpha');
   await expect(page.locator('#hostMapId')).toHaveValue('client-alpha');
   await page.locator('#hostLoadMap').click();
