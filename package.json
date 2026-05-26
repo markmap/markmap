@@ -36,9 +36,9 @@
     "lint:fix": "eslint --fix && prettier --write packages/*/src",
     "test": "vitest --run",
     "test:embed:browser": "npx -y --package @playwright/test@1.60.0 -c 'NODE_PATH=$(dirname $(dirname $(command -v playwright))) playwright test --config packages/markmap-embed/test/playwright.config.cjs'",
-    "clean": "pnpm -r clean",
-    "build:types": "pnpm -r build:types",
-    "build:js": "pnpm -r build:js",
+    "clean": "pnpm -r run clean",
+    "build:types": "pnpm -r run build:types",
+    "build:js": "pnpm -r run build:js",
     "build:docs": "typedoc --out api --titleLink / --name markmap"
   },
   "lint-staged": {
