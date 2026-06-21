@@ -1,0 +1,1 @@
+import"./CWj6FrbW.js";import"./BY1OsP5-.js";import{f as e,a as t}from"./CJ4bccHK.js";var a=e('<footer>Designed with &hearts; by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer>');function i(r){var o=a();t(r,o)}export{i as F};
