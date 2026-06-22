@@ -51,7 +51,7 @@ export function deriveOptions(jsonOptions?: Partial<IMarkmapJSONOptions>) {
     if (typeof value === 'number') derivedOptions[key] = value;
   });
 
-  const booleanKeys = ['zoom', 'pan'] as const;
+  const booleanKeys = ['zoom', 'pan', 'rtl'] as const;
   booleanKeys.forEach((key) => {
     const value = options[key];
     if (value != null) derivedOptions[key] = !!value;

@@ -153,6 +153,193 @@ exports[`checkboxes 1`] = `
 }
 `;
 
+exports[`content with RTL frontmatter 1`] = `
+{
+  "content": "---
+markmap:
+  rtl: true
+  color: blue
+---
+
+- l1
+  - l1.1
+  - l1.2
+    - l1.2.1
+",
+  "features": {},
+  "frontmatter": {
+    "markmap": {
+      "color": [
+        "blue",
+      ],
+      "rtl": true,
+    },
+  },
+  "frontmatterInfo": {
+    "lines": 5,
+    "offset": 43,
+  },
+  "parserOptions": {},
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "l1.1",
+        "payload": {
+          "lines": "7,8",
+          "tag": "li",
+        },
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "content": "l1.2.1",
+            "payload": {
+              "lines": "9,10",
+              "tag": "li",
+            },
+          },
+        ],
+        "content": "l1.2",
+        "payload": {
+          "lines": "8,10",
+          "tag": "li",
+        },
+      },
+    ],
+    "content": "l1",
+    "payload": {
+      "lines": "6,10",
+      "tag": "li",
+    },
+  },
+}
+`;
+
+exports[`content with RTL frontmatter as number 0 1`] = `
+{
+  "content": "---
+markmap:
+  rtl: 0
+---
+
+- l1
+  - l1.1
+",
+  "features": {},
+  "frontmatter": {
+    "markmap": {
+      "rtl": false,
+    },
+  },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 26,
+  },
+  "parserOptions": {},
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "l1.1",
+        "payload": {
+          "lines": "6,7",
+          "tag": "li",
+        },
+      },
+    ],
+    "content": "l1",
+    "payload": {
+      "lines": "5,7",
+      "tag": "li",
+    },
+  },
+}
+`;
+
+exports[`content with RTL frontmatter as number 1 1`] = `
+{
+  "content": "---
+markmap:
+  rtl: 1
+---
+
+- l1
+  - l1.1
+",
+  "features": {},
+  "frontmatter": {
+    "markmap": {
+      "rtl": true,
+    },
+  },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 26,
+  },
+  "parserOptions": {},
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "l1.1",
+        "payload": {
+          "lines": "6,7",
+          "tag": "li",
+        },
+      },
+    ],
+    "content": "l1",
+    "payload": {
+      "lines": "5,7",
+      "tag": "li",
+    },
+  },
+}
+`;
+
+exports[`content with RTL frontmatter as string 1`] = `
+{
+  "content": "---
+markmap:
+  rtl: "true"
+---
+
+- l1
+  - l1.1
+",
+  "features": {},
+  "frontmatter": {
+    "markmap": {
+      "rtl": true,
+    },
+  },
+  "frontmatterInfo": {
+    "lines": 4,
+    "offset": 31,
+  },
+  "parserOptions": {},
+  "root": {
+    "children": [
+      {
+        "children": [],
+        "content": "l1.1",
+        "payload": {
+          "lines": "6,7",
+          "tag": "li",
+        },
+      },
+    ],
+    "content": "l1",
+    "payload": {
+      "lines": "5,7",
+      "tag": "li",
+    },
+  },
+}
+`;
+
 exports[`content with frontmatter 1`] = `
 {
   "content": "---

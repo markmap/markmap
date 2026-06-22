@@ -151,6 +151,69 @@ test('magic comments', () => {
   expect(result).toMatchSnapshot();
 });
 
+test('content with RTL frontmatter', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+---
+markmap:
+  rtl: true
+  color: blue
+---
+
+- l1
+  - l1.1
+  - l1.2
+    - l1.2.1
+`);
+  expect(result.frontmatter?.markmap?.rtl).toBe(true);
+  expect(result).toMatchSnapshot();
+});
+
+test('content with RTL frontmatter as string', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+---
+markmap:
+  rtl: "true"
+---
+
+- l1
+  - l1.1
+`);
+  expect(result.frontmatter?.markmap?.rtl).toBe(true);
+  expect(result).toMatchSnapshot();
+});
+
+test('content with RTL frontmatter as number 1', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+---
+markmap:
+  rtl: 1
+---
+
+- l1
+  - l1.1
+`);
+  expect(result.frontmatter?.markmap?.rtl).toBe(true);
+  expect(result).toMatchSnapshot();
+});
+
+test('content with RTL frontmatter as number 0', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform(`\
+---
+markmap:
+  rtl: 0
+---
+
+- l1
+  - l1.1
+`);
+  expect(result.frontmatter?.markmap?.rtl).toBe(false);
+  expect(result).toMatchSnapshot();
+});
+
 test('links - target=_blank', () => {
   const transformer = new Transformer([
     ...builtInPlugins,
