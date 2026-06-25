@@ -1,6 +1,7 @@
 import type * as d3 from 'd3';
 import {
   linkHorizontal,
+  linkVertical,
   max,
   min,
   minIndex,
@@ -35,8 +36,6 @@ export const globalCSS = css;
 const SELECTOR_NODE = 'g.markmap-node';
 const SELECTOR_LINK = 'path.markmap-link';
 const SELECTOR_HIGHLIGHT = 'g.markmap-highlight';
-
-const linkShape = linkHorizontal();
 
 function minBy(numbers: number[], by: (v: number) => number): number {
   const index = minIndex(numbers, by);
@@ -226,34 +225,72 @@ export class Markmap {
         d.state.size = newSize;
       });
 
-    const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
+    const { lineWidth, paddingX, spacingHorizontal, spacingVertical, ttd } =
       this.options;
-    const layout = flextree<INode>({})
-      .children((d) => {
-        if (!d.payload?.fold) return d.children;
-      })
-      .nodeSize((node) => {
-        const [width, height] = node.data.state.size;
-        return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
-      })
-      .spacing((a, b) => {
-        return (
-          (a.parent === b.parent ? spacingVertical : spacingVertical * 2) +
-          lineWidth(a.data)
-        );
-      });
+    const layout = flextree<INode>({}).children((d) => {
+      if (!d.payload?.fold) return d.children;
+    });
+
+    if (ttd) {
+      // TTD (Top-To-Down) 垂直布局
+      layout
+        .nodeSize((node) => {
+          const [width, height] = node.data.state.size;
+          return [
+            width + (width ? paddingX * 2 : 0) + spacingHorizontal * 0.5,
+            height + spacingVertical * 20,
+          ];
+        })
+        .spacing((a, b) => {
+          return (
+            (a.parent === b.parent
+              ? spacingVertical * 1.5
+              : spacingVertical * 2) + lineWidth(a.data)
+          );
+        });
+    } else {
+      // LTR (Left-To-Right) 水平布局
+      layout
+        .nodeSize((node) => {
+          const [width, height] = node.data.state.size;
+          return [
+            height,
+            width + (width ? paddingX * 2 : 0) + spacingHorizontal,
+          ];
+        })
+        .spacing((a, b) => {
+          return (
+            (a.parent === b.parent ? spacingVertical : spacingVertical * 2) +
+            lineWidth(a.data)
+          );
+        });
+    }
+
     const tree = layout.hierarchy(this.state.data);
     layout(tree);
     const fnodes = tree.descendants();
+
     fnodes.forEach((fnode) => {
       const node = fnode.data;
-      node.state.rect = {
-        x: fnode.y,
-        y: fnode.x - fnode.xSize / 2,
-        width: fnode.ySize - spacingHorizontal,
-        height: fnode.xSize,
-      };
+      if (ttd) {
+        // TTD 垂直布局
+        node.state.rect = {
+          x: fnode.x - fnode.xSize / 2,
+          y: fnode.y,
+          width: fnode.xSize,
+          height: fnode.ySize - spacingVertical * 1.5,
+        };
+      } else {
+        // LTR 水平布局
+        node.state.rect = {
+          x: fnode.y,
+          y: fnode.x - fnode.xSize / 2,
+          width: fnode.ySize - spacingHorizontal,
+          height: fnode.xSize,
+        };
+      }
     });
+
     this.state.rect = {
       x1: min(fnodes, (fnode) => fnode.data.state.rect.x) || 0,
       y1: min(fnodes, (fnode) => fnode.data.state.rect.y) || 0,
@@ -315,7 +352,7 @@ export class Markmap {
   }
 
   async renderData(originData?: INode) {
-    const { paddingX, autoFit, color, maxWidth, lineWidth } = this.options;
+    const { paddingX, autoFit, color, maxWidth, lineWidth, ttd } = this.options;
     const rootNode = this.state.data;
     if (!rootNode) return;
 
@@ -349,6 +386,9 @@ export class Markmap {
       (nodeMap[originMap[node.state.id]] || rootNode).state.rect;
     sourceRectMap[rootNode.state.id] = rootNode.state.rect;
     if (originData) setOriginNode(originData);
+
+    // 根据布局选择合适的连线形状
+    const linkShape = ttd ? linkVertical() : linkHorizontal();
 
     // Update highlight
     let { highlight } = this.state;
@@ -449,13 +489,24 @@ export class Markmap {
       .style('opacity', 0)
       .on('mousedown', stopPropagation)
       .on('dblclick', stopPropagation);
-    mmFoEnter
-      // The outer `<div>` with a width of `maxWidth`
-      .append<HTMLDivElement>('xhtml:div')
-      // The inner `<div>` with `display: inline-block` to get the proper width
-      .append<HTMLDivElement>('xhtml:div')
-      .html((d) => d.content)
-      .attr('xmlns', 'http://www.w3.org/1999/xhtml');
+
+    if (ttd) {
+      // TTD 垂直布局的 foreignObject
+      mmFoEnter
+        .append<HTMLDivElement>('xhtml:div')
+        .append<HTMLDivElement>('xhtml:div')
+        .style('transform', 'translate(30px, 90px)')
+        .html((d) => d.content)
+        .attr('xmlns', 'http://www.w3.org/1999/xhtml');
+    } else {
+      // LTR 水平布局的 foreignObject
+      mmFoEnter
+        .append<HTMLDivElement>('xhtml:div')
+        .append<HTMLDivElement>('xhtml:div')
+        .html((d) => d.content)
+        .attr('xmlns', 'http://www.w3.org/1999/xhtml');
+    }
+
     mmFoEnter.each(function () {
       const el = this.firstChild?.firstChild as Element;
       observer.observe(el);
@@ -488,15 +539,30 @@ export class Markmap {
       .attr('class', 'markmap-link')
       .attr('data-depth', (d) => d.target.state.depth)
       .attr('data-path', (d) => d.target.state.path)
-      .attr('d', (d) => {
+      .attr('stroke-width', 0);
+
+    if (ttd) {
+      // TTD 垂直布局的初始路径
+      mmPathEnter.attr('d', (d) => {
+        const originRect = getOriginSourceRect(d.target);
+        const pathOrigin: [number, number] = [
+          originRect.x + originRect.width + lineWidth(d.target) / 2,
+          originRect.y + originRect.height,
+        ];
+        return linkShape({ source: pathOrigin, target: pathOrigin });
+      });
+    } else {
+      // LTR 水平布局的初始路径
+      mmPathEnter.attr('d', (d) => {
         const originRect = getOriginSourceRect(d.target);
         const pathOrigin: [number, number] = [
           originRect.x + originRect.width,
           originRect.y + originRect.height,
         ];
         return linkShape({ source: pathOrigin, target: pathOrigin });
-      })
-      .attr('stroke-width', 0);
+      });
+    }
+
     const mmPathMerge = mmPathEnter.merge(mmPath);
 
     this.svg.style(
@@ -518,9 +584,7 @@ export class Markmap {
 
     mmGEnter.attr('transform', (d) => {
       const originRect = getOriginSourceRect(d);
-      return `translate(${originRect.x + originRect.width - d.state.rect.width},${
-        originRect.y + originRect.height - d.state.rect.height
-      })`;
+      return `translate(${originRect.x + originRect.width - d.state.rect.width},${originRect.y + originRect.height - d.state.rect.height})`;
     });
     this.transition(mmGExit)
       .attr('transform', (d) => {
@@ -539,28 +603,60 @@ export class Markmap {
     const mmLineExit = mmGExit.selectAll<SVGLineElement, INode>(
       childSelector<SVGLineElement>('line'),
     );
-    this.transition(mmLineExit)
-      .attr('x1', (d) => d.state.rect.width)
-      .attr('stroke-width', 0);
-    mmLineEnter
-      .attr('x1', (d) => d.state.rect.width)
-      .attr('x2', (d) => d.state.rect.width);
-    mmLineMerge
-      .attr('y1', (d) => d.state.rect.height + lineWidth(d) / 2)
-      .attr('y2', (d) => d.state.rect.height + lineWidth(d) / 2);
-    this.transition(mmLineMerge)
-      .attr('x1', -1)
-      .attr('x2', (d) => d.state.rect.width + 2)
-      .attr('stroke', (d) => color(d))
-      .attr('stroke-width', lineWidth);
+
+    if (ttd) {
+      // TTD 垂直布局的线条
+      this.transition(mmLineExit)
+        .attr('x1', (d) => d.state.rect.width)
+        .attr('stroke-width', 0);
+      mmLineEnter
+        .attr('x1', (d) => d.state.rect.width)
+        .attr('x2', (d) => d.state.rect.width);
+      mmLineMerge
+        .attr('x1', (d) => d.state.rect.width + lineWidth(d) / 2)
+        .attr('x2', (d) => d.state.rect.width + lineWidth(d) / 2)
+        .attr('y1', 70)
+        .attr('y2', (d) => d.state.rect.height + 2);
+      this.transition(mmLineMerge)
+        .attr('y1', 70)
+        .attr('y2', (d) => d.state.rect.height + 2)
+        .attr('stroke', (d) => color(d))
+        .attr('stroke-width', lineWidth);
+    } else {
+      // LTR 水平布局的线条
+      this.transition(mmLineExit)
+        .attr('x1', (d) => d.state.rect.width)
+        .attr('stroke-width', 0);
+      mmLineEnter
+        .attr('x1', (d) => d.state.rect.width)
+        .attr('x2', (d) => d.state.rect.width);
+      mmLineMerge
+        .attr('y1', (d) => d.state.rect.height + lineWidth(d) / 2)
+        .attr('y2', (d) => d.state.rect.height + lineWidth(d) / 2);
+      this.transition(mmLineMerge)
+        .attr('x1', -1)
+        .attr('x2', (d) => d.state.rect.width + 2)
+        .attr('stroke', (d) => color(d))
+        .attr('stroke-width', lineWidth);
+    }
 
     const mmCircleExit = mmGExit.selectAll<SVGCircleElement, INode>(
       childSelector<SVGCircleElement>('circle'),
     );
     this.transition(mmCircleExit).attr('r', 0).attr('stroke-width', 0);
-    mmCircleMerge
-      .attr('cx', (d) => d.state.rect.width)
-      .attr('cy', (d) => d.state.rect.height + lineWidth(d) / 2);
+
+    if (ttd) {
+      // TTD 垂直布局的圆圈
+      mmCircleMerge
+        .attr('cx', (d) => d.state.rect.width + lineWidth(d) / 2)
+        .attr('cy', (d) => d.state.rect.height);
+    } else {
+      // LTR 水平布局的圆圈
+      mmCircleMerge
+        .attr('cx', (d) => d.state.rect.width)
+        .attr('cy', (d) => d.state.rect.height + lineWidth(d) / 2);
+    }
+
     this.transition(mmCircleMerge).attr('r', 6).attr('stroke-width', '1.5');
 
     this.transition(mmFoExit).style('opacity', 0);
@@ -569,38 +665,80 @@ export class Markmap {
       .attr('height', (d) => d.state.rect.height);
     this.transition(mmFoMerge).style('opacity', 1);
 
-    this.transition(mmPathExit)
-      .attr('d', (d) => {
-        const targetRect = getOriginTargetRect(d.target);
-        const pathTarget: [number, number] = [
-          targetRect.x + targetRect.width,
-          targetRect.y + targetRect.height + lineWidth(d.target) / 2,
-        ];
-        return linkShape({ source: pathTarget, target: pathTarget });
-      })
-      .attr('stroke-width', 0)
-      .remove();
+    //路径退出动画
+    if (ttd) {
+      // TTD 垂直布局的路径退出
+      this.transition(mmPathExit)
+        .attr('d', (d) => {
+          const targetRect = getOriginTargetRect(d.target);
+          const pathTarget: [number, number] = [
+            targetRect.x + targetRect.width + lineWidth(d.target) / 2,
+            targetRect.y,
+          ];
+          return linkShape({ source: pathTarget, target: pathTarget });
+        })
+        .attr('stroke-width', 0)
+        .remove();
+    } else {
+      // LTR 水平布局的路径退出
+      this.transition(mmPathExit)
+        .attr('d', (d) => {
+          const targetRect = getOriginTargetRect(d.target);
+          const pathTarget: [number, number] = [
+            targetRect.x + targetRect.width,
+            targetRect.y + targetRect.height + lineWidth(d.target) / 2,
+          ];
+          return linkShape({ source: pathTarget, target: pathTarget });
+        })
+        .attr('stroke-width', 0)
+        .remove();
+    }
 
-    this.transition(mmPathMerge)
-      .attr('stroke', (d) => color(d.target))
-      .attr('stroke-width', (d) => lineWidth(d.target))
-      .attr('d', (d) => {
-        const origSource = d.source;
-        const origTarget = d.target;
-        const source: [number, number] = [
-          origSource.state.rect.x + origSource.state.rect.width,
-          origSource.state.rect.y +
-            origSource.state.rect.height +
-            lineWidth(origSource) / 2,
-        ];
-        const target: [number, number] = [
-          origTarget.state.rect.x,
-          origTarget.state.rect.y +
-            origTarget.state.rect.height +
-            lineWidth(origTarget) / 2,
-        ];
-        return linkShape({ source, target });
-      });
+    // 主路径几何
+    if (ttd) {
+      this.transition(mmPathMerge)
+        .attr('stroke', (d) => color(d.target))
+        .attr('stroke-width', (d) => lineWidth(d.target))
+        .attr('d', (d) => {
+          const origSource = d.source;
+          const origTarget = d.target;
+          // 确保连接线从父节点底部连接到子节点顶部
+          const source: [number, number] = [
+            origSource.state.rect.x +
+              origSource.state.rect.width +
+              lineWidth(origSource) / 2,
+            origSource.state.rect.y + origSource.state.rect.height,
+          ];
+          const target: [number, number] = [
+            origTarget.state.rect.x +
+              origTarget.state.rect.width +
+              lineWidth(origTarget) / 2,
+            origTarget.state.rect.y + 70,
+          ];
+          return linkShape({ source, target });
+        });
+    } else {
+      this.transition(mmPathMerge)
+        .attr('stroke', (d) => color(d.target))
+        .attr('stroke-width', (d) => lineWidth(d.target))
+        .attr('d', (d) => {
+          const origSource = d.source;
+          const origTarget = d.target;
+          const source: [number, number] = [
+            origSource.state.rect.x + origSource.state.rect.width,
+            origSource.state.rect.y +
+              origSource.state.rect.height +
+              lineWidth(origSource) / 2,
+          ];
+          const target: [number, number] = [
+            origTarget.state.rect.x,
+            origTarget.state.rect.y +
+              origTarget.state.rect.height +
+              lineWidth(origTarget) / 2,
+          ];
+          return linkShape({ source, target });
+        });
+    }
 
     if (autoFit) this.fit();
   }
@@ -619,15 +757,28 @@ export class Markmap {
     const svgNode = this.svg.node()!;
     const { width: offsetWidth, height: offsetHeight } =
       svgNode.getBoundingClientRect();
-    const { fitRatio } = this.options;
+    const { fitRatio, ttd } = this.options;
     const { x1, y1, x2, y2 } = this.state.rect;
     const naturalWidth = x2 - x1;
     const naturalHeight = y2 - y1;
-    const scale = Math.min(
-      (offsetWidth / naturalWidth) * fitRatio,
-      (offsetHeight / naturalHeight) * fitRatio,
-      maxScale,
-    );
+
+    let scale: number;
+    if (ttd) {
+      // TTD 垂直布局的自适应缩放
+      scale = Math.min(
+        (offsetWidth / naturalWidth) * fitRatio * 0.8,
+        (offsetHeight / naturalHeight) * fitRatio * 1.2,
+        maxScale,
+      );
+    } else {
+      // LTR 水平布局的自适应缩放
+      scale = Math.min(
+        (offsetWidth / naturalWidth) * fitRatio,
+        (offsetHeight / naturalHeight) * fitRatio,
+        maxScale,
+      );
+    }
+
     const initialZoom = zoomIdentity
       .translate(
         (offsetWidth - naturalWidth * scale) / 2 - x1 * scale,

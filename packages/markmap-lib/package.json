@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "del-cli dist tsconfig.tsbuildinfo",
     "build:types": "tsc",
-    "build:js": "vite build && TARGET=nodeLight vite build && TARGET=browserEs vite build && TARGET=browserJs vite build",
+    "build:js": "vite build && cross-env TARGET=nodeLight vite build && cross-env TARGET=browserEs vite build && cross-env TARGET=browserJs vite build",
     "build": "pnpm clean && pnpm /^build:/",
     "prepublishOnly": "pnpm build"
   },

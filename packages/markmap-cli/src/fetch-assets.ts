@@ -80,7 +80,7 @@ async function downloadAsset(
   }
   const url = await resolveUrl();
   let body: ReadableStream;
-  if (url.startsWith('/')) {
+  if (url.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(url)) {
     body = createStreamBody(createReadStream(url));
   } else {
     const res = await fetch(url);
