@@ -1,0 +1,61 @@
+{
+  "name": "markmap-react",
+  "version": "0.1.0",
+  "description": "React adapter for embeddable Markmap views",
+  "author": "Gerald <gera2ld@live.com>",
+  "license": "MIT",
+  "scripts": {
+    "clean": "del-cli dist tsconfig.tsbuildinfo",
+    "build:types": "tsc",
+    "build:js": "vite build",
+    "build": "pnpm clean && pnpm /^build:/",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "markdown",
+    "markmap",
+    "mindmap",
+    "react"
+  ],
+  "homepage": "https://github.com/markmap/markmap/packages/markmap-react#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/markmap/markmap/issues"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.22.6",
+    "markmap-embed": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.29",
+    "@types/react-test-renderer": "^18.3.1",
+    "react": "^18.3.1",
+    "react-test-renderer": "^18.3.1"
+  }
+}
