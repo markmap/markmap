@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { convertNode, parseHtml } from '../src/index';
+import { buildTree, convertNode, parseHtml } from '../src/index';
 
 test('parseHtml', () => {
   const root = parseHtml(`
@@ -90,4 +90,29 @@ test('ol > li', () => {
 </body>`);
   expect(root).toMatchSnapshot();
   expect(convertNode(root)).toMatchSnapshot();
+});
+
+test('buildTree sanitizes active HTML by default', () => {
+  const root = buildTree(`<body>
+<h1><a href="javascript:alert(1)" onclick="alert(2)">unsafe link</a></h1>
+<h2><img src="x" srcset="javascript:alert(3) 1x" onerror="alert(4)"><script>alert(5)</script></h2>
+<h3><span style="background-image:url(javascript:alert(5))">bad style</span></h3>
+</body>`);
+
+  expect(root.children[0].content).toBe('<a>unsafe link</a>');
+  expect(root.children[0].children[0].content).toBe('<img src="x">');
+  expect(root.children[0].children[0].children[0].content).toBe(
+    '<span>bad style</span>',
+  );
+});
+
+test('buildTree allows raw HTML when sanitization is disabled', () => {
+  const root = buildTree(
+    `<body><h1><a href="javascript:alert(1)" onclick="alert(2)">unsafe link</a></h1></body>`,
+    { sanitize: false },
+  );
+
+  expect(root.children[0].content).toBe(
+    '<a href="javascript:alert(1)" onclick="alert(2)">unsafe link</a>',
+  );
 });

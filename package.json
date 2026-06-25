@@ -35,9 +35,12 @@
     "lint": "eslint && prettier --check packages/*/src",
     "lint:fix": "eslint --fix && prettier --write packages/*/src",
     "test": "vitest --run",
-    "clean": "pnpm -r clean",
-    "build:types": "pnpm -r build:types",
-    "build:js": "pnpm -r build:js",
+    "test:embed:browser": "npx -y --package @playwright/test@1.60.0 -c 'NODE_PATH=$(dirname $(dirname $(command -v playwright))) playwright test --config packages/markmap-embed/test/playwright.config.cjs'",
+    "build:mindmaps": "vite build --config examples/mindmaps-playground/vite.config.mts",
+    "preview:mindmaps": "vite --host 127.0.0.1 --port 4177 examples/mindmaps-playground",
+    "clean": "pnpm -r run clean",
+    "build:types": "pnpm -r run build:types",
+    "build:js": "pnpm -r run build:js",
     "build:docs": "typedoc --out api --titleLink / --name markmap"
   },
   "lint-staged": {
