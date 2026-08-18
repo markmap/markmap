@@ -19,6 +19,7 @@ Markmap is also available in:
 - Emacs: [eaf-markmap](https://github.com/emacs-eaf/eaf-markmap) -- powered by [EAF](https://github.com/emacs-eaf/emacs-application-framework)
 - MCP Server: [markmap-mcp-server](https://github.com/jinzcdev/markmap-mcp-server) [![NPM Version](https://img.shields.io/npm/v/@jinzcdev/markmap-mcp-server.svg)](https://www.npmjs.com/package/@jinzcdev/markmap-mcp-server) - powered by [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - AI agents: [mindmap-skills](https://github.com/galiacheng/mindmap-skills) - generate an interactive Markmap from a file, URL, or topic, without leaving your AI agent
+- Web: [text2diagram](https://text2everything.vip) - describe a mindmap in plain language and get an interactive Markmap in the browser, no install
 
 ## Usage
 
