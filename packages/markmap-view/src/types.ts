@@ -16,6 +16,7 @@ export interface IMarkmapState {
  * Portable options that can be derived into `IMarkmapOptions`.
  */
 export interface IMarkmapJSONOptions {
+  autoFit: boolean;
   color: string[];
   colorFreezeLevel: number;
   duration: number;
