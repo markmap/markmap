@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		
+		<link rel="modulepreload" href="./_app/immutable/entry/start.Cvc9nZdB.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/Ddvnjkwr.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/B-fbdRLl.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.CImy2e-I.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/Dw9IwxVR.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/C0H-6aTP.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/CA4cFvoh.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/D4wCSexA.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/CJ4bccHK.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/CWj6FrbW.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DF75cDRs.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/DIBUR5Au.js">
+	</head>
+	<body>
+		<div>
+			<script>
+				{
+					__sveltekit_yj6fi5 = {
+						base: new URL(".", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.Cvc9nZdB.js"),
+						import("./_app/immutable/entry/app.CImy2e-I.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+
+					if ('serviceWorker' in navigator) {
+						addEventListener('load', function () {
+							navigator.serviceWorker.register('./service-worker.js');
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
