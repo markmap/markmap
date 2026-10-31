@@ -3,6 +3,7 @@ import { ITransformHooks } from '../../types';
 import { definePlugin } from '../base';
 import { config, name } from './config';
 import { katexPlugin } from './vendor';
+import { enableMathInlineInHtml } from './inline-html';
 
 const plugin = definePlugin({
   name,
@@ -11,6 +12,7 @@ const plugin = definePlugin({
     let enableFeature = noop;
     transformHooks.parser.tap((md) => {
       md.use(katexPlugin);
+      enableMathInlineInHtml(md);
       ['math_block', 'math_inline'].forEach((key) => {
         const fn = md.renderer.rules[key];
         if (fn) {

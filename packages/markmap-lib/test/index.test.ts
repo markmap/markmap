@@ -83,6 +83,13 @@ markmap:
   expect(transformer.getUsedAssets(result.features)).toMatchSnapshot();
 });
 
+test('katex inside inline HTML', () => {
+  const transformer = new Transformer();
+  const result = transformer.transform('# <span>$x+2$</span>');
+  expect(result.root.content).toContain('<span class="katex">');
+  expect(result.root.content).not.toContain('$x+2$');
+});
+
 test('tables', () => {
   const transformer = new Transformer();
   const result = transformer.transform(`\
