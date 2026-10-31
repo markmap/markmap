@@ -226,15 +226,23 @@ export class Markmap {
         d.state.size = newSize;
       });
 
-    const { lineWidth, paddingX, spacingHorizontal, spacingVertical } =
-      this.options;
+    const {
+      lineWidth,
+      nodeMinHeight,
+      paddingX,
+      spacingHorizontal,
+      spacingVertical,
+    } = this.options;
     const layout = flextree<INode>({})
       .children((d) => {
         if (!d.payload?.fold) return d.children;
       })
       .nodeSize((node) => {
         const [width, height] = node.data.state.size;
-        return [height, width + (width ? paddingX * 2 : 0) + spacingHorizontal];
+        return [
+          Math.max(height, nodeMinHeight),
+          width + (width ? paddingX * 2 : 0) + spacingHorizontal,
+        ];
       })
       .spacing((a, b) => {
         return (
