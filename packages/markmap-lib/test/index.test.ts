@@ -90,6 +90,53 @@ test('katex inside inline HTML', () => {
   expect(result.root.content).not.toContain('$x+2$');
 });
 
+test.each([
+  ['plain text', '# Cost $5'],
+  ['inline HTML', '# <span>Cost $5</span>'],
+])('literal dollar signs in %s', (_, content) => {
+  const result = new Transformer().transform(content);
+  expect(result.root.content).toContain('Cost &#x24;5');
+  expect(result.features.katex).toBeUndefined();
+});
+
+test.each([
+  ['plain text', '# $x+2$ and cost $5'],
+  ['inline HTML', '# <span>$x+2$ and cost $5</span>'],
+])('katex and literal dollar signs in %s', (_, content) => {
+  const result = new Transformer().transform(content);
+  expect(result.root.content).toContain('<span class="katex">');
+  expect(result.root.content).toContain('and cost &#x24;5');
+  expect(result.features.katex).toBe(true);
+});
+
+test.each([
+  ['escaped dollars', String.raw`# \$x+2\$`, '&#x24;x+2&#x24;'],
+  [
+    'escaped dollars in HTML',
+    String.raw`# <span>\$x+2\$</span>`,
+    '<span>&#x24;x+2&#x24;</span>',
+  ],
+  ['inline code', '# `$x+2$`', '<code>&#x24;x+2&#x24;</code>'],
+  [
+    'inline code in HTML',
+    '# <span>`$x+2$`</span>',
+    '<span><code>&#x24;x+2&#x24;</code></span>',
+  ],
+])('preserve %s', (_, content, expected) => {
+  const result = new Transformer().transform(content);
+  expect(result.root.content).toBe(expected);
+  expect(result.features.katex).toBeUndefined();
+});
+
+test('preserve escaped HTML around katex', () => {
+  const result = new Transformer().transform(
+    '# &lt;span&gt;$x+2$&lt;/span&gt;',
+  );
+  expect(result.root.content).toMatch(/^&lt;span&gt;.*&lt;\/span&gt;$/);
+  expect(result.root.content).toContain('<span class="katex">');
+  expect(result.features.katex).toBe(true);
+});
+
 test('tables', () => {
   const transformer = new Transformer();
   const result = transformer.transform(`\

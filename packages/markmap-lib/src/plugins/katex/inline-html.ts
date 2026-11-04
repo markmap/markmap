@@ -12,9 +12,10 @@ export function enableMathInlineInHtml(md: MarkdownIt) {
           continue;
         }
 
-        const parsed = md.parseInline(child.content, state.env);
-        const parsedChildren = parsed[0]?.children;
-        if (parsedChildren?.some((item) => item.type === 'math_inline')) {
+        const parsedChildren: typeof children = [];
+        // Parse tokens directly so literal dollars cannot re-enter this core rule.
+        md.inline.parse(child.content, md, state.env, parsedChildren);
+        if (parsedChildren.some((item) => item.type === 'math_inline')) {
           children.push(...parsedChildren);
         } else {
           children.push(child);
