@@ -23,6 +23,11 @@
     "build:js": "vite build"
   },
   "dependencies": {
-    "@markmap/core": "workspace:*"
+    "@markmap/core": "workspace:*",
+    "d3-flextree": "^2.1.2"
+  },
+  "devDependencies": {
+    "@markmap/parse": "workspace:*",
+    "@types/d3-flextree": "^2.1.4"
   }
 }
