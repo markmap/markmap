@@ -1,4 +1,5 @@
 import {
+  type Layout,
   type MarkmapJSONOptions,
   readJSONOptions,
   type Theme,
@@ -6,7 +7,22 @@ import {
   validateOptions,
 } from '@markmap/core';
 import type { RenderOptions } from './render';
+import { orgChartLayout } from './layouts/org-chart';
+import { treeLayout } from './layouts/tree';
+import { twoSidedLayout } from './layouts/two-sided';
 import { classicTheme } from './themes/classic';
+
+/** Layouts Markdown can pick by name with the `layout` option. */
+export const builtinLayouts: Readonly<Record<string, Layout>> = Object.freeze({
+  [treeLayout.name]: treeLayout,
+  [twoSidedLayout.name]: twoSidedLayout,
+  [orgChartLayout.name]: orgChartLayout,
+});
+
+export interface ResolveOptions {
+  /** Layouts the `layout` option may name. Defaults to {@link builtinLayouts}. */
+  layouts?: Readonly<Record<string, Layout>>;
+}
 
 export interface ResolvedOptions<T> {
   options: T;
@@ -41,17 +57,36 @@ const RENDER_KEYS = ['maxWidth', 'spacingHorizontal', 'spacingVertical'] as cons
 export function resolveRenderOptions<T extends Partial<RenderOptions>>(
   base: T,
   input: unknown,
+  { layouts = builtinLayouts }: ResolveOptions = {},
 ): ResolvedOptions<T & Partial<RenderOptions>> {
   const core = readJSONOptions(input);
   const result: T & Partial<RenderOptions> = { ...base };
   for (const key of RENDER_KEYS) {
     if (core.options[key] != null) result[key] = core.options[key];
   }
+  const layoutWarnings: string[] = [];
+  if (core.options.layout != null) {
+    const layout = Object.hasOwn(layouts, core.options.layout)
+      ? layouts[core.options.layout]
+      : undefined;
+    if (layout) result.layout = layout;
+    else {
+      const names = Object.keys(layouts).map((name) => `\`${name}\``);
+      layoutWarnings.push(
+        `Unknown layout \`${core.options.layout}\`; available: ${names.join(', ')}`,
+      );
+    }
+  }
   const themed = configureTheme(base.theme ?? classicTheme, core.rest);
   if (themed.theme !== (base.theme ?? classicTheme)) result.theme = themed.theme;
   return {
     options: result,
     json: core.options,
-    warnings: [...core.warnings, ...themed.warnings, ...unknownOptionWarnings(themed.rest)],
+    warnings: [
+      ...core.warnings,
+      ...layoutWarnings,
+      ...themed.warnings,
+      ...unknownOptionWarnings(themed.rest),
+    ],
   };
 }

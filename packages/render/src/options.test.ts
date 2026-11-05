@@ -6,10 +6,13 @@ import {
   classicTheme,
   configureTheme,
   createClassicTheme,
+  orgChartLayout,
   renderTree,
   resolveRenderOptions,
   tokensToCSS,
   toSVGString,
+  treeLayout,
+  twoSidedLayout,
 } from '.';
 
 const md = '# R\n\n## A\n\n- a1\n  - a1x\n- a2\n\n## B\n\n- b1';
@@ -118,5 +121,34 @@ describe('tokensToCSS', () => {
       tokens: { ok: 'red', bad: 'red;}</style><script>x</script>', 'bad name;': 'red' },
     };
     expect(tokensToCSS(theme)).toBe('--ok:red;');
+  });
+});
+
+describe('layout option', () => {
+  it('picks a built-in layout by name', () => {
+    const { options, warnings } = resolveRenderOptions({}, { layout: 'org-chart' });
+    expect(options.layout).toBe(orgChartLayout);
+    expect(warnings).toEqual([]);
+  });
+
+  it('warns about unknown names and keeps the base layout', () => {
+    const { options, warnings } = resolveRenderOptions(
+      { layout: twoSidedLayout },
+      { layout: 'radial' },
+    );
+    expect(options.layout).toBe(twoSidedLayout);
+    expect(warnings).toEqual([
+      'Unknown layout `radial`; available: `tree`, `two-sided`, `org-chart`',
+    ]);
+    expect(resolveRenderOptions({}, { layout: 'toString' }).options.layout).toBeUndefined();
+    expect(resolveRenderOptions({}, { layout: 3 }).warnings).toEqual([
+      '`layout` must be a non-empty string',
+    ]);
+  });
+
+  it('uses a custom registry', () => {
+    const mine = { name: 'mine', layout: treeLayout.layout };
+    const { options } = resolveRenderOptions({}, { layout: 'mine' }, { layouts: { mine } });
+    expect(options.layout).toBe(mine);
   });
 });

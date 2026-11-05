@@ -8,6 +8,7 @@ import {
   easeCubicInOut,
   interpolateStates,
   type RenderOptions,
+  type ResolveOptions,
   type RenderResult,
   renderTree,
   resolveRenderOptions,
@@ -55,8 +56,9 @@ const DEFAULTS: ViewOptions = {
 export function resolveViewOptions(
   base: ViewOptions,
   input: unknown,
+  resolve?: ResolveOptions,
 ): { options: ViewOptions; warnings: string[] } {
-  const { options, json, warnings } = resolveRenderOptions(base, input);
+  const { options, json, warnings } = resolveRenderOptions(base, input, resolve);
   const keys = [
     'zoom',
     'pan',

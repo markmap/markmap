@@ -15,6 +15,8 @@ export interface MarkmapJSONOptions {
   maxFitScale?: number;
   /** Length of fold, update and fit animations, in ms. `0` disables them. */
   duration?: number;
+  /** Name of a registered layout, such as `two-sided` or `org-chart`. */
+  layout?: string;
 }
 
 /**
@@ -47,6 +49,13 @@ export const validators = {
       }
       return { value };
     };
+  },
+  /** A short non-empty string, such as a name to look up. */
+  string(): OptionValidator {
+    return (value, key) =>
+      typeof value === 'string' && value.trim() && value.length <= 100
+        ? { value: value.trim() }
+        : { warning: `\`${key}\` must be a non-empty string` };
   },
   boolean(): OptionValidator {
     return (value, key) =>
@@ -83,6 +92,7 @@ const CORE_SCHEMA: OptionSchema = {
   fitPadding: validators.number(0),
   maxFitScale: validators.number(0.01),
   duration: validators.number(0),
+  layout: validators.string(),
 };
 
 export interface ValidatedOptions<T> {

@@ -17,6 +17,9 @@ const DEFAULT_COLORS = [
 
 const CIRCLE_RADIUS = 6;
 
+/** Space between a top anchor and the label below it. */
+const TOP_GAP = 4;
+
 /** Line width shrinks with depth: 4, 2.5, 1.75, … */
 const lineWidth = (depth: number) => 1 + 3 / 2 ** depth;
 
@@ -69,8 +72,11 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
         const color = colorOf(ctx.path);
         const width = lineWidth(ctx.depth);
         const y = box.height + width / 2;
-        // The fold toggle sits where the children go: the outer end of the underline.
-        const cx = ctx.direction === 'left' ? 0 : box.width;
+        // The fold toggle sits where the children go: the outer end of the underline,
+        // or its middle when children grow up or down.
+        const cx = { left: 0, right: box.width, top: box.width / 2, bottom: box.width / 2 }[
+          ctx.direction
+        ];
         const chrome = [
           { kind: 'path' as const, d: `M0,${y}H${box.width}`, stroke: color, strokeWidth: width },
         ];
@@ -96,16 +102,23 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
         if (side === 'left') return { x: rect.x, y, side };
         if (side === 'right') return { x: rect.x + rect.width, y, side };
         const x = rect.x + rect.width / 2;
-        return { x, y: side === 'top' ? rect.y : y, side };
+        // Stop short of the label, so the edge does not touch the text.
+        return { x, y: side === 'top' ? rect.y - TOP_GAP : y, side };
       },
     },
     edge: {
       render(from, to, ctx) {
-        const mid = (from.x + to.x) / 2;
+        // An S-curve that leaves and arrives along the anchors' axis.
+        const vertical = from.side === 'top' || from.side === 'bottom';
+        const mx = (from.x + to.x) / 2;
+        const my = (from.y + to.y) / 2;
+        const controls = vertical
+          ? `${from.x},${my},${to.x},${my}`
+          : `${mx},${from.y},${mx},${to.y}`;
         return [
           {
             kind: 'path',
-            d: `M${from.x},${from.y}C${mid},${from.y},${mid},${to.y},${to.x},${to.y}`,
+            d: `M${from.x},${from.y}C${controls},${to.x},${to.y}`,
             stroke: colorOf(ctx.node.path),
             strokeWidth: lineWidth(ctx.node.depth),
           },

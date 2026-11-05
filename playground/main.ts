@@ -1,5 +1,5 @@
 import { parse } from '@markmap/parse';
-import { toSVGString, treeLayout, twoSidedLayout } from '@markmap/render';
+import { builtinLayouts, toSVGString } from '@markmap/render';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
@@ -11,7 +11,6 @@ const stats = document.querySelector<HTMLSpanElement>('#stats')!;
 
 editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
 
-const LAYOUTS = { tree: treeLayout, 'two-sided': twoSidedLayout };
 const layoutSelect = document.querySelector<HTMLSelectElement>('#layout')!;
 const baseOptions: ViewOptions = { maxWidth: 300 };
 const mm = new Markmap(svg, baseOptions);
@@ -19,7 +18,7 @@ const mm = new Markmap(svg, baseOptions);
 function update() {
   const start = performance.now();
   const { root, frontmatter } = parse(editor.value);
-  const layout = LAYOUTS[layoutSelect.value as keyof typeof LAYOUTS];
+  const layout = builtinLayouts[layoutSelect.value];
   const { options, warnings } = resolveViewOptions({ ...baseOptions, layout }, frontmatter.markmap);
   mm.setData(root, options);
   const ms = performance.now() - start;
