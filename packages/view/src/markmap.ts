@@ -1,0 +1,212 @@
+import {
+  type MarkmapNode,
+  type Measurer,
+  type NodeContext,
+  type Rect,
+  walkTree,
+} from '@markmap/core';
+import {
+  branchOf,
+  classicTheme,
+  createCanvasMeasurer,
+  type LayoutNode,
+  type RenderOptions,
+  type RenderResult,
+  renderTree,
+  tokensToCSS,
+} from '@markmap/render';
+import { pointer, select, type Selection } from 'd3-selection';
+import { zoom, type ZoomBehavior, zoomIdentity, zoomTransform } from 'd3-zoom';
+import { SvgDomBackend } from './svg-backend';
+
+export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> {
+  /** Defaults to a canvas measurer. */
+  measurer?: Measurer;
+  /** Zoom with the wheel or pinch. */
+  zoom?: boolean;
+  /** Pan by dragging. */
+  pan?: boolean;
+  /** Space kept around the drawing by `fit()`, in px. */
+  fitPadding?: number;
+  /** Largest scale `fit()` zooms in to. */
+  maxFitScale?: number;
+  /** Fold nodes at this depth and deeper when first seen. `-1` expands everything. */
+  initialExpandLevel?: number;
+}
+
+/** How close to a node's fold anchor a click must be to toggle it, in px. */
+const TOGGLE_RADIUS = 10;
+
+export class Markmap {
+  readonly svg: SVGSVGElement;
+  readonly options: ViewOptions;
+  private backend: SvgDomBackend;
+  private style: SVGStyleElement;
+  private zoomBehavior: ZoomBehavior<SVGSVGElement, unknown>;
+  private selection: Selection<SVGSVGElement, unknown, null, undefined>;
+  private measurer: Measurer;
+  private root?: MarkmapNode;
+  private folded = new Set<string>();
+  private known = new Set<string>();
+  private result?: RenderResult;
+
+  constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
+    this.svg = svg;
+    this.options = {
+      zoom: true,
+      pan: true,
+      fitPadding: 20,
+      maxFitScale: 2,
+      initialExpandLevel: -1,
+      ...options,
+    };
+    this.measurer = options.measurer ?? createCanvasMeasurer();
+    svg.classList.add('markmap');
+
+    this.style = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
+    this.style.textContent = `.markmap{${tokensToCSS(this.theme)}}`;
+    svg.append(this.style);
+    this.backend = new SvgDomBackend(svg);
+
+    this.selection = select(svg);
+    this.zoomBehavior = zoom<SVGSVGElement, unknown>()
+      .filter((event: Event) => {
+        if (event.type === 'wheel') return !!this.options.zoom;
+        if (event.type === 'dblclick') return false;
+        const { button = 0, ctrlKey = false } = event as MouseEvent;
+        return !!this.options.pan && !ctrlKey && !button;
+      })
+      .on('zoom', (event: { transform: { toString(): string } }) => {
+        this.backend.root.setAttribute('transform', event.transform.toString());
+      });
+    this.selection.call(this.zoomBehavior);
+    svg.addEventListener('click', this.handleClick);
+  }
+
+  static create(svg: SVGSVGElement, root?: MarkmapNode, options?: ViewOptions): Markmap {
+    const mm = new Markmap(svg, options);
+    if (root) {
+      mm.setData(root);
+      mm.fit();
+    }
+    return mm;
+  }
+
+  get theme() {
+    return this.options.theme ?? classicTheme;
+  }
+
+  /** Ids of folded nodes. */
+  get foldedIds(): ReadonlySet<string> {
+    return this.folded;
+  }
+
+  get state(): RenderResult | undefined {
+    return this.result;
+  }
+
+  /**
+   * Show a new tree. Fold state is kept for ids that still exist, so live editing
+   * does not reset what the user folded.
+   */
+  setData(root: MarkmapNode): void {
+    this.root = root;
+    const ids = new Set<string>();
+    const level = this.options.initialExpandLevel ?? -1;
+    walkTree(root, (node, _parent, depth) => {
+      ids.add(node.id);
+      if (this.known.has(node.id) || !node.children.length) return;
+      if (node.data.fold || (level >= 0 && depth >= level)) this.folded.add(node.id);
+    });
+    for (const id of this.folded) if (!ids.has(id)) this.folded.delete(id);
+    this.known = ids;
+    this.render();
+  }
+
+  /** Re-measure, lay out and draw the current tree. */
+  render(): RenderResult | undefined {
+    if (!this.root) return undefined;
+    this.result = renderTree(this.root, {
+      ...this.options,
+      measurer: this.measurer,
+      folded: this.folded,
+    });
+    this.backend.draw(this.result.primitives);
+    return this.result;
+  }
+
+  /** Fold or unfold a node, keeping it in place on screen. */
+  setFolded(id: string, folded: boolean): void {
+    if (folded === this.folded.has(id)) return;
+    const before = this.result?.layout.byId.get(id)?.rect;
+    if (folded) this.folded.add(id);
+    else this.folded.delete(id);
+    const after = this.render()?.layout.byId.get(id)?.rect;
+    if (before && after) {
+      this.zoomBehavior.translateBy(this.selection, before.x - after.x, before.y - after.y);
+    }
+  }
+
+  toggle(id: string): void {
+    this.setFolded(id, !this.folded.has(id));
+  }
+
+  /** Scale and center the drawing to fill the SVG. */
+  fit(): void {
+    if (!this.result) return;
+    const { width, height } = this.svg.getBoundingClientRect();
+    if (!width || !height) return;
+    const box: Rect = this.result.bounds;
+    const padding = this.options.fitPadding ?? 0;
+    const scale = Math.min(
+      (width - padding * 2) / box.width,
+      (height - padding * 2) / box.height,
+      this.options.maxFitScale ?? 2,
+    );
+    const transform = zoomIdentity
+      .translate(width / 2, height / 2)
+      .scale(scale)
+      .translate(-(box.x + box.width / 2), -(box.y + box.height / 2));
+    this.zoomBehavior.transform(this.selection, transform);
+  }
+
+  /** Current zoom transform. */
+  get transform() {
+    return zoomTransform(this.svg);
+  }
+
+  /** The node whose fold anchor is under a point in layout coordinates. */
+  hitToggle(x: number, y: number): LayoutNode | undefined {
+    if (!this.result) return undefined;
+    for (const item of this.result.layout.nodes) {
+      if (!item.node.children.length) continue;
+      const anchor = this.theme.node.anchor(item.rect, 'source', this.contextOf(item));
+      if (Math.hypot(anchor.x - x, anchor.y - y) <= TOGGLE_RADIUS) return item;
+    }
+    return undefined;
+  }
+
+  destroy(): void {
+    this.svg.removeEventListener('click', this.handleClick);
+    this.selection.on('.zoom', null);
+    this.backend.destroy();
+    this.style.remove();
+    this.svg.classList.remove('markmap');
+  }
+
+  private contextOf(item: LayoutNode): NodeContext {
+    return {
+      depth: item.depth,
+      branch: branchOf(item.node),
+      hasChildren: item.node.children.length > 0,
+      folded: item.folded,
+    };
+  }
+
+  private handleClick = (event: MouseEvent) => {
+    if (event.defaultPrevented) return;
+    const [x, y] = pointer(event, this.backend.root);
+    const item = this.hitToggle(x, y);
+    if (item) this.toggle(item.node.id);
+  };
+}

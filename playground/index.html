@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>markmap next playground</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        /* Dark mode comes with themes in M2. */
+        color-scheme: light;
+        background: #fff;
+        color: #222;
+      }
+      body {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) 2fr;
+        grid-template-rows: auto 1fr;
+      }
+      header {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 12px;
+        border-bottom: 1px solid #ddd;
+      }
+      header h1 {
+        margin: 0 auto 0 0;
+        font-size: 16px;
+      }
+      textarea {
+        width: 100%;
+        height: 100%;
+        padding: 12px;
+        border: 0;
+        border-right: 1px solid #ddd;
+        font:
+          14px/1.5 ui-monospace,
+          monospace;
+        resize: none;
+        outline: none;
+      }
+      svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>markmap next</h1>
+      <span id="stats"></span>
+      <button id="fit">Fit</button>
+      <button id="download">Download SVG</button>
+    </header>
+    <textarea id="editor" spellcheck="false"></textarea>
+    <svg id="mindmap"></svg>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

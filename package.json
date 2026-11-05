@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "vite playground",
     "build": "pnpm lint && pnpm fmt:check && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
