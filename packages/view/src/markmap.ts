@@ -49,6 +49,7 @@ export class Markmap {
   private folded = new Set<string>();
   private known = new Set<string>();
   private result?: RenderResult;
+  private pendingFit?: ResizeObserver;
 
   constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
     this.svg = svg;
@@ -151,11 +152,19 @@ export class Markmap {
     this.setFolded(id, !this.folded.has(id));
   }
 
-  /** Scale and center the drawing to fill the SVG. */
+  /**
+   * Scale and center the drawing to fill the SVG. If the SVG has no size yet (hidden,
+   * or not laid out), the fit happens as soon as it gets one.
+   */
   fit(): void {
     if (!this.result) return;
     const { width, height } = this.svg.getBoundingClientRect();
-    if (!width || !height) return;
+    if (!width || !height) {
+      this.fitWhenSized();
+      return;
+    }
+    this.pendingFit?.disconnect();
+    this.pendingFit = undefined;
     const box: Rect = this.result.bounds;
     const padding = this.options.fitPadding ?? 0;
     const scale = Math.min(
@@ -168,6 +177,15 @@ export class Markmap {
       .scale(scale)
       .translate(-(box.x + box.width / 2), -(box.y + box.height / 2));
     this.zoomBehavior.transform(this.selection, transform);
+  }
+
+  private fitWhenSized() {
+    if (this.pendingFit || typeof ResizeObserver === 'undefined') return;
+    this.pendingFit = new ResizeObserver(() => {
+      const { width, height } = this.svg.getBoundingClientRect();
+      if (width && height) this.fit();
+    });
+    this.pendingFit.observe(this.svg);
   }
 
   /** Current zoom transform. */
@@ -188,6 +206,7 @@ export class Markmap {
 
   destroy(): void {
     this.svg.removeEventListener('click', this.handleClick);
+    this.pendingFit?.disconnect();
     this.selection.on('.zoom', null);
     this.backend.destroy();
     this.style.remove();

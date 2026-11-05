@@ -27,6 +27,8 @@ export interface Theme {
   /** Emitted as CSS variables, e.g. `{ 'mm-color': '#333' }` → `--mm-color: #333`. */
   tokens: Record<string, string>;
   font: FontStyle;
+  /** Font family for inline code. */
+  codeFontFamily: string;
   textFill: Paint;
   node: {
     /** `[top, right, bottom, left]` around the content. */

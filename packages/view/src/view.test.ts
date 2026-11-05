@@ -140,6 +140,32 @@ describe('Markmap', () => {
     expect(mm.foldedIds.size).toBe(0);
   });
 
+  it('defers fit until the SVG has a size', () => {
+    const callbacks: ResizeObserverCallback[] = [];
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(cb: ResizeObserverCallback) {
+        callbacks.push(cb);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+    try {
+      let size = { width: 0, height: 0 };
+      const svg = createSvg();
+      svg.getBoundingClientRect = () => ({ x: 0, y: 0, ...size }) as DOMRect;
+      const mm = Markmap.create(svg, parse(md).root, { measurer: approximateMeasurer });
+      expect(mm.transform.k).toBe(1);
+      expect(callbacks).toHaveLength(1);
+      size = { width: 800, height: 600 };
+      callbacks[0]([], {} as ResizeObserver);
+      expect(mm.transform.k).not.toBe(1);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+
   it('cleans up on destroy', () => {
     const mm = create();
     mm.destroy();

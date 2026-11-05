@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "lib": ["es2023", "dom", "dom.iterable"],
+    "lib": ["es2024", "dom", "dom.iterable"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "strict": true,

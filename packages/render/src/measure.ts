@@ -27,10 +27,11 @@ const ZERO_WIDTH = /^[\p{Mn}\p{Me}\p{Cf}]$/u;
  */
 export const approximateMeasurer: Measurer = {
   measure(text, font) {
+    const mono = /mono|consolas|courier|menlo/i.test(font.family);
     let em = 0;
     for (const char of text) {
       const code = char.codePointAt(0)!;
-      if (code >= 32 && code <= 126) em += ASCII_WIDTHS[code - 32] / 1000;
+      if (code >= 32 && code <= 126) em += mono ? 0.6 : ASCII_WIDTHS[code - 32] / 1000;
       else if (ZERO_WIDTH.test(char)) continue;
       else if (WIDE.test(char)) em += 1;
       else em += 0.6;

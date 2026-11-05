@@ -1,4 +1,5 @@
 import {
+  type ContentPlugin,
   hashString,
   type Measurer,
   type MarkmapNode,
@@ -11,7 +12,8 @@ import {
   unionRects,
 } from '@markmap/core';
 import { type LayoutNode, type LayoutResult, layoutTree, visibleNodes } from './layout';
-import { layoutText, type TextLayout } from './text';
+import { defaultContentPlugins } from './content';
+import { layoutText, type TextLayout, transformContent } from './text';
 import { classicTheme } from './themes/classic';
 
 export interface RenderOptions {
@@ -23,6 +25,8 @@ export interface RenderOptions {
   maxWidth?: number;
   spacingHorizontal?: number;
   spacingVertical?: number;
+  /** Inline content renderers. Defaults to {@link defaultContentPlugins}. */
+  plugins?: readonly ContentPlugin[];
 }
 
 export interface RenderResult {
@@ -62,11 +66,13 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
   for (const node of visibleNodes(root, options.folded)) {
     const depth = depths.get(node)!;
     for (const child of node.children) depths.set(child, depth + 1);
-    const text = layoutText(node.content, {
-      font: theme.font,
-      fill: theme.textFill,
+    const plugins = options.plugins ?? defaultContentPlugins;
+    const inlineCtx = { theme, measurer: options.measurer, node };
+    const text = layoutText(transformContent(plugins, inlineCtx), {
+      style: { font: theme.font, fill: theme.textFill },
       maxWidth: options.maxWidth,
-      measurer: options.measurer,
+      plugins,
+      ctx: inlineCtx,
     });
     const ctx: NodeContext = {
       depth,
@@ -128,7 +134,7 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
           { width: item.rect.width, height: item.rect.height },
           contextOf(item),
         ),
-        { kind: 'text', x: left, y: top, runs: text.runs },
+        { kind: 'group', transform: translate(left, top), children: text.primitives },
       ],
     };
   });

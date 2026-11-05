@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@markmap/*": ["./packages/*/src/index.ts"]
+    }
+  },
+  "include": ["packages/*/src", "playground", "packages/*/vite.config.ts", "vitest.config.ts"]
+}

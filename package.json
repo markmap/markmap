@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite playground",
-    "build": "pnpm lint && pnpm fmt:check && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
+    "build": "pnpm lint && pnpm fmt:check && pnpm typecheck && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "test": "vitest --run",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -p tsconfig.test.json",
     "clean": "pnpm -r clean",
     "build:types": "tsc -b",
     "build:js": "pnpm -r build:js"

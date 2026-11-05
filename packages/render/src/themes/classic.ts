@@ -27,6 +27,11 @@ export const classicTheme: Theme = {
     'mm-color': '#333',
     'mm-bg': '#fff',
     'mm-circle-open-bg': '#fff',
+    'mm-link-color': '#0097e6',
+    'mm-code-bg': '#f0f0f0',
+    'mm-code-color': '#555',
+    'mm-mark-bg': '#ffeaa7',
+    'mm-checkbox': '#555',
     ...Object.fromEntries(BRANCH_COLORS.map((color, i) => [`mm-branch-${i}`, color])),
   },
   font: {
@@ -36,6 +41,7 @@ export const classicTheme: Theme = {
     style: 'normal',
     lineHeight: 20,
   },
+  codeFontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
   textFill: 'var(--mm-color)',
   node: {
     padding: [0, 8, 0, 8],

@@ -1,0 +1,6 @@
+- [heading] Inline {"depth":1}
+  - [listItem] mark and nested mark and a = b == c
+  - [listItem] code ==not mark== and gone
+  - [listItem] ref link and ref image and [missing][]
+  - [listItem] soft
+break

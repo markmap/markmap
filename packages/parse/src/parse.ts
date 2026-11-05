@@ -5,10 +5,11 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { type PluggableList, unified } from 'unified';
 import { parse as parseYaml } from 'yaml';
+import { remarkMark, remarkResolveReferences } from './plugins';
 import { toTree } from './to-tree';
 
 export interface ParseOptions {
-  /** Extra unified plugins, applied after the built-in gfm and frontmatter support. */
+  /** Extra unified plugins, applied after the built-in ones (gfm, frontmatter, highlight, references). */
   plugins?: PluggableList;
 }
 
@@ -22,6 +23,8 @@ export function parse(markdown: string, options: ParseOptions = {}): ParseResult
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkFrontmatter, ['yaml'])
+    .use(remarkMark)
+    .use(remarkResolveReferences)
     .use(options.plugins ?? []);
   const mdast = processor.runSync(processor.parse(markdown)) as Root;
   const frontmatter = readFrontmatter(mdast);

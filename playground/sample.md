@@ -25,3 +25,12 @@
 ## 中文标题
 
 - 支持中日韩文字换行，这是一段比较长的文本，用来测试自动换行是否正常工作
+
+## Inline
+
+- `inline code` and [a link][docs]
+- ~~strikethrough~~ and ==highlight==
+- [x] Done task
+- [ ] Open task with **==bold highlight==**
+
+[docs]: https://markmap.js.org
