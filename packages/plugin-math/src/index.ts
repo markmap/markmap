@@ -1,4 +1,5 @@
 import type { AtomSize, ContentPlugin, InlineContext, Primitive, TextStyle } from '@markmap/core';
+import type { Element, ElementContent, Root as HastRoot } from 'hast';
 import type { InlineMath } from 'mdast-util-math';
 import type { MathSvg } from './mathjax';
 
@@ -32,7 +33,27 @@ function sourceSize(tex: string, style: TextStyle, ctx: InlineContext): AtomSize
   };
 }
 
+/** Trusted markup that `hast-util-to-html` prints as is with `allowDangerousHtml`. */
+interface RawNode {
+  type: 'raw';
+  value: string;
+}
+
 const escapeAttr = (value: string) => value.replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
+
+const isMathCode = (node: ElementContent | undefined): node is Element =>
+  node?.type === 'element' &&
+  node.tagName === 'code' &&
+  Array.isArray(node.properties.className) &&
+  node.properties.className.includes('language-math');
+
+const textOf = (node: Element) =>
+  node.children.map((child) => (child.type === 'text' ? child.value : '')).join('');
+
+/** Standalone HTML `<svg>` for a popover, sized in ex so it scales with the text. */
+function popoverSvg(tex: string, svg: MathSvg): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${svg.width}ex" height="${svg.height}ex" viewBox="${escapeAttr(svg.viewBox)}" style="vertical-align:${svg.verticalAlign}ex" role="img" focusable="false" aria-label="${escapeAttr(tex)}">${svg.body}</svg>`;
+}
 
 /**
  * Draws `$…$` in labels as MathJax SVG. Formulas are measured from the TeX source until
@@ -70,6 +91,54 @@ export function createMathContent(options: MathContentOptions = {}): ContentPlug
     ctx.defer?.(task);
   };
 
+  /** Replace `$…$` and `$$…$$` (code with `language-math` after sanitizing) with SVG. */
+  const popover = async (tree: HastRoot) => {
+    const found: { parent: HastRoot | Element; index: number; tex: string; display: boolean }[] =
+      [];
+    const visit = (parent: HastRoot | Element) => {
+      parent.children.forEach((child, index) => {
+        if (child.type !== 'element') return;
+        const [only] = child.children;
+        if (child.tagName === 'pre' && child.children.length === 1 && isMathCode(only)) {
+          found.push({ parent, index, tex: textOf(only), display: true });
+        } else if (isMathCode(child)) {
+          found.push({ parent, index, tex: textOf(child), display: false });
+        } else {
+          visit(child);
+        }
+      });
+    };
+    visit(tree);
+    if (!found.length) return;
+    let texToSvg: Awaited<ReturnType<typeof load>>['texToSvg'];
+    try {
+      converter ??= load();
+      ({ texToSvg } = await converter);
+    } catch {
+      converter = undefined;
+      return;
+    }
+    for (const { parent, index, tex, display } of found) {
+      let svg: MathSvg;
+      try {
+        svg = texToSvg(tex, display);
+      } catch {
+        // Invalid TeX: leave the source in its code element.
+        continue;
+      }
+      const markup = popoverSvg(tex, svg);
+      const raw: RawNode = {
+        type: 'raw',
+        value: display
+          ? `<div class="markmap-math-display" style="margin:0.5em 0;text-align:center;overflow-x:auto">${markup}</div>`
+          : markup,
+      };
+      // hast-util-to-html prints raw nodes; hast's own types only know them once
+      // mdast-util-to-hast is loaded, which this package does not need.
+      parent.children[index] = raw as unknown as ElementContent;
+    }
+  };
+
   const formula = (inline: InlineMath, ctx: InlineContext): MathSvg | undefined => {
     const found = formulas.get(inline.value);
     if (!found) convert(inline.value, ctx);
@@ -78,6 +147,7 @@ export function createMathContent(options: MathContentOptions = {}): ContentPlug
 
   return {
     name: 'math',
+    popover,
     atoms: {
       inlineMath: {
         measure(inline, style, ctx) {

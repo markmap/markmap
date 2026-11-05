@@ -22,19 +22,21 @@ afterEach(() => {
 });
 
 describe('attachmentsToHtml', () => {
-  it('renders blocks, including GFM and highlights', () => {
-    const html = attachmentsToHtml(
+  it('renders blocks, including GFM and highlights', async () => {
+    const html = await attachmentsToHtml(
       notesOf(
-        '- a\n\n  Some **text** and ==mark==.\n\n  ```js\n  x\n  ```\n\n  | h |\n  | - |\n  | c |',
+        '- a\n\n  Some **text** and ==mark==.\n\n  ```js\n  const x = 1;\n  ```\n\n  | h |\n  | - |\n  | c |',
       ),
     );
     expect(html).toContain('<p>Some <strong>text</strong> and <mark>mark</mark>.</p>');
-    expect(html).toContain('<pre><code class="language-js">x\n</code></pre>');
+    expect(html).toContain(
+      '<pre><code class="language-js hljs"><span class="hljs-keyword">const</span> x = <span class="hljs-number">1</span>;\n</code></pre>',
+    );
     expect(html).toContain('<td>c</td>');
   });
 
-  it('opens links in a new tab and drops unsafe URLs', () => {
-    const html = attachmentsToHtml(
+  it('opens links in a new tab and drops unsafe URLs', async () => {
+    const html = await attachmentsToHtml(
       notesOf('- a\n\n  [ok](https://x.y) [bad](javascript:alert(1))'),
     );
     expect(html).toContain(
@@ -43,8 +45,8 @@ describe('attachmentsToHtml', () => {
     expect(html).not.toContain('javascript:');
   });
 
-  it('never contains raw HTML; sized <img> tags come through clean', () => {
-    const html = attachmentsToHtml(
+  it('never contains raw HTML; sized <img> tags come through clean', async () => {
+    const html = await attachmentsToHtml(
       notesOf(
         '- a\n\n  x <img src=x.png width=40 onerror=alert(1)> <b>y</b> <img src="javascript:alert(1)">',
       ),
@@ -53,6 +55,40 @@ describe('attachmentsToHtml', () => {
     expect(html).not.toContain('onerror');
     expect(html).not.toContain('<b>');
     expect(html).not.toContain('javascript:');
+  });
+});
+
+describe('code highlighting', () => {
+  it('leaves unknown languages, plain blocks and opted-out popovers alone', async () => {
+    const notes = notesOf('- a\n\n  ```nosuchlang\n  if\n  ```\n\n  ```\n  if\n  ```');
+    const html = await attachmentsToHtml(notes);
+    expect(html).not.toContain('hljs');
+    const off = await attachmentsToHtml(notesOf('- a\n\n  ```js\n  if\n  ```'), {
+      highlight: false,
+    });
+    expect(off).toBe('<pre><code class="language-js">if\n</code></pre>');
+  });
+
+  it('only adds spans: markup in code stays text', async () => {
+    const html = await attachmentsToHtml(
+      notesOf('- a\n\n  ```html\n  <img src=x onerror=alert(1)>\n  ```'),
+    );
+    expect(html).toContain('&#x3C;');
+    expect(html).not.toContain('<img');
+  });
+
+  it('runs plugin popover hooks after sanitizing', async () => {
+    const html = await attachmentsToHtml(notesOf('- a\n\n  text'), {
+      plugins: [
+        {
+          name: 'raw',
+          popover(tree) {
+            tree.children.push({ type: 'raw', value: '<svg data-ok="1"></svg>' });
+          },
+        },
+      ],
+    });
+    expect(html).toBe('<p>text</p><svg data-ok="1"></svg>');
   });
 });
 

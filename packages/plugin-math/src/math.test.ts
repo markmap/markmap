@@ -7,6 +7,7 @@ import {
   renderTreeAsync,
   toSVGString,
 } from '@markmap/render';
+import type { Root as HastRoot } from 'hast';
 import { describe, expect, it } from 'vitest';
 import { createMathContent, remarkMath } from '.';
 import { texToSvg } from './mathjax';
@@ -79,5 +80,45 @@ describe('math content', () => {
     expect(loads).toBe(0);
     await renderTreeAsync(tree('# $a$ and $b$\n\n- $a$'), options);
     expect(loads).toBe(1);
+  });
+});
+
+const mathCode = (tex: string) => ({
+  type: 'element' as const,
+  tagName: 'code',
+  properties: { className: ['language-math'] },
+  children: [{ type: 'text' as const, value: tex }],
+});
+
+describe('math in popovers', () => {
+  it('replaces inline and display math with SVG and keeps invalid TeX', async () => {
+    const hast: HastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'element',
+          tagName: 'p',
+          properties: {},
+          children: [mathCode('x^2'), mathCode('\\frac{a')],
+        },
+        { type: 'element', tagName: 'pre', properties: {}, children: [mathCode('\\sum_k k')] },
+      ],
+    };
+    await createMathContent().popover!(hast);
+    const [p, display] = hast.children as { type: string; value?: string; children?: unknown[] }[];
+    const [inline, invalid] = p.children as { type: string; value?: string }[];
+    expect(inline.type).toBe('raw');
+    expect(inline.value).toMatch(/^<svg xmlns="http:\/\/www.w3.org\/2000\/svg" width="[\d.]+ex"/);
+    expect(inline.value).toContain('aria-label="x^2"');
+    expect(invalid).toMatchObject({ type: 'element', tagName: 'code' });
+    expect(display.type).toBe('raw');
+    expect(display.value).toMatch(/^<div class="markmap-math-display"/);
+  });
+
+  it('escapes the TeX it puts in attributes', async () => {
+    const hast: HastRoot = { type: 'root', children: [mathCode('a<b "c"')] };
+    await createMathContent().popover!(hast);
+    const [node] = hast.children as { value: string }[];
+    expect(node.value).toContain('aria-label="a&#60;b &#34;c&#34;"');
   });
 });

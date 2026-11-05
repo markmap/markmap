@@ -23,6 +23,7 @@
     "build:js": "vite build"
   },
   "dependencies": {
+    "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4"
   }
 }

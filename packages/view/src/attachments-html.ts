@@ -1,9 +1,10 @@
-import type { Attachment, Mark } from '@markmap/core';
+import type { Attachment, ContentPlugin, Mark } from '@markmap/core';
 import type { Element, Root as HastRoot } from 'hast';
 import { defaultSchema, sanitize, type Schema } from 'hast-util-sanitize';
 import { toHtml } from 'hast-util-to-html';
 import type { Root } from 'mdast';
 import { type State, toHast } from 'mdast-util-to-hast';
+import { codeLanguages, walkElements } from './hast-utils';
 
 const schema: Schema = {
   ...defaultSchema,
@@ -13,11 +14,23 @@ const schema: Schema = {
   clobberPrefix: 'mm-',
 };
 
+export interface AttachmentsHtmlOptions {
+  /** Plugins whose `popover` hooks run on the sanitized tree, in order. */
+  plugins?: readonly ContentPlugin[];
+  /** Color code blocks that name a language. Defaults to `true`. */
+  highlight?: boolean;
+}
+
 /**
- * Render attachment blocks as sanitized HTML. Loaded on demand by the view, so the
- * Markdown-to-HTML code stays out of the initial bundle.
+ * Render attachment blocks as HTML: Markdown to HTML, sanitized, then code highlighting
+ * and plugin hooks, which may add trusted markup. Loaded on demand by the view, and
+ * the highlighter only when a code block names a language, so neither weighs on the
+ * initial bundle.
  */
-export function attachmentsToHtml(attachments: readonly Attachment[]): string {
+export async function attachmentsToHtml(
+  attachments: readonly Attachment[],
+  options: AttachmentsHtmlOptions = {},
+): Promise<string> {
   const mdast: Root = {
     type: 'root',
     children: attachments.map((a) => a.block) as Root['children'],
@@ -37,13 +50,11 @@ export function attachmentsToHtml(attachments: readonly Attachment[]): string {
     link.properties.target = '_blank';
     link.properties.rel = ['noopener', 'noreferrer'];
   }
-  return toHtml(clean);
-}
-
-function* walkElements(node: HastRoot | Element, tagName: string): Generator<Element> {
-  for (const child of node.children) {
-    if (child.type !== 'element') continue;
-    if (child.tagName === tagName) yield child;
-    yield* walkElements(child, tagName);
+  if (options.highlight !== false && codeLanguages(clean).length) {
+    const { highlightCode } = await import('./highlight');
+    highlightCode(clean);
   }
+  for (const plugin of options.plugins ?? []) await plugin.popover?.(clean);
+  // Raw nodes can only come from the hooks above: sanitizing removed any from Markdown.
+  return toHtml(clean, { allowDangerousHtml: true });
 }

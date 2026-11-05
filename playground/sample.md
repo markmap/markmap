@@ -56,6 +56,13 @@ markmap:
 
 - Euler $e^{i\pi} + 1 = 0$
 - $\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$
+- Notes with math
+
+  Inline $a^2 + b^2 = c^2$, and on its own line:
+
+  $$
+  \int_0^1 x^2 \, dx = \frac{1}{3}
+  $$
 
 ## Images
 

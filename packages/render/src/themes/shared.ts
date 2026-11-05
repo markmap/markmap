@@ -8,6 +8,13 @@ export const CONTENT_TOKENS = {
   'mm-mark-bg': '#ffeaa7',
   'mm-checkbox': '#555',
   'mm-attachment': '#999',
+  // Code highlighting in popovers.
+  'mm-hl-keyword': '#cf222e',
+  'mm-hl-string': '#0a3069',
+  'mm-hl-comment': '#6e7781',
+  'mm-hl-number': '#0550ae',
+  'mm-hl-title': '#8250df',
+  'mm-hl-attr': '#116329',
 };
 
 export const DARK_CONTENT_TOKENS = {
@@ -17,6 +24,12 @@ export const DARK_CONTENT_TOKENS = {
   'mm-mark-bg': '#6b5a1e',
   'mm-checkbox': '#bbb',
   'mm-attachment': '#888',
+  'mm-hl-keyword': '#ff7b72',
+  'mm-hl-string': '#a5d6ff',
+  'mm-hl-comment': '#8b949e',
+  'mm-hl-number': '#79c0ff',
+  'mm-hl-title': '#d2a8ff',
+  'mm-hl-attr': '#7ee787',
 };
 
 export const SYSTEM_FONT: Theme['font'] = {

@@ -1,3 +1,4 @@
+import type { Root as HastRoot } from 'hast';
 import type { Rect, Size } from './geometry';
 import type { FontStyle, Paint, Primitive } from './primitives';
 import type { Measurer, Theme } from './theme';
@@ -69,4 +70,10 @@ export interface ContentPlugin {
   styles?: { [K in Inline['type']]?: InlineStyler<Extract<Inline, { type: K }>> };
   /** Draw inline nodes as boxes, keyed by inline type. */
   atoms?: { [K in Inline['type']]?: AtomRenderer<Extract<Inline, { type: K }>> };
+  /**
+   * Change the HTML of an attachment popover, e.g. to draw math. Runs after the
+   * Markdown's HTML has been sanitized, so markup added here is trusted as is,
+   * including `raw` nodes. Never copy unescaped text from the tree into raw markup.
+   */
+  popover?(tree: HastRoot): void | Promise<void>;
 }

@@ -2,6 +2,7 @@ import { findNode, type MarkmapNode, type Measurer, type Rect } from '@markmap/c
 import {
   classicTheme,
   createCanvasMeasurer,
+  defaultContentPlugins,
   type DrawNode,
   type DrawState,
   drawState,
@@ -39,6 +40,8 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
    * the user's `prefers-reduced-motion` setting.
    */
   duration?: number;
+  /** Color code blocks in attachment popovers. Defaults to `true`. */
+  highlight?: boolean;
   /** Which theme tokens to use; `auto` follows the reader's system setting. Defaults to `light`. */
   colorScheme?: ColorScheme;
 }
@@ -497,12 +500,12 @@ export class Markmap {
     this.closeAttachments();
     const request = this.popoverRequest;
     const { attachmentsToHtml } = await import('./attachments-html');
+    const html = await attachmentsToHtml(item.node.attachments, {
+      plugins: this.options.plugins ?? defaultContentPlugins,
+      highlight: this.options.highlight,
+    });
     if (request !== this.popoverRequest) return;
-    const popover = new Popover(
-      this.svg.ownerDocument,
-      attachmentsToHtml(item.node.attachments),
-      this.currentTokens(),
-    );
+    const popover = new Popover(this.svg.ownerDocument, html, this.currentTokens());
     popover.el.setAttribute('aria-label', 'Notes');
     this.popover = { id, popover };
     this.positionPopover();

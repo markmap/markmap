@@ -39,6 +39,16 @@ const CSS = `
 .markmap-popover th, .markmap-popover td { padding: 2px 8px; border: 1px solid rgba(0, 0, 0, 0.15); }
 .markmap-popover mark { background: var(--mm-mark-bg, #ffeaa7); color: inherit; }
 .markmap-popover img { max-width: 100%; }
+.markmap-popover .hljs-keyword, .markmap-popover .hljs-type, .markmap-popover .hljs-meta .hljs-keyword,
+.markmap-popover .hljs-selector-tag, .markmap-popover .hljs-doctag { color: var(--mm-hl-keyword, #cf222e); }
+.markmap-popover .hljs-string, .markmap-popover .hljs-regexp, .markmap-popover .hljs-char,
+.markmap-popover .hljs-meta .hljs-string { color: var(--mm-hl-string, #0a3069); }
+.markmap-popover .hljs-comment, .markmap-popover .hljs-quote { color: var(--mm-hl-comment, #6e7781); font-style: italic; }
+.markmap-popover .hljs-number, .markmap-popover .hljs-literal, .markmap-popover .hljs-symbol,
+.markmap-popover .hljs-variable.constant_, .markmap-popover .hljs-built_in { color: var(--mm-hl-number, #0550ae); }
+.markmap-popover .hljs-title, .markmap-popover .hljs-section { color: var(--mm-hl-title, #8250df); }
+.markmap-popover .hljs-attr, .markmap-popover .hljs-attribute, .markmap-popover .hljs-property,
+.markmap-popover .hljs-name, .markmap-popover .hljs-selector-class { color: var(--mm-hl-attr, #116329); }
 `;
 
 function ensureStyle(doc: Document) {
