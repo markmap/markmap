@@ -1,5 +1,5 @@
 export * from './content';
-export * from './layout';
+export * from './layouts';
 export * from './measure';
 export * from './options';
 export * from './render';

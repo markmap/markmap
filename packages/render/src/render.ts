@@ -1,7 +1,13 @@
 import {
   type ContentPlugin,
+  type FrameNode,
+  type Layout,
+  type LayoutNode,
+  type LayoutResult,
+  oppositeSide,
   type Measurer,
   type MarkmapNode,
+  type MeasureContext,
   type NodeContext,
   type Primitive,
   type Rect,
@@ -10,7 +16,7 @@ import {
   translate,
   unionRects,
 } from '@markmap/core';
-import { type LayoutNode, type LayoutResult, layoutTree, visibleNodes } from './layout';
+import { treeLayout, visibleNodes } from './layouts/tree';
 import { defaultContentPlugins } from './content';
 import { layoutText, type TextLayout, transformContent } from './text';
 import { classicTheme } from './themes/classic';
@@ -18,6 +24,8 @@ import { classicTheme } from './themes/classic';
 export interface RenderOptions {
   measurer: Measurer;
   theme?: Theme;
+  /** Where nodes go. Defaults to {@link treeLayout}. */
+  layout?: Layout;
   /** Ids of collapsed nodes. */
   folded?: ReadonlySet<string>;
   /** Wrap labels wider than this, in px. `0` disables wrapping. */
@@ -75,7 +83,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
       plugins,
       ctx: inlineCtx,
     });
-    const ctx: NodeContext = {
+    const ctx: MeasureContext = {
       depth,
       path,
       hasChildren: node.children.length > 0,
@@ -106,17 +114,17 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
         path: paths.get(item.node.id)!,
         hasChildren: item.node.children.length > 0,
         folded: item.folded,
+        direction: item.direction,
       };
       contexts.set(item.node.id, ctx);
     }
     return ctx;
   };
-  const layout = layoutTree(root, {
+  const layout = (options.layout ?? treeLayout).layout(root, {
     sizes: new Map([...measured].map(([id, { box }]) => [id, box])),
     folded: options.folded,
     spacingHorizontal: options.spacingHorizontal,
     spacingVertical: options.spacingVertical,
-    anchor: (rect, role, item) => theme.node.anchor(rect, role, contextOf(item)),
   });
 
   const state: DrawState = {
@@ -126,7 +134,7 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
       rect: item.rect,
       ctx: contextOf(item),
       text: measured.get(item.node.id)!.text,
-      opacity: 1,
+      presence: 1,
     })),
   };
   const primitives = drawState(state, theme);
@@ -135,14 +143,10 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
 }
 
 /** A node as drawn in one frame: final, or somewhere along an animation. */
-export interface DrawNode {
-  node: MarkmapNode;
+export interface DrawNode extends FrameNode {
   /** Parent in the same state; nodes without one get no edge. */
   parentId?: string;
-  rect: Rect;
-  ctx: NodeContext;
   text: TextLayout;
-  opacity: number;
 }
 
 /** Everything needed to draw one frame. Parents come before their children. */
@@ -165,10 +169,10 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
       kind: 'group',
       key: `edge:${target.node.id}`,
       nodeId: target.node.id,
-      ...(target.opacity < 1 && { opacity: target.opacity }),
+      ...(target.presence < 1 && { opacity: target.presence }),
       children: theme.edge.render(
-        theme.node.anchor(source.rect, 'source', source.ctx),
-        theme.node.anchor(target.rect, 'target', target.ctx),
+        theme.node.anchor(source.rect, target.ctx.direction, source.ctx),
+        theme.node.anchor(target.rect, oppositeSide(target.ctx.direction), target.ctx),
         { source: source.node, target: target.node, node: target.ctx },
       ),
     });
@@ -180,7 +184,7 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
     key: `node:${item.node.id}`,
     nodeId: item.node.id,
     transform: translate(item.rect.x, item.rect.y),
-    ...(item.opacity < 1 && { opacity: item.opacity }),
+    ...(item.presence < 1 && { opacity: item.presence }),
     children: [
       ...theme.node.render(
         item.node,

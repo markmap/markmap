@@ -69,6 +69,8 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
         const color = colorOf(ctx.path);
         const width = lineWidth(ctx.depth);
         const y = box.height + width / 2;
+        // The fold toggle sits where the children go: the outer end of the underline.
+        const cx = ctx.direction === 'left' ? 0 : box.width;
         const chrome = [
           { kind: 'path' as const, d: `M0,${y}H${box.width}`, stroke: color, strokeWidth: width },
         ];
@@ -77,7 +79,7 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
           ...chrome,
           {
             kind: 'rect',
-            x: box.width - CIRCLE_RADIUS,
+            x: cx - CIRCLE_RADIUS,
             y: y - CIRCLE_RADIUS,
             w: CIRCLE_RADIUS * 2,
             h: CIRCLE_RADIUS * 2,
@@ -88,11 +90,13 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
           },
         ];
       },
-      anchor(rect, role, ctx) {
+      anchor(rect, side, ctx) {
+        // Left and right: the ends of the underline. Top and bottom: the box's middle.
         const y = rect.y + rect.height + lineWidth(ctx.depth) / 2;
-        return role === 'source'
-          ? { x: rect.x + rect.width, y, side: 'right' }
-          : { x: rect.x, y, side: 'left' };
+        if (side === 'left') return { x: rect.x, y, side };
+        if (side === 'right') return { x: rect.x + rect.width, y, side };
+        const x = rect.x + rect.width / 2;
+        return { x, y: side === 'top' ? rect.y : y, side };
       },
     },
     edge: {

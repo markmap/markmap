@@ -24,6 +24,7 @@ const group = (key: string, x: number, label = key): Primitive => ({
 });
 
 const visibleIds = (mm: Markmap) => mm.state!.layout.nodes.map((n) => n.node.id);
+const labels = (mm: Markmap) => mm.state!.layout.nodes.map((n) => toPlainText(n.node.content));
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -115,11 +116,12 @@ describe('Markmap', () => {
   it('hit-tests fold anchors', () => {
     const mm = create();
     const a = mm.state!.layout.nodes[1];
-    const anchor = mm.theme.node.anchor(a.rect, 'source', {
+    const anchor = mm.theme.node.anchor(a.rect, 'right', {
       depth: a.depth,
       path: [],
       hasChildren: true,
       folded: false,
+      direction: 'right',
     });
     expect(mm.hitToggle(anchor.x + 3, anchor.y - 3)?.node.id).toBe(a.node.id);
     expect(mm.hitToggle(a.rect.x, a.rect.y)).toBeUndefined();
@@ -301,7 +303,6 @@ describe('view API', () => {
   const md = '# Root\n\n## A\n\n- a1\n- a2\n  - a2x\n\n## B\n\n- b1';
   const create = () =>
     Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer, duration: 0 });
-  const labels = (mm: Markmap) => mm.state!.layout.nodes.map((n) => toPlainText(n.node.content));
 
   it('folds to a level and expands everything again', () => {
     const mm = create();

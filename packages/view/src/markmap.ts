@@ -220,8 +220,11 @@ export class Markmap {
     const duration = this.duration;
     if (from && duration > 0) {
       const theme = this.theme;
+      const layout = this.options.layout;
       this.stateTween.start(duration, (t) => {
-        this.drawFrame(t < 1 ? interpolateStates(from, target, easeCubicInOut(t), theme) : target);
+        this.drawFrame(
+          t < 1 ? interpolateStates(from, target, easeCubicInOut(t), theme, layout) : target,
+        );
         if (t >= 1) this.pin = undefined;
       });
     } else {
@@ -428,7 +431,7 @@ export class Markmap {
     for (const item of this.frame.nodes) {
       // Skip nodes that are leaving: they can no longer be toggled.
       if (!item.ctx.hasChildren || !this.result.layout.byId.has(item.node.id)) continue;
-      const anchor = this.theme.node.anchor(item.rect, 'source', item.ctx);
+      const anchor = this.theme.node.anchor(item.rect, item.ctx.direction, item.ctx);
       if (Math.hypot(anchor.x - x, anchor.y - y) <= TOGGLE_RADIUS) return item;
     }
     return undefined;

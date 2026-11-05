@@ -1,42 +1,12 @@
-import { type Anchor, type MarkmapNode, type Rect, type Size, unionRects } from '@markmap/core';
+import {
+  type Layout,
+  type LayoutNode,
+  type LayoutOptions,
+  type LayoutResult,
+  type MarkmapNode,
+  unionRects,
+} from '@markmap/core';
 import { flextree, type FlextreeNode } from 'd3-flextree';
-
-export interface LayoutNode {
-  node: MarkmapNode;
-  parent?: LayoutNode;
-  /** Visible children: empty when the node is folded. */
-  children: LayoutNode[];
-  depth: number;
-  folded: boolean;
-  rect: Rect;
-}
-
-export interface LayoutEdge {
-  source: LayoutNode;
-  target: LayoutNode;
-  from: Anchor;
-  to: Anchor;
-}
-
-export interface LayoutResult {
-  /** Visible nodes in pre-order. */
-  nodes: LayoutNode[];
-  edges: LayoutEdge[];
-  byId: Map<string, LayoutNode>;
-  /** Union of all node rects. */
-  bounds: Rect;
-}
-
-export interface LayoutOptions {
-  /** Box size of each visible node. */
-  sizes: ReadonlyMap<string, Size>;
-  folded?: ReadonlySet<string>;
-  /** Gap between a node and its children. */
-  spacingHorizontal?: number;
-  /** Gap between siblings; doubled between cousins. */
-  spacingVertical?: number;
-  anchor: (rect: Rect, role: 'source' | 'target', layout: LayoutNode) => Anchor;
-}
 
 /** Return the subtree that is visible when the `folded` nodes are collapsed. */
 export function visibleNodes(root: MarkmapNode, folded?: ReadonlySet<string>): MarkmapNode[] {
@@ -81,6 +51,7 @@ export function layoutTree(root: MarkmapNode, options: LayoutOptions): LayoutRes
       depth: h.depth,
       folded: !!folded?.has(h.data.id) && h.data.children.length > 0,
       rect: { x: h.y, y: h.x - height / 2, width, height },
+      direction: 'right',
     };
     nodes.push(item);
     byId.set(item.node.id, item);
@@ -89,17 +60,8 @@ export function layoutTree(root: MarkmapNode, options: LayoutOptions): LayoutRes
   };
   convert(tree);
 
-  const edges: LayoutEdge[] = nodes
-    .filter((item) => item.parent)
-    .map((target) => {
-      const source = target.parent!;
-      return {
-        source,
-        target,
-        from: options.anchor(source.rect, 'source', source),
-        to: options.anchor(target.rect, 'target', target),
-      };
-    });
-
-  return { nodes, edges, byId, bounds: unionRects(nodes.map((n) => n.rect)) };
+  return { nodes, byId, bounds: unionRects(nodes.map((n) => n.rect)) };
 }
+
+/** The classic markmap layout: a tidy tree growing to the right. */
+export const treeLayout: Layout = { name: 'tree', layout: layoutTree };

@@ -1,5 +1,13 @@
-import type { Rect, Theme } from '@markmap/core';
-import type { DrawNode, DrawState } from './render';
+import {
+  type FrameNode,
+  type InterpolateContext,
+  type Layout,
+  type LayoutFrame,
+  oppositeSide,
+  type Rect,
+  type Theme,
+} from '@markmap/core';
+import type { DrawState } from './render';
 
 export type Easing = (t: number) => number;
 
@@ -14,14 +22,8 @@ const lerpRect = (a: Rect, b: Rect, t: number): Rect => ({
   height: lerp(a.height, b.height, t),
 });
 
-/** A zero-progress rect for a node growing out of (or shrinking into) `ancestor`. */
-function collapsedInto(ancestor: DrawNode, size: Rect, theme: Theme): Rect {
-  const anchor = theme.node.anchor(ancestor.rect, 'source', ancestor.ctx);
-  return { x: anchor.x, y: anchor.y - size.height, width: size.width, height: size.height };
-}
-
 /** The closest ancestor of `item` (by its id path) that exists in `byId`. */
-function nearestAncestor(item: DrawNode, byId: Map<string, DrawNode>): DrawNode | undefined {
+function nearestAncestor<N extends FrameNode>(item: N, byId: Map<string, N>): N | undefined {
   const { path } = item.ctx;
   for (let i = path.length - 2; i >= 0; i--) {
     const found = byId.get(path[i]);
@@ -31,41 +33,63 @@ function nearestAncestor(item: DrawNode, byId: Map<string, DrawNode>): DrawNode 
 }
 
 /**
- * The frame `t` (already eased, 0 to 1) of the way from one state to another.
- *
- * - Nodes in both move and resize between their rects.
- * - Entering nodes grow out of their nearest ancestor's old fold anchor and fade in.
- * - Leaving nodes shrink into their nearest surviving ancestor's new anchor and fade out.
- *
- * `from` can itself be a frame of an earlier animation, so animations can be restarted
- * from wherever they are.
+ * The default {@link Layout.interpolate}: nodes in both frames move in a straight line;
+ * entering nodes grow out of their nearest ancestor's anchor (on the side they grow
+ * towards) and leaving nodes shrink back into their nearest surviving ancestor's.
  */
-export function interpolateStates(
-  from: DrawState,
-  to: DrawState,
+export function interpolateFrames<N extends FrameNode>(
+  from: LayoutFrame<N>,
+  to: LayoutFrame<N>,
   t: number,
-  theme: Theme,
-): DrawState {
+  ctx: InterpolateContext<N>,
+): LayoutFrame<N> {
   const fromById = new Map(from.nodes.map((item) => [item.node.id, item]));
   const toById = new Map(to.nodes.map((item) => [item.node.id, item]));
-  const nodes: DrawNode[] = to.nodes.map((item) => {
+
+  /** A rect of `item`'s size whose incoming anchor sits on `ancestor`'s outgoing one. */
+  const collapsedInto = (item: N, ancestor: N): Rect => {
+    const side = item.ctx.direction;
+    const point = ctx.anchor(ancestor, side);
+    const offset = ctx.anchor({ ...item, rect: { ...item.rect, x: 0, y: 0 } }, oppositeSide(side));
+    return { ...item.rect, x: point.x - offset.x, y: point.y - offset.y };
+  };
+
+  const nodes: N[] = to.nodes.map((item) => {
     const old = fromById.get(item.node.id);
     if (old) {
       return {
         ...item,
         rect: lerpRect(old.rect, item.rect, t),
-        opacity: lerp(old.opacity, item.opacity, t),
+        presence: lerp(old.presence, item.presence, t),
       };
     }
     const ancestor = nearestAncestor(item, fromById);
-    const start = ancestor ? collapsedInto(ancestor, item.rect, theme) : item.rect;
-    return { ...item, rect: lerpRect(start, item.rect, t), opacity: item.opacity * t };
+    const start = ancestor ? collapsedInto(item, ancestor) : item.rect;
+    return { ...item, rect: lerpRect(start, item.rect, t), presence: item.presence * t };
   });
   for (const item of from.nodes) {
     if (toById.has(item.node.id)) continue;
     const ancestor = nearestAncestor(item, toById);
-    const end = ancestor ? collapsedInto(ancestor, item.rect, theme) : item.rect;
-    nodes.push({ ...item, rect: lerpRect(item.rect, end, t), opacity: item.opacity * (1 - t) });
+    const end = ancestor ? collapsedInto(item, ancestor) : item.rect;
+    nodes.push({
+      ...item,
+      rect: lerpRect(item.rect, end, t),
+      presence: item.presence * (1 - t),
+    });
   }
   return { nodes };
+}
+
+/** Interpolate draw states with the layout's own interpolation, or the default one. */
+export function interpolateStates(
+  from: DrawState,
+  to: DrawState,
+  t: number,
+  theme: Theme,
+  layout?: Layout,
+): DrawState {
+  const interpolate = layout?.interpolate ?? interpolateFrames;
+  return interpolate(from, to, t, {
+    anchor: (item, side) => theme.node.anchor(item.rect, side, item.ctx),
+  });
 }

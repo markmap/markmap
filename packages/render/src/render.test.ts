@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { MarkmapNode, Primitive } from '@markmap/core';
+import { type Layout, type MarkmapNode, type Primitive, unionRects } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { describe, expect, it } from 'vitest';
 import {
@@ -40,9 +40,12 @@ describe('layoutTree', () => {
     }
   });
 
-  it('connects every visible child to its parent', () => {
-    expect(layout.edges).toHaveLength(layout.nodes.length - 1);
-    for (const edge of layout.edges) expect(edge.target.parent).toBe(edge.source);
+  it('links every visible child to its parent and grows to the right', () => {
+    for (const item of layout.nodes.slice(1)) {
+      expect(item.parent?.children).toContain(item);
+      expect(item.rect.x).toBeGreaterThan(item.parent!.rect.x + item.parent!.rect.width);
+    }
+    expect(layout.nodes.every((item) => item.direction === 'right')).toBe(true);
   });
 
   it('hides the children of folded nodes', () => {
@@ -67,9 +70,7 @@ describe('layoutTree', () => {
       data: {},
       children: [],
     };
-    expect(() =>
-      layoutTree(root, { sizes: new Map(), anchor: (r) => ({ ...r, side: 'left' }) }),
-    ).toThrow(/Missing size/);
+    expect(() => layoutTree(root, { sizes: new Map() })).toThrow(/Missing size/);
   });
 });
 
@@ -77,8 +78,9 @@ describe('renderTree', () => {
   it('draws edges under nodes with stable keys', () => {
     const { primitives, layout } = render(sample);
     const keys = primitives.map((p) => (p.kind === 'group' ? p.key : undefined));
-    expect(keys.filter((k) => k?.startsWith('edge:'))).toHaveLength(layout.edges.length);
-    expect(keys.slice(layout.edges.length).every((k) => k?.startsWith('node:'))).toBe(true);
+    const edgeCount = layout.nodes.length - 1;
+    expect(keys.filter((k) => k?.startsWith('edge:'))).toHaveLength(edgeCount);
+    expect(keys.slice(edgeCount).every((k) => k?.startsWith('node:'))).toBe(true);
     expect(new Set(keys).size).toBe(keys.length);
   });
 
@@ -149,5 +151,34 @@ describe('toSVGString', () => {
     const svg = toSVGString(result);
     expect(svg).toContain('<circle id="custom"/>');
     expect(svg).not.toContain('width="1"');
+  });
+});
+
+describe('custom layouts', () => {
+  it('uses the layout and its node directions for edges and fold toggles', () => {
+    const root = parse('# R\n\n- a\n  - a1').root;
+    // The tree layout, mirrored: everything grows to the left.
+    const mirrored: Layout = {
+      name: 'mirrored',
+      layout(tree, options) {
+        const result = layoutTree(tree, options);
+        for (const item of result.nodes) {
+          item.rect = { ...item.rect, x: -item.rect.x - item.rect.width };
+          item.direction = 'left';
+        }
+        return { ...result, bounds: unionRects(result.nodes.map((n) => n.rect)) };
+      },
+    };
+    const { layout, primitives } = renderTree(root, {
+      measurer: approximateMeasurer,
+      layout: mirrored,
+    });
+    const [r, a] = layout.nodes;
+    expect(a.rect.x + a.rect.width).toBeLessThan(r.rect.x);
+    const edge = primitives.find((p) => p.kind === 'group' && p.key === `edge:${a.node.id}`);
+    const d = edge?.kind === 'group' && edge.children[0].kind === 'path' ? edge.children[0].d : '';
+    // From the root's left end to the child's right end.
+    expect(d.startsWith(`M${r.rect.x},`)).toBe(true);
+    expect(d).toContain(`,${a.rect.x + a.rect.width},`);
   });
 });

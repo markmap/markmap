@@ -44,3 +44,9 @@ export function expandRect(rect: Rect, by: number): Rect {
     height: rect.height + by * 2,
   };
 }
+
+const OPPOSITE: Record<Side, Side> = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
+
+export function oppositeSide(side: Side): Side {
+  return OPPOSITE[side];
+}

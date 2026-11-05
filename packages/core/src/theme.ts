@@ -1,4 +1,4 @@
-import type { Anchor, Rect, Size } from './geometry';
+import type { Anchor, Rect, Side, Size } from './geometry';
 import type { OptionSchema } from './options';
 import type { FontStyle, Paint, Primitive } from './primitives';
 import type { MarkmapNode } from './types';
@@ -14,7 +14,12 @@ export interface NodeContext {
   path: readonly string[];
   hasChildren: boolean;
   folded: boolean;
+  /** The way the node grows away from its parent, from the layout. */
+  direction: Side;
 }
+
+/** What is known about a node before layout: everything but its direction. */
+export type MeasureContext = Omit<NodeContext, 'direction'>;
 
 export interface EdgeContext {
   source: MarkmapNode;
@@ -40,11 +45,14 @@ export interface Theme {
     padding: [number, number, number, number];
     minHeight?: number;
     /** Box size from content size. Defaults to content plus padding, at least `minHeight` tall. */
-    measure?(content: Size, node: MarkmapNode, ctx: NodeContext): Size;
+    measure?(content: Size, node: MarkmapNode, ctx: MeasureContext): Size;
     /** Chrome in node-local coordinates (the box starts at 0, 0). */
     render(node: MarkmapNode, box: Size, ctx: NodeContext): Primitive[];
-    /** Where edges leave (`source`) or enter (`target`) the node, in layout coordinates. */
-    anchor(rect: Rect, role: 'source' | 'target', ctx: NodeContext): Anchor;
+    /**
+     * Where edges meet the node on one side, in layout coordinates. Edges to children
+     * leave on `ctx.direction` and the edge from the parent enters on the opposite side.
+     */
+    anchor(rect: Rect, side: Side, ctx: NodeContext): Anchor;
   };
   edge: {
     render(from: Anchor, to: Anchor, ctx: EdgeContext): Primitive[];
