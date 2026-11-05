@@ -1,5 +1,5 @@
 import { parse } from '@markmap/parse';
-import { builtinLayouts, toSVGString } from '@markmap/render';
+import { builtinLayouts, builtinThemes, toSVGString } from '@markmap/render';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
@@ -12,14 +12,23 @@ const stats = document.querySelector<HTMLSpanElement>('#stats')!;
 editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
 
 const layoutSelect = document.querySelector<HTMLSelectElement>('#layout')!;
+const themeSelect = document.querySelector<HTMLSelectElement>('#theme')!;
+const schemeSelect = document.querySelector<HTMLSelectElement>('#scheme')!;
 const baseOptions: ViewOptions = { maxWidth: 300 };
 const mm = new Markmap(svg, baseOptions);
 
 function update() {
   const start = performance.now();
   const { root, frontmatter } = parse(editor.value);
-  const layout = builtinLayouts[layoutSelect.value];
-  const { options, warnings } = resolveViewOptions({ ...baseOptions, layout }, frontmatter.markmap);
+  const { options, warnings } = resolveViewOptions(
+    {
+      ...baseOptions,
+      layout: builtinLayouts[layoutSelect.value],
+      theme: builtinThemes[themeSelect.value],
+      colorScheme: schemeSelect.value as ViewOptions['colorScheme'],
+    },
+    frontmatter.markmap,
+  );
   mm.setData(root, options);
   const ms = performance.now() - start;
   stats.textContent = `${mm.state?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
@@ -40,10 +49,12 @@ editor.addEventListener('input', () => {
   }, 150);
 });
 
-layoutSelect.addEventListener('change', () => {
-  update();
-  mm.fit();
-});
+for (const select of [layoutSelect, themeSelect, schemeSelect]) {
+  select.addEventListener('change', () => {
+    update();
+    mm.fit();
+  });
+}
 document.querySelector('#fit')!.addEventListener('click', () => mm.fit());
 document.querySelector('#zoom-in')!.addEventListener('click', () => mm.zoomIn());
 document.querySelector('#zoom-out')!.addEventListener('click', () => mm.zoomOut());
@@ -56,7 +67,8 @@ level.addEventListener('change', () => {
 
 document.querySelector('#download')!.addEventListener('click', () => {
   if (!mm.state) return;
-  const blob = new Blob([toSVGString(mm.state)], { type: 'image/svg+xml' });
+  const svgText = toSVGString(mm.state, { colorScheme: mm.options.colorScheme });
+  const blob = new Blob([svgText], { type: 'image/svg+xml' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'markmap.svg';

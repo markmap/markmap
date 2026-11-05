@@ -1,4 +1,4 @@
-import type { Anchor, Rect, Side, Size } from './geometry';
+import type { Anchor, Matrix, Rect, Side, Size } from './geometry';
 import type { OptionSchema } from './options';
 import type { FontStyle, Paint, Primitive } from './primitives';
 import type { MarkmapNode } from './types';
@@ -28,6 +28,15 @@ export interface EdgeContext {
   node: NodeContext;
 }
 
+/** How a node looks part way into or out of the drawing. */
+export interface PresenceStyle {
+  opacity?: number;
+  /** Applied in node-local coordinates (the box starts at 0, 0), before the node's position. */
+  transform?: Matrix;
+}
+
+export type TextAlign = 'start' | 'center' | 'end';
+
 export interface Theme {
   name: string;
   /** Theme-specific Markdown options, such as colors. Validated before `configure` sees them. */
@@ -36,6 +45,8 @@ export interface Theme {
   configure?(options: Record<string, unknown>): Theme;
   /** Emitted as CSS variables, e.g. `{ 'mm-color': '#333' }` → `--mm-color: #333`. */
   tokens: Record<string, string>;
+  /** Tokens that change in dark mode; the rest of `tokens` still applies. */
+  darkTokens?: Record<string, string>;
   font: FontStyle;
   /** Font family for inline code. */
   codeFontFamily: string;
@@ -46,6 +57,13 @@ export interface Theme {
     minHeight?: number;
     /** Box size from content size. Defaults to content plus padding, at least `minHeight` tall. */
     measure?(content: Size, node: MarkmapNode, ctx: MeasureContext): Size;
+    /** Alignment of wrapped label lines. Defaults to `start`. */
+    textAlign?(ctx: NodeContext): TextAlign;
+    /**
+     * How a node looks while `presence` goes from 0 (absent) to 1 (shown), as it enters
+     * or leaves. Its edge gets the same opacity. Defaults to fading.
+     */
+    presence?(presence: number, box: Size, ctx: NodeContext): PresenceStyle;
     /** Chrome in node-local coordinates (the box starts at 0, 0). */
     render(node: MarkmapNode, box: Size, ctx: NodeContext): Primitive[];
     /**

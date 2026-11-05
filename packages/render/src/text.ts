@@ -9,6 +9,7 @@ import type {
   Primitive,
   Size,
   TextRun,
+  TextAlign,
   TextStyle,
 } from '@markmap/core';
 
@@ -25,6 +26,8 @@ export interface TextLayoutOptions {
   maxWidth?: number;
   plugins: readonly ContentPlugin[];
   ctx: InlineContext;
+  /** Alignment of lines within the widest one. Defaults to `start`. */
+  align?: TextAlign;
 }
 
 /** A styled inline node with a decoration; items inside it share the same span object. */
@@ -267,17 +270,20 @@ export function layoutText(content: readonly Inline[], options: TextLayoutOption
   const atoms: Primitive[] = [];
   const links: Primitive[] = [];
   const runs: TextRun[] = [];
-  let width = 0;
+  const lineWidths = lines.map((line) =>
+    line.reduce((sum, unit) => sum + unit.items.reduce((w, item) => w + item.width, 0), 0),
+  );
+  const width = Math.max(0, ...lineWidths);
+  const alignFactor = { start: 0, center: 0.5, end: 1 }[options.align ?? 'start'];
   let top = 0;
 
-  for (const line of lines) {
+  for (const [index, line] of lines.entries()) {
     const placed: Placed[] = [];
-    let x = 0;
+    let x = (width - lineWidths[index]) * alignFactor;
     for (const item of line.flatMap((unit) => unit.items)) {
       placed.push({ item, x });
       x += item.width;
     }
-    width = Math.max(width, x);
 
     // Tall atoms push the baseline down and the line taller.
     let ascent = textAscent;

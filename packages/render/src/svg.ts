@@ -13,7 +13,12 @@ export interface SVGStringOptions {
   padding?: number;
   /** Fill the background with `--mm-bg`. */
   background?: boolean;
+  /** Which tokens to use. Defaults to `light`. */
+  colorScheme?: ColorScheme;
 }
+
+/** `auto` follows the reader's `prefers-color-scheme`. */
+export type ColorScheme = 'light' | 'dark' | 'auto';
 
 const ESCAPES: Record<string, string> = {
   '&': '&amp;',
@@ -153,19 +158,36 @@ function serialize(primitives: Primitive[], options: PrimitivesToSVGOptions): st
 }
 
 /** Theme tokens as CSS custom property declarations. */
-export function tokensToCSS(theme: Theme): string {
-  return Object.entries(theme.tokens)
+export function tokensToCSS(theme: Theme | Record<string, string>): string {
+  const tokens = isTheme(theme) ? theme.tokens : theme;
+  return Object.entries(tokens)
     .filter(([name, value]) => /^[\w-]+$/.test(name) && isSafeCSSValue(value))
     .map(([name, value]) => `--${name}:${value};`)
     .join('');
 }
 
+const isTheme = (value: Theme | Record<string, string>): value is Theme =>
+  typeof value.tokens === 'object';
+
+/**
+ * Rules that set a theme's tokens on `selector`. Dark tokens override light ones for
+ * `dark`, and inside a `prefers-color-scheme: dark` query for `auto`.
+ */
+export function themeCSS(theme: Theme, colorScheme: ColorScheme = 'light', selector = '.markmap') {
+  const light = `${selector}{${tokensToCSS(theme.tokens)}}`;
+  if (!theme.darkTokens || colorScheme === 'light') return light;
+  const dark = `${selector}{${tokensToCSS(theme.darkTokens)}}`;
+  return colorScheme === 'dark'
+    ? light + dark
+    : `${light}@media (prefers-color-scheme: dark){${dark}}`;
+}
+
 /** A standalone SVG document. Theme tokens are embedded so user CSS can still override them. */
 export function toSVGString(result: RenderResult, options: SVGStringOptions = {}): string {
-  const { padding = 20, background = true } = options;
+  const { padding = 20, background = true, colorScheme } = options;
   const box: Rect = expandRect(result.bounds, padding);
   const viewBox = [box.x, box.y, box.width, box.height].map(num).join(' ');
-  const css = `.markmap{${tokensToCSS(result.theme)}}`;
+  const css = themeCSS(result.theme, colorScheme);
   const bg = background
     ? `<rect${attrs({ x: box.x, y: box.y, width: box.width, height: box.height, style: 'fill:var(--mm-bg)' })}/>`
     : '';

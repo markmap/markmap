@@ -6,5 +6,7 @@ export * from './render';
 export * from './svg';
 export * from './text';
 export * from './themes/branch';
+export * from './themes/cards';
 export * from './themes/classic';
+export * from './themes/minimal';
 export * from './animate';

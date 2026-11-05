@@ -364,3 +364,52 @@ describe('view API', () => {
     vi.useRealTimers();
   });
 });
+
+describe('events and color scheme', () => {
+  const md = '# Root\n\n## A\n\n- a1\n\n## B';
+  const create = (options = {}) =>
+    Markmap.create(createSvg(), parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+      ...options,
+    });
+
+  it('emits render, zoom and fold, and stops after unsubscribing', () => {
+    const mm = create();
+    const seen: string[] = [];
+    const offRender = mm.on('render', (result) =>
+      seen.push(`render:${result.layout.nodes.length}`),
+    );
+    mm.on('fold', (folded) => seen.push(`fold:${folded.size}`));
+    mm.on('zoom', (t) => seen.push(`zoom:${t.k.toFixed(2)}`));
+    const a = mm.state!.layout.nodes[1].node.id;
+    const k = mm.transform.k;
+    mm.toggle(a);
+    expect(seen).toEqual(['render:3', 'fold:1']);
+    seen.length = 0;
+    mm.zoomIn();
+    expect(seen).toEqual([`zoom:${(k * 1.25).toFixed(2)}`]);
+    seen.length = 0;
+    offRender();
+    mm.toggle(a);
+    expect(seen).toEqual(['fold:0']);
+    // No change, no event.
+    seen.length = 0;
+    mm.expandAll();
+    expect(seen).toEqual([]);
+  });
+
+  it('switches token sets with colorScheme', () => {
+    const mm = create();
+    const css = () => mm.svg.querySelector('style')!.textContent!;
+    expect(css()).not.toContain('#1e1e1e');
+    mm.setOptions({ ...mm.options, colorScheme: 'dark' });
+    expect(css()).toContain('--mm-bg:#1e1e1e;');
+    mm.setOptions({ ...mm.options, colorScheme: 'auto' });
+    expect(css()).toContain('prefers-color-scheme: dark');
+    expect(resolveViewOptions({}, { colorScheme: 'dark' }).options.colorScheme).toBe('dark');
+    expect(resolveViewOptions({}, { colorScheme: 'dim' }).warnings).toEqual([
+      '`colorScheme` must be one of `light`, `dark`, `auto`',
+    ]);
+  });
+});

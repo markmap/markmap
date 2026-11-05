@@ -24,6 +24,25 @@ export function translate(x: number, y: number): Matrix {
   return [1, 0, 0, 1, x, y];
 }
 
+/** Scale by `k` around the point (`cx`, `cy`). */
+export function scaleAround(k: number, cx: number, cy: number): Matrix {
+  return [k, 0, 0, k, cx * (1 - k), cy * (1 - k)];
+}
+
+/** `a` applied after `b`, as in SVG `transform="matrix(a) matrix(b)"`. */
+export function multiply(a: Matrix, b: Matrix): Matrix {
+  const [a0, a1, a2, a3, a4, a5] = a;
+  const [b0, b1, b2, b3, b4, b5] = b;
+  return [
+    a0 * b0 + a2 * b1,
+    a1 * b0 + a3 * b1,
+    a0 * b2 + a2 * b3,
+    a1 * b2 + a3 * b3,
+    a0 * b4 + a2 * b5 + a4,
+    a1 * b4 + a3 * b5 + a5,
+  ];
+}
+
 export function unionRects(rects: Iterable<Rect>): Rect {
   let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
   for (const r of rects) {

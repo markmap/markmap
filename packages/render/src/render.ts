@@ -4,7 +4,9 @@ import {
   type Layout,
   type LayoutNode,
   type LayoutResult,
+  multiply,
   oppositeSide,
+  type PresenceStyle,
   type Measurer,
   type MarkmapNode,
   type MeasureContext,
@@ -12,6 +14,7 @@ import {
   type Primitive,
   type Rect,
   type Size,
+  type TextAlign,
   type Theme,
   translate,
   unionRects,
@@ -66,6 +69,24 @@ export function nodePaths(root: MarkmapNode): Map<string, readonly string[]> {
   return paths;
 }
 
+/** Lay out a node's label. Alignment does not change the size. */
+function labelLayout(
+  node: MarkmapNode,
+  theme: Theme,
+  options: RenderOptions,
+  align?: TextAlign,
+): TextLayout {
+  const plugins = options.plugins ?? defaultContentPlugins;
+  const ctx = { theme, measurer: options.measurer, node };
+  return layoutText(transformContent(plugins, ctx), {
+    style: { font: theme.font, fill: theme.textFill },
+    maxWidth: options.maxWidth,
+    plugins,
+    ctx,
+    align,
+  });
+}
+
 /** Measure the label and box of every visible node. */
 export function measureTree(root: MarkmapNode, options: RenderOptions): Map<string, MeasuredNode> {
   const theme = options.theme ?? classicTheme;
@@ -75,14 +96,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
   for (const node of visibleNodes(root, options.folded)) {
     const path = paths.get(node.id)!;
     const depth = path.length - 1;
-    const plugins = options.plugins ?? defaultContentPlugins;
-    const inlineCtx = { theme, measurer: options.measurer, node };
-    const text = layoutText(transformContent(plugins, inlineCtx), {
-      style: { font: theme.font, fill: theme.textFill },
-      maxWidth: options.maxWidth,
-      plugins,
-      ctx: inlineCtx,
-    });
+    const text = labelLayout(node, theme, options);
     const ctx: MeasureContext = {
       depth,
       path,
@@ -128,14 +142,21 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
   });
 
   const state: DrawState = {
-    nodes: layout.nodes.map((item) => ({
-      node: item.node,
-      parentId: item.parent?.node.id,
-      rect: item.rect,
-      ctx: contextOf(item),
-      text: measured.get(item.node.id)!.text,
-      presence: 1,
-    })),
+    nodes: layout.nodes.map((item) => {
+      const ctx = contextOf(item);
+      let { text } = measured.get(item.node.id)!;
+      // Alignment depends on the direction, known only now; one line needs no alignment.
+      const align = theme.node.textAlign?.(ctx) ?? 'start';
+      if (align !== 'start' && text.lines > 1) text = labelLayout(item.node, theme, options, align);
+      return {
+        node: item.node,
+        parentId: item.parent?.node.id,
+        rect: item.rect,
+        ctx,
+        text,
+        presence: 1,
+      };
+    }),
   };
   const primitives = drawState(state, theme);
   const bounds = unionRects([layout.bounds, primitiveBounds(primitives)]);
@@ -161,6 +182,17 @@ export interface DrawState {
  */
 export function drawState(state: DrawState, theme: Theme): Primitive[] {
   const byId = new Map(state.nodes.map((item) => [item.node.id, item]));
+  const looks = new Map<string, PresenceStyle>();
+  const lookOf = (item: DrawNode): PresenceStyle => {
+    if (item.presence >= 1) return {};
+    let look = looks.get(item.node.id);
+    if (!look) {
+      const box = { width: item.rect.width, height: item.rect.height };
+      look = theme.node.presence?.(item.presence, box, item.ctx) ?? { opacity: item.presence };
+      looks.set(item.node.id, look);
+    }
+    return look;
+  };
   const edges: Primitive[] = [];
   for (const target of state.nodes) {
     const source = target.parentId ? byId.get(target.parentId) : undefined;
@@ -169,7 +201,7 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
       kind: 'group',
       key: `edge:${target.node.id}`,
       nodeId: target.node.id,
-      ...(target.presence < 1 && { opacity: target.presence }),
+      ...opacityOf(lookOf(target)),
       children: theme.edge.render(
         theme.node.anchor(source.rect, target.ctx.direction, source.ctx),
         theme.node.anchor(target.rect, oppositeSide(target.ctx.direction), target.ctx),
@@ -183,8 +215,10 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
     kind: 'group',
     key: `node:${item.node.id}`,
     nodeId: item.node.id,
-    transform: translate(item.rect.x, item.rect.y),
-    ...(item.presence < 1 && { opacity: item.presence }),
+    transform: lookOf(item).transform
+      ? multiply(translate(item.rect.x, item.rect.y), lookOf(item).transform!)
+      : translate(item.rect.x, item.rect.y),
+    ...opacityOf(lookOf(item)),
     children: [
       ...theme.node.render(
         item.node,
@@ -196,6 +230,9 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
   }));
   return [...edges, ...nodes];
 }
+
+const opacityOf = ({ opacity }: PresenceStyle) =>
+  opacity != null && opacity < 1 ? { opacity: Math.max(0, opacity) } : {};
 
 /** Absolute points of a path made of `M`, `L`, `H`, `V` and `C` commands. */
 function pathPoints(d: string): [number, number][] {

@@ -17,6 +17,10 @@ export interface MarkmapJSONOptions {
   duration?: number;
   /** Name of a registered layout, such as `two-sided` or `org-chart`. */
   layout?: string;
+  /** Name of a registered theme, such as `cards`. Its own options apply on top. */
+  theme?: string;
+  /** `light`, `dark`, or `auto` to follow the reader's system setting. */
+  colorScheme?: 'light' | 'dark' | 'auto';
 }
 
 /**
@@ -57,6 +61,12 @@ export const validators = {
         ? { value: value.trim() }
         : { warning: `\`${key}\` must be a non-empty string` };
   },
+  oneOf<T extends string>(values: readonly T[]): OptionValidator {
+    return (value, key) =>
+      values.includes(value as T)
+        ? { value }
+        : { warning: `\`${key}\` must be one of ${values.map((v) => `\`${v}\``).join(', ')}` };
+  },
   boolean(): OptionValidator {
     return (value, key) =>
       typeof value === 'boolean' ? { value } : { warning: `\`${key}\` must be true or false` };
@@ -93,6 +103,8 @@ const CORE_SCHEMA: OptionSchema = {
   maxFitScale: validators.number(0.01),
   duration: validators.number(0),
   layout: validators.string(),
+  theme: validators.string(),
+  colorScheme: validators.oneOf(['light', 'dark', 'auto']),
 };
 
 export interface ValidatedOptions<T> {

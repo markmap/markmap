@@ -10,7 +10,9 @@ import type { RenderOptions } from './render';
 import { orgChartLayout } from './layouts/org-chart';
 import { treeLayout } from './layouts/tree';
 import { twoSidedLayout } from './layouts/two-sided';
+import { cardsTheme } from './themes/cards';
 import { classicTheme } from './themes/classic';
+import { minimalTheme } from './themes/minimal';
 
 /** Layouts Markdown can pick by name with the `layout` option. */
 export const builtinLayouts: Readonly<Record<string, Layout>> = Object.freeze({
@@ -19,9 +21,32 @@ export const builtinLayouts: Readonly<Record<string, Layout>> = Object.freeze({
   [orgChartLayout.name]: orgChartLayout,
 });
 
+/** Themes Markdown can pick by name with the `theme` option. */
+export const builtinThemes: Readonly<Record<string, Theme>> = Object.freeze({
+  [classicTheme.name]: classicTheme,
+  [cardsTheme.name]: cardsTheme,
+  [minimalTheme.name]: minimalTheme,
+});
+
 export interface ResolveOptions {
   /** Layouts the `layout` option may name. Defaults to {@link builtinLayouts}. */
   layouts?: Readonly<Record<string, Layout>>;
+  /** Themes the `theme` option may name. Defaults to {@link builtinThemes}. */
+  themes?: Readonly<Record<string, Theme>>;
+}
+
+/** Look up a name from Markdown, warning when it is not registered. */
+function pick<T>(
+  kind: string,
+  name: string | undefined,
+  registry: Readonly<Record<string, T>>,
+  warnings: string[],
+): T | undefined {
+  if (name == null) return undefined;
+  if (Object.hasOwn(registry, name)) return registry[name];
+  const names = Object.keys(registry).map((key) => `\`${key}\``);
+  warnings.push(`Unknown ${kind} \`${name}\`; available: ${names.join(', ')}`);
+  return undefined;
 }
 
 export interface ResolvedOptions<T> {
@@ -57,34 +82,26 @@ const RENDER_KEYS = ['maxWidth', 'spacingHorizontal', 'spacingVertical'] as cons
 export function resolveRenderOptions<T extends Partial<RenderOptions>>(
   base: T,
   input: unknown,
-  { layouts = builtinLayouts }: ResolveOptions = {},
+  { layouts = builtinLayouts, themes = builtinThemes }: ResolveOptions = {},
 ): ResolvedOptions<T & Partial<RenderOptions>> {
   const core = readJSONOptions(input);
   const result: T & Partial<RenderOptions> = { ...base };
   for (const key of RENDER_KEYS) {
     if (core.options[key] != null) result[key] = core.options[key];
   }
-  const layoutWarnings: string[] = [];
-  if (core.options.layout != null) {
-    const layout = Object.hasOwn(layouts, core.options.layout)
-      ? layouts[core.options.layout]
-      : undefined;
-    if (layout) result.layout = layout;
-    else {
-      const names = Object.keys(layouts).map((name) => `\`${name}\``);
-      layoutWarnings.push(
-        `Unknown layout \`${core.options.layout}\`; available: ${names.join(', ')}`,
-      );
-    }
-  }
-  const themed = configureTheme(base.theme ?? classicTheme, core.rest);
+  const pickWarnings: string[] = [];
+  const layout = pick('layout', core.options.layout, layouts, pickWarnings);
+  if (layout) result.layout = layout;
+  // A named theme replaces the base one; its own options then apply on top.
+  const baseTheme = pick('theme', core.options.theme, themes, pickWarnings) ?? base.theme;
+  const themed = configureTheme(baseTheme ?? classicTheme, core.rest);
   if (themed.theme !== (base.theme ?? classicTheme)) result.theme = themed.theme;
   return {
     options: result,
     json: core.options,
     warnings: [
       ...core.warnings,
-      ...layoutWarnings,
+      ...pickWarnings,
       ...themed.warnings,
       ...unknownOptionWarnings(themed.rest),
     ],

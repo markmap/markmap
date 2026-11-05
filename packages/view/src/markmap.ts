@@ -12,7 +12,8 @@ import {
   type RenderResult,
   renderTree,
   resolveRenderOptions,
-  tokensToCSS,
+  themeCSS,
+  type ColorScheme,
 } from '@markmap/render';
 import { pointer, select, type Selection } from 'd3-selection';
 import { zoom, type ZoomBehavior, zoomIdentity, type ZoomTransform, zoomTransform } from 'd3-zoom';
@@ -38,6 +39,18 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
    * the user's `prefers-reduced-motion` setting.
    */
   duration?: number;
+  /** Which theme tokens to use; `auto` follows the reader's system setting. Defaults to `light`. */
+  colorScheme?: ColorScheme;
+}
+
+/** What each event passes to its listeners. */
+export interface MarkmapEvents {
+  /** After every render, with the final (not mid-animation) result. */
+  render: RenderResult;
+  /** Whenever the view moves, by the user or by the API. */
+  zoom: ZoomTransform;
+  /** When the set of folded nodes changes. */
+  fold: ReadonlySet<string>;
 }
 
 const DEFAULTS: ViewOptions = {
@@ -66,6 +79,7 @@ export function resolveViewOptions(
     'maxFitScale',
     'initialExpandLevel',
     'duration',
+    'colorScheme',
   ] as const;
   for (const key of keys) {
     if (json[key] != null) (options as Record<string, unknown>)[key] = json[key];
@@ -141,6 +155,7 @@ export class Markmap {
         }
         this.backend.root.setAttribute('transform', event.transform.toString());
         this.positionPopover();
+        this.emit('zoom', event.transform);
       });
     this.selection.call(this.zoomBehavior);
     svg.addEventListener('click', this.handleClick);
@@ -159,7 +174,7 @@ export class Markmap {
   private applyOptions(options: ViewOptions) {
     this.viewOptions = { ...DEFAULTS, ...options };
     if (options.measurer) this.measurer = options.measurer;
-    this.style.textContent = `.markmap{${tokensToCSS(this.theme)}}`;
+    this.style.textContent = themeCSS(this.theme, this.viewOptions.colorScheme);
   }
 
   static create(svg: SVGSVGElement, root?: MarkmapNode, options?: ViewOptions): Markmap {
@@ -203,10 +218,12 @@ export class Markmap {
       }
       for (const child of node.children) visit(child, depth + 1, all);
     };
+    const before = new Set(this.folded);
     visit(root, 0, false);
     for (const id of this.folded) if (!ids.has(id)) this.folded.delete(id);
     this.known = ids;
     this.render();
+    if (!sameSet(before, this.folded)) this.emit('fold', this.folded);
   }
 
   /** Re-measure, lay out and draw the current tree. */
@@ -239,6 +256,7 @@ export class Markmap {
       if (item?.node.attachments.length) this.positionPopover();
       else this.closeAttachments();
     }
+    this.emit('render', this.result);
     return this.result;
   }
 
@@ -331,7 +349,7 @@ export class Markmap {
   private updateFolded(pinId: string, change: () => void) {
     const before = new Set(this.folded);
     change();
-    if (before.size === this.folded.size && [...before].every((id) => this.folded.has(id))) return;
+    if (sameSet(before, this.folded)) return;
     const pinned = this.frameNode(pinId) ?? (this.root && this.frameNode(this.root.id));
     if (pinned) {
       const [x, y] = this.transform.apply([pinned.rect.x, pinned.rect.y]);
@@ -339,6 +357,26 @@ export class Markmap {
       this.pin = { id: pinned.node.id, x, y };
     }
     this.render();
+    this.emit('fold', this.folded);
+  }
+
+  private listeners = new Map<keyof MarkmapEvents, Set<(value: never) => void>>();
+
+  /** Listen to an event. Returns a function that stops listening. */
+  on<K extends keyof MarkmapEvents>(
+    type: K,
+    listener: (value: MarkmapEvents[K]) => void,
+  ): () => void {
+    let set = this.listeners.get(type);
+    if (!set) this.listeners.set(type, (set = new Set()));
+    set.add(listener);
+    return () => set.delete(listener);
+  }
+
+  private emit<K extends keyof MarkmapEvents>(type: K, value: MarkmapEvents[K]) {
+    for (const listener of this.listeners.get(type) ?? []) {
+      (listener as (value: MarkmapEvents[K]) => void)(value);
+    }
   }
 
   /**
@@ -455,7 +493,7 @@ export class Markmap {
     const popover = new Popover(
       this.svg.ownerDocument,
       attachmentsToHtml(item.node.attachments),
-      this.theme.tokens,
+      this.currentTokens(),
     );
     popover.el.setAttribute('aria-label', 'Notes');
     this.popover = { id, popover };
@@ -478,6 +516,20 @@ export class Markmap {
     doc.removeEventListener('click', this.handleOutside, true);
     doc.removeEventListener('keydown', this.handleKey);
     doc.defaultView?.removeEventListener('scroll', this.handleScroll, true);
+  }
+
+  /**
+   * Token values as the SVG resolves them right now, so the popover matches the color
+   * scheme in effect and any CSS overrides on the page.
+   */
+  private currentTokens(): Record<string, string> {
+    const { tokens, darkTokens = {} } = this.theme;
+    const style = this.svg.ownerDocument.defaultView?.getComputedStyle(this.svg);
+    const result: Record<string, string> = {};
+    for (const name of new Set([...Object.keys(tokens), ...Object.keys(darkTokens)])) {
+      result[name] = style?.getPropertyValue(`--${name}`).trim() || tokens[name] || '';
+    }
+    return result;
   }
 
   /** A node's box in viewport coordinates, where it is drawn right now. */
@@ -517,6 +569,7 @@ export class Markmap {
   };
 
   destroy(): void {
+    this.listeners.clear();
     this.stateTween.stop();
     this.zoomTween.stop();
     this.closeAttachments();
@@ -559,4 +612,8 @@ export function interpolateZoom(
   const x = ((cx - a.x) / a.k) * (1 - t) + ((cx - b.x) / b.k) * t;
   const y = ((cy - a.y) / a.k) * (1 - t) + ((cy - b.y) / b.k) * t;
   return zoomIdentity.translate(cx - x * k, cy - y * k).scale(k);
+}
+
+function sameSet<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+  return a.size === b.size && [...a].every((item) => b.has(item));
 }

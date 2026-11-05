@@ -1,19 +1,14 @@
 import type { Theme } from '@markmap/core';
 import { validators } from '@markmap/core';
-import { branchIndex } from './branch';
-
-const DEFAULT_COLORS = [
-  '#1f77b4',
-  '#ff7f0e',
-  '#2ca02c',
-  '#d62728',
-  '#9467bd',
-  '#8c564b',
-  '#e377c2',
-  '#7f7f7f',
-  '#bcbd22',
-  '#17becf',
-];
+import { type BranchColorOptions, branchColors } from './branch';
+import {
+  alignFor,
+  CODE_FONT,
+  CONTENT_TOKENS,
+  DARK_CONTENT_TOKENS,
+  sCurve,
+  SYSTEM_FONT,
+} from './shared';
 
 const CIRCLE_RADIUS = 6;
 
@@ -23,19 +18,11 @@ const TOP_GAP = 4;
 /** Line width shrinks with depth: 4, 2.5, 1.75, … */
 const lineWidth = (depth: number) => 1 + 3 / 2 ** depth;
 
-export interface ClassicThemeOptions {
-  /** Branch colors, cycled through. One color paints every branch the same. */
-  color?: string[];
-  /** Nodes deeper than this level (the root is level 1) take their ancestor's color. `0` disables. */
-  colorFreezeLevel?: number;
-}
+export type ClassicThemeOptions = BranchColorOptions;
 
 /** The original markmap look: underlined labels, curved edges and fold circles. */
 export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
-  const colors = options.color?.length ? options.color : DEFAULT_COLORS;
-  const freezeLevel = options.colorFreezeLevel ?? 0;
-  const colorOf = (path: readonly string[]) =>
-    `var(--mm-branch-${branchIndex(path, colors.length, freezeLevel)})`;
+  const { tokens: branchTokens, colorOf } = branchColors(options);
 
   return {
     name: 'classic',
@@ -48,26 +35,22 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
       'mm-color': '#333',
       'mm-bg': '#fff',
       'mm-circle-open-bg': '#fff',
-      'mm-link-color': '#0097e6',
-      'mm-code-bg': '#f0f0f0',
-      'mm-code-color': '#555',
-      'mm-mark-bg': '#ffeaa7',
-      'mm-checkbox': '#555',
-      'mm-attachment': '#999',
-      ...Object.fromEntries(colors.map((color, i) => [`mm-branch-${i}`, color])),
+      ...CONTENT_TOKENS,
+      ...branchTokens,
     },
-    font: {
-      family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-      size: 16,
-      weight: 400,
-      style: 'normal',
-      lineHeight: 20,
+    darkTokens: {
+      'mm-color': '#ddd',
+      'mm-bg': '#1e1e1e',
+      'mm-circle-open-bg': '#1e1e1e',
+      ...DARK_CONTENT_TOKENS,
     },
-    codeFontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+    font: SYSTEM_FONT,
+    codeFontFamily: CODE_FONT,
     textFill: 'var(--mm-color)',
     node: {
       padding: [0, 8, 0, 8],
       minHeight: 16,
+      textAlign: (ctx) => alignFor(ctx.direction),
       render(_node, box, ctx) {
         const color = colorOf(ctx.path);
         const width = lineWidth(ctx.depth);
@@ -107,23 +90,14 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
       },
     },
     edge: {
-      render(from, to, ctx) {
-        // An S-curve that leaves and arrives along the anchors' axis.
-        const vertical = from.side === 'top' || from.side === 'bottom';
-        const mx = (from.x + to.x) / 2;
-        const my = (from.y + to.y) / 2;
-        const controls = vertical
-          ? `${from.x},${my},${to.x},${my}`
-          : `${mx},${from.y},${mx},${to.y}`;
-        return [
-          {
-            kind: 'path',
-            d: `M${from.x},${from.y}C${controls},${to.x},${to.y}`,
-            stroke: colorOf(ctx.node.path),
-            strokeWidth: lineWidth(ctx.node.depth),
-          },
-        ];
-      },
+      render: (from, to, ctx) => [
+        {
+          kind: 'path',
+          d: sCurve(from, to),
+          stroke: colorOf(ctx.node.path),
+          strokeWidth: lineWidth(ctx.node.depth),
+        },
+      ],
     },
   };
 }
