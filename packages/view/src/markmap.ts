@@ -96,6 +96,12 @@ export class Markmap {
   private zoomTween = new Tween();
   /** Whether the first fit has happened; it is never animated. */
   private placed = false;
+  /**
+   * A node held at a fixed point in the SVG (its top-left corner) while the tree moves
+   * around it, as when folding. Applied on every frame, so it works however the
+   * frames move the node, and released when the animation ends or the user moves the view.
+   */
+  private pin?: { id: string; x: number; y: number };
 
   constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
     this.svg = svg;
@@ -116,7 +122,10 @@ export class Markmap {
       })
       .on('zoom', (event: { transform: ZoomTransform; sourceEvent: unknown }) => {
         // The user took over: stop moving the view under them.
-        if (event.sourceEvent) this.zoomTween.stop();
+        if (event.sourceEvent) {
+          this.zoomTween.stop();
+          this.pin = undefined;
+        }
         this.backend.root.setAttribute('transform', event.transform.toString());
         this.positionPopover();
       });
@@ -200,12 +209,14 @@ export class Markmap {
     const duration = this.duration;
     if (from && duration > 0) {
       const theme = this.theme;
-      this.stateTween.start(duration, (t) =>
-        this.drawFrame(t < 1 ? interpolateStates(from, target, easeCubicInOut(t), theme) : target),
-      );
+      this.stateTween.start(duration, (t) => {
+        this.drawFrame(t < 1 ? interpolateStates(from, target, easeCubicInOut(t), theme) : target);
+        if (t >= 1) this.pin = undefined;
+      });
     } else {
       this.stateTween.stop();
       this.drawFrame(target);
+      this.pin = undefined;
     }
     if (this.popover) {
       const item = this.result.layout.byId.get(this.popover.id);
@@ -218,7 +229,19 @@ export class Markmap {
   private drawFrame(state: DrawState) {
     this.frame = state;
     this.backend.draw(drawState(state, this.theme));
+    this.applyPin();
     this.positionPopover();
+  }
+
+  /** Pan so the pinned node's frame position lands on its pinned point. */
+  private applyPin() {
+    const rect = this.pin && this.frameNode(this.pin.id)?.rect;
+    if (!this.pin || !rect) return;
+    const { k, x, y } = this.transform;
+    const dx = this.pin.x - (x + rect.x * k);
+    const dy = this.pin.y - (y + rect.y * k);
+    if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) return;
+    this.zoomBehavior.transform(this.selection, zoomIdentity.translate(x + dx, y + dy).scale(k));
   }
 
   /** Animation length in ms, `0` when animations are off. */
@@ -236,18 +259,20 @@ export class Markmap {
   /** Fold or unfold a node, keeping it in place on screen. */
   setFolded(id: string, folded: boolean): void {
     if (folded === this.folded.has(id)) return;
-    const before = this.frameNode(id)?.rect;
+    const rect = this.frameNode(id)?.rect;
+    if (rect) {
+      const [x, y] = this.transform.apply([rect.x, rect.y]);
+      this.zoomTween.stop();
+      this.pin = { id, x, y };
+    }
     if (folded) this.folded.add(id);
     else this.folded.delete(id);
-    const after = this.render()?.layout.byId.get(id)?.rect;
-    if (before && after) {
-      // Moves exactly as fast as the node does in layout space, so it stays still.
-      this.zoomTo(this.transform.translate(before.x - after.x, before.y - after.y));
-    }
+    this.render();
   }
 
   /** Move the view to `target`, animated unless animations are off. */
   private zoomTo(target: ZoomTransform, animate = true) {
+    this.pin = undefined;
     const from = this.transform;
     const { width, height } = this.svg.getBoundingClientRect();
     const apply = (transform: ZoomTransform) =>
