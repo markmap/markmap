@@ -4,6 +4,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/parse" },
     { "path": "./packages/render" },
-    { "path": "./packages/view" }
+    { "path": "./packages/view" },
+    { "path": "./packages/plugin-math" }
   ]
 }

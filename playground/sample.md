@@ -52,6 +52,11 @@ markmap:
   | ----- | ----------- |
   | Table | the popover |
 
+## Math
+
+- Euler $e^{i\pi} + 1 = 0$
+- $\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$
+
 ## Images
 
 - Sized: <img src="sample.png" width="48" height="32" alt="sized">

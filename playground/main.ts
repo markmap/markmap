@@ -1,5 +1,6 @@
 import { parse } from '@markmap/parse';
-import { builtinLayouts, builtinThemes, toSVGString } from '@markmap/render';
+import { mathContent, remarkMath } from '@markmap/plugin-math';
+import { builtinLayouts, builtinThemes, defaultContentPlugins, toSVGString } from '@markmap/render';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
@@ -14,12 +15,15 @@ editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
 const layoutSelect = document.querySelector<HTMLSelectElement>('#layout')!;
 const themeSelect = document.querySelector<HTMLSelectElement>('#theme')!;
 const schemeSelect = document.querySelector<HTMLSelectElement>('#scheme')!;
-const baseOptions: ViewOptions = { maxWidth: 300 };
+const baseOptions: ViewOptions = {
+  maxWidth: 300,
+  plugins: [...defaultContentPlugins, mathContent],
+};
 const mm = new Markmap(svg, baseOptions);
 
 function update() {
   const start = performance.now();
-  const { root, frontmatter } = parse(editor.value);
+  const { root, frontmatter } = parse(editor.value, { plugins: [remarkMath] });
   const { options, warnings } = resolveViewOptions(
     {
       ...baseOptions,
