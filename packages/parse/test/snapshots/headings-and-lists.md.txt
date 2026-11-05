@@ -1,0 +1,11 @@
+- [heading] Project {"depth":1}
+  - [heading] Goals {"depth":2}
+    - [listItem] Fast
+    - [listItem] Small
+      - [listItem] Tiny core
+      - [listItem] Lazy plugins
+  - [heading] Non-goals {"depth":2}
+    - [listItem] HTML content {"ordered":true}
+    - [listItem] Old APIs {"ordered":true}
+    - [heading] Skipped level {"depth":4}
+    - [heading] Back to three {"depth":3}

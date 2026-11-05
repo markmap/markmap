@@ -1,0 +1,5 @@
+- [heading] Tasks {"depth":1}
+  - [listItem] Done with bold and em {"checked":true}
+  - [listItem] Todo with code and a link {"checked":false}
+  - [listItem] Struck item
+  - [listItem] Heading label

@@ -1,0 +1,3 @@
+- [root] From frontmatter
+  - [heading] Heading one {"depth":1}
+  - [heading] Heading two {"depth":1}

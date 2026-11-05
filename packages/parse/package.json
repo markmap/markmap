@@ -23,6 +23,14 @@
     "build:js": "vite build"
   },
   "dependencies": {
-    "@markmap/core": "workspace:*"
+    "@markmap/core": "workspace:*",
+    "remark-frontmatter": "^5.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4"
   }
 }

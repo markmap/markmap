@@ -1,0 +1,6 @@
+- [root] 
+  - [listItem] Same
+    - [listItem] Child
+  - [listItem] Same
+    - [listItem] Child
+  - [listItem] Different

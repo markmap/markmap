@@ -1,0 +1,12 @@
+- [root] 
+    @0 paragraph
+  - [heading] Section {"depth":2}
+      @0 paragraph
+      @2 paragraph
+      @2 table
+    - [listItem] Item one
+        @0 paragraph
+        @0 code
+        @1 blockquote
+      - [listItem] Child
+    - [listItem] Item two
