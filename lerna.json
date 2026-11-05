@@ -1,9 +1,0 @@
-{
-  "command": {
-    "publish": {
-      "graphType": "all"
-    }
-  },
-  "npmClient": "pnpm",
-  "version": "0.18.13"
-}

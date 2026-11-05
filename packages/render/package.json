@@ -1,0 +1,28 @@
+{
+  "name": "@markmap/render",
+  "version": "0.0.0",
+  "description": "Measure, lay out and render Markmap trees to primitives and SVG",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "dependencies": {
+    "@markmap/core": "workspace:*"
+  }
+}

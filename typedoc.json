@@ -1,9 +1,0 @@
-{
-  "entryPoints": ["packages/*"],
-  "entryPointStrategy": "packages",
-  "excludeExternals": true,
-  "externalPattern": ["**/node_modules/**"],
-  "packageOptions": {
-    "entryPoints": ["src/index.ts"]
-  }
-}

@@ -1,0 +1,28 @@
+{
+  "name": "@markmap/parse",
+  "version": "0.0.0",
+  "description": "Parse Markdown into a Markmap tree",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "dependencies": {
+    "@markmap/core": "workspace:*"
+  }
+}

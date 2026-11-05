@@ -1,52 +1,28 @@
 {
-  "name": "markmap",
+  "name": "markmap-next",
   "private": true,
-  "engines": {
-    "node": ">=22"
+  "type": "module",
+  "scripts": {
+    "build": "pnpm lint && pnpm fmt:check && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "test": "vitest --run",
+    "typecheck": "tsc -b",
+    "clean": "pnpm -r clean",
+    "build:types": "tsc -b",
+    "build:js": "pnpm -r build:js"
   },
   "devDependencies": {
-    "@eslint/js": "^9.28.0",
-    "@types/node": "^24.0.1",
-    "@unocss/postcss": "^66.2.0",
-    "autoprefixer": "^10.4.21",
-    "del-cli": "^6.0.0",
-    "eslint": "^9.28.0",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.4.1",
-    "globals": "^16.2.0",
-    "husky": "^9.1.7",
-    "lerna": "^8.2.2",
-    "lint-staged": "^16.1.0",
-    "postcss": "^8.5.5",
-    "postcss-calc": "^10.1.1",
-    "postcss-nested": "^7.0.2",
-    "prettier": "^3.5.3",
-    "read-package-up": "^11.0.0",
-    "typedoc": "^0.28.5",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0",
-    "unocss": "^66.2.0",
-    "vite": "^6.3.5",
-    "vitest": "^3.2.3"
+    "@types/node": "^26.6.6",
+    "oxfmt": "^0.76.0",
+    "oxlint": "^1.91.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
-  "scripts": {
-    "prepare": "husky || true",
-    "build": "pnpm lint && pnpm clean && pnpm build:types && pnpm build:js && pnpm test",
-    "lint": "eslint && prettier --check packages/*/src",
-    "lint:fix": "eslint --fix && prettier --write packages/*/src",
-    "test": "vitest --run",
-    "clean": "pnpm -r clean",
-    "build:types": "pnpm -r build:types",
-    "build:js": "pnpm -r build:js",
-    "build:docs": "typedoc --out api --titleLink / --name markmap"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.css": [
-      "prettier --write"
-    ]
+  "engines": {
+    "node": ">=22"
   }
 }

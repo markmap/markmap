@@ -1,13 +1,9 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/markmap-autoloader" },
-    { "path": "./packages/markmap-cli" },
-    { "path": "./packages/markmap-common" },
-    { "path": "./packages/markmap-html-parser" },
-    { "path": "./packages/markmap-lib" },
-    { "path": "./packages/markmap-render" },
-    { "path": "./packages/markmap-toolbar" },
-    { "path": "./packages/markmap-view" }
+    { "path": "./packages/core" },
+    { "path": "./packages/parse" },
+    { "path": "./packages/render" },
+    { "path": "./packages/view" }
   ]
 }
