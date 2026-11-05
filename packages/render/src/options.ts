@@ -1,28 +1,57 @@
-import type { MarkmapJSONOptions, Theme } from '@markmap/core';
+import {
+  type MarkmapJSONOptions,
+  readJSONOptions,
+  type Theme,
+  unknownOptionWarnings,
+  validateOptions,
+} from '@markmap/core';
 import type { RenderOptions } from './render';
 import { classicTheme } from './themes/classic';
 
-/** A copy of `theme` whose branch colors are replaced by `colors`. */
-export function withBranchColors(theme: Theme, colors: readonly string[]): Theme {
-  const tokens = Object.fromEntries(
-    Object.entries(theme.tokens).filter(([name]) => !/^mm-branch-\d+$/.test(name)),
-  );
-  colors.forEach((color, i) => {
-    tokens[`mm-branch-${i}`] = color;
-  });
-  return { ...theme, tokens };
+export interface ResolvedOptions<T> {
+  options: T;
+  /** The validated theme-independent options, for callers that use more of them. */
+  json: MarkmapJSONOptions;
+  /** Problems with the input, one per ignored value or unknown key. */
+  warnings: string[];
 }
 
-/** Render options with the rendering parts of Markdown options applied on top. */
-export function applyRenderOptions<T extends Partial<RenderOptions>>(
+/**
+ * Apply the theme's own options (for example `color`) and return the keys it did not
+ * claim. Themes without options leave everything in `rest`.
+ */
+export function configureTheme(
+  theme: Theme,
+  input: Record<string, unknown>,
+): { theme: Theme; rest: Record<string, unknown>; warnings: string[] } {
+  if (!theme.options) return { theme, rest: input, warnings: [] };
+  const { options, rest, warnings } = validateOptions(input, theme.options);
+  const configured =
+    Object.keys(options).length && theme.configure ? theme.configure(options) : theme;
+  return { theme: configured, rest, warnings };
+}
+
+/** Markdown option keys that map straight onto render options. */
+const RENDER_KEYS = ['maxWidth', 'spacingHorizontal', 'spacingVertical'] as const;
+
+/**
+ * Validate untrusted Markdown options (usually `frontmatter.markmap`) and apply them on
+ * top of `base`: shared keys first, then the theme's own keys. Anything left is reported.
+ */
+export function resolveRenderOptions<T extends Partial<RenderOptions>>(
   base: T,
-  json: MarkmapJSONOptions,
-): T & Partial<RenderOptions> {
+  input: unknown,
+): ResolvedOptions<T & Partial<RenderOptions>> {
+  const core = readJSONOptions(input);
   const result: T & Partial<RenderOptions> = { ...base };
-  if (json.maxWidth != null) result.maxWidth = json.maxWidth;
-  if (json.spacingHorizontal != null) result.spacingHorizontal = json.spacingHorizontal;
-  if (json.spacingVertical != null) result.spacingVertical = json.spacingVertical;
-  if (json.colorFreezeLevel != null) result.colorFreezeLevel = json.colorFreezeLevel;
-  if (json.color?.length) result.theme = withBranchColors(base.theme ?? classicTheme, json.color);
-  return result;
+  for (const key of RENDER_KEYS) {
+    if (core.options[key] != null) result[key] = core.options[key];
+  }
+  const themed = configureTheme(base.theme ?? classicTheme, core.rest);
+  if (themed.theme !== (base.theme ?? classicTheme)) result.theme = themed.theme;
+  return {
+    options: result,
+    json: core.options,
+    warnings: [...core.warnings, ...themed.warnings, ...unknownOptionWarnings(themed.rest)],
+  };
 }

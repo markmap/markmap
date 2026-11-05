@@ -1,65 +1,113 @@
-import { describe, expect, it } from 'vitest';
 import { parse } from '@markmap/parse';
+import { describe, expect, it } from 'vitest';
 import {
-  applyRenderOptions,
   approximateMeasurer,
+  branchIndex,
   classicTheme,
-  computeBranches,
-  paletteSize,
+  configureTheme,
+  createClassicTheme,
   renderTree,
+  resolveRenderOptions,
   tokensToCSS,
   toSVGString,
-  withBranchColors,
 } from '.';
 
 const md = '# R\n\n## A\n\n- a1\n  - a1x\n- a2\n\n## B\n\n- b1';
+const branchesIn = (svg: string) => new Set(svg.match(/var\(--mm-branch-\d+\)/g));
 
-describe('branch colors', () => {
-  it('counts the theme palette', () => {
-    expect(paletteSize(classicTheme)).toBe(10);
-    expect(paletteSize(withBranchColors(classicTheme, ['red', 'blue']))).toBe(2);
-    expect(paletteSize({ ...classicTheme, tokens: {} })).toBe(1);
+describe('branchIndex', () => {
+  it('stays inside the palette', () => {
+    for (const id of ['root', 'a', 'b', 'c', 'd']) {
+      const index = branchIndex(['root', id], 3);
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(index).toBeLessThan(3);
+    }
+    expect(branchIndex(['x'], 0)).toBe(0);
   });
 
-  it('keeps indices inside the palette', () => {
-    const { root } = parse(md);
-    const theme = withBranchColors(classicTheme, ['red', 'blue', 'green']);
-    for (const branch of computeBranches(root, theme).values()) {
-      expect(branch).toBeGreaterThanOrEqual(0);
-      expect(branch).toBeLessThan(3);
-    }
+  it('uses the ancestor at the freeze level for deeper nodes', () => {
+    const deep = ['root', 'a', 'a1', 'a1x'];
+    expect(branchIndex(deep, 10, 2)).toBe(branchIndex(['root', 'a'], 10));
+    expect(branchIndex(deep.slice(0, 2), 10, 2)).toBe(branchIndex(['root', 'a'], 10));
+    // Shallower than the freeze level: own color.
+    expect(branchIndex(['root'], 10, 2)).toBe(branchIndex(['root'], 10));
+  });
+});
+
+describe('classic theme options', () => {
+  it('declares its options and configures a copy', () => {
+    expect(Object.keys(classicTheme.options ?? {})).toEqual(['color', 'colorFreezeLevel']);
+    const theme = classicTheme.configure!({ color: ['red', 'blue'] });
+    expect(theme).not.toBe(classicTheme);
+    expect(tokensToCSS(theme)).toContain('--mm-branch-0:red;--mm-branch-1:blue;');
+    expect(tokensToCSS(theme)).not.toContain('--mm-branch-2');
+    expect(tokensToCSS(classicTheme)).toContain('--mm-branch-9:');
   });
 
   it('freezes colors below a level', () => {
     const { root } = parse(md);
-    const branches = computeBranches(root, classicTheme, 2);
+    const render = (theme = classicTheme) =>
+      renderTree(root, { measurer: approximateMeasurer, theme });
+    const frozen = render(createClassicTheme({ colorFreezeLevel: 2 }));
+    const stroke = (id: string) =>
+      JSON.stringify(
+        frozen.primitives.find((p) => p.kind === 'group' && p.key === `edge:${id}`),
+      ).match(/var\(--mm-branch-\d+\)/)?.[0];
     const [a, b] = root.children;
-    // Level 2 is A and B; everything under them shares their color.
-    expect(branches.get(a.children[0].id)).toBe(branches.get(a.id));
-    expect(branches.get(a.children[0].children[0].id)).toBe(branches.get(a.id));
-    expect(branches.get(b.children[0].id)).toBe(branches.get(b.id));
+    expect(stroke(a.children[0].id)).toBe(stroke(a.id));
+    expect(stroke(a.children[0].children[0].id)).toBe(stroke(a.id));
+    expect(stroke(b.children[0].id)).toBe(stroke(b.id));
   });
 });
 
-describe('applyRenderOptions', () => {
-  it('maps Markdown options onto render options', () => {
-    const result = applyRenderOptions(
+describe('configureTheme', () => {
+  it('validates theme keys and returns the rest', () => {
+    const { theme, rest, warnings } = configureTheme(classicTheme, {
+      color: 'red',
+      colorFreezeLevel: -1,
+      other: 1,
+    });
+    expect(tokensToCSS(theme)).toContain('--mm-branch-0:red;');
+    expect(rest).toEqual({ other: 1 });
+    expect(warnings).toEqual(['`colorFreezeLevel` must be an integer >= 0']);
+  });
+
+  it('passes everything through for themes without options', () => {
+    const plain = { ...classicTheme, options: undefined, configure: undefined };
+    expect(configureTheme(plain, { color: 'red' })).toEqual({
+      theme: plain,
+      rest: { color: 'red' },
+      warnings: [],
+    });
+  });
+});
+
+describe('resolveRenderOptions', () => {
+  it('applies shared and theme options, and reports the rest', () => {
+    const { options, json, warnings } = resolveRenderOptions(
       { maxWidth: 100, spacingVertical: 5 },
-      { maxWidth: 200, colorFreezeLevel: 3, color: ['#f00'] },
+      { maxWidth: 200, zoom: false, color: ['#f00'], bogus: 1 },
     );
-    expect(result).toMatchObject({ maxWidth: 200, spacingVertical: 5, colorFreezeLevel: 3 });
-    expect(result.theme?.tokens['mm-branch-0']).toBe('#f00');
-    expect(result.theme?.tokens['mm-branch-1']).toBeUndefined();
+    expect(options).toMatchObject({ maxWidth: 200, spacingVertical: 5 });
+    expect(json).toEqual({ maxWidth: 200, zoom: false });
+    expect(tokensToCSS(options.theme!)).toContain('--mm-branch-0:#f00;');
+    expect(warnings).toEqual(['Unknown option `bogus`']);
+  });
+
+  it('keeps the base theme when no theme option is set', () => {
+    const { options } = resolveRenderOptions({}, { maxWidth: 1 });
+    expect(options.theme).toBeUndefined();
   });
 
   it('paints every branch with a single color', () => {
     const { root } = parse(md);
-    const options = applyRenderOptions({ measurer: approximateMeasurer }, { color: ['#123456'] });
+    const { options } = resolveRenderOptions(
+      { measurer: approximateMeasurer },
+      { color: '#123456' },
+    );
     const svg = toSVGString(renderTree(root, options));
     expect(svg).toContain('--mm-branch-0:#123456;');
-    expect(svg.match(/var\(--mm-branch-(\d+)\)/g)?.every((v) => v === 'var(--mm-branch-0)')).toBe(
-      true,
-    );
+    expect(branchesIn(svg)).toEqual(new Set(['var(--mm-branch-0)']));
   });
 });
 

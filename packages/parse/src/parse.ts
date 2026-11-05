@@ -1,4 +1,4 @@
-import { type MarkmapJSONOptions, type MarkmapNode, readJSONOptions } from '@markmap/core';
+import type { MarkmapNode } from '@markmap/core';
 import type { Root } from 'mdast';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -15,11 +15,8 @@ export interface ParseOptions {
 
 export interface ParseResult {
   root: MarkmapNode;
+  /** Parsed YAML frontmatter. Markmap options live under `markmap`; validate them with the theme in use. */
   frontmatter: Record<string, unknown>;
-  /** Validated options from the frontmatter `markmap` key. */
-  options: MarkmapJSONOptions;
-  /** Options that were ignored, and why. */
-  warnings: string[];
 }
 
 export function parse(markdown: string, options: ParseOptions = {}): ParseResult {
@@ -33,8 +30,7 @@ export function parse(markdown: string, options: ParseOptions = {}): ParseResult
   const mdast = processor.runSync(processor.parse(markdown)) as Root;
   const frontmatter = readFrontmatter(mdast);
   const title = typeof frontmatter.title === 'string' ? frontmatter.title : undefined;
-  const { options: markmapOptions, warnings } = readJSONOptions(frontmatter.markmap);
-  return { root: toTree(mdast, { title }), frontmatter, options: markmapOptions, warnings };
+  return { root: toTree(mdast, { title }), frontmatter };
 }
 
 function readFrontmatter(mdast: Root): Record<string, unknown> {

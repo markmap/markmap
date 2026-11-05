@@ -1,12 +1,12 @@
-import { type MarkmapJSONOptions, type MarkmapNode, type Measurer, type Rect } from '@markmap/core';
+import type { MarkmapNode, Measurer, Rect } from '@markmap/core';
 import {
-  applyRenderOptions,
   classicTheme,
   createCanvasMeasurer,
   type LayoutNode,
   type RenderOptions,
   type RenderResult,
   renderTree,
+  resolveRenderOptions,
   tokensToCSS,
 } from '@markmap/render';
 import { pointer, select, type Selection } from 'd3-selection';
@@ -36,13 +36,19 @@ const DEFAULTS: ViewOptions = {
   initialExpandLevel: -1,
 };
 
-/** View options with Markdown options (usually from frontmatter) applied on top. */
-export function applyViewOptions(base: ViewOptions, json: MarkmapJSONOptions): ViewOptions {
-  const result = applyRenderOptions(base, json);
+/**
+ * Validate untrusted Markdown options (usually `frontmatter.markmap`) and apply them on
+ * top of `base`, including the theme's own options. Ignored values come back as warnings.
+ */
+export function resolveViewOptions(
+  base: ViewOptions,
+  input: unknown,
+): { options: ViewOptions; warnings: string[] } {
+  const { options, json, warnings } = resolveRenderOptions(base, input);
   for (const key of ['zoom', 'pan', 'fitPadding', 'maxFitScale', 'initialExpandLevel'] as const) {
-    if (json[key] != null) (result as Record<string, unknown>)[key] = json[key];
+    if (json[key] != null) (options as Record<string, unknown>)[key] = json[key];
   }
-  return result;
+  return { options, warnings };
 }
 
 /** How close to a node's fold anchor a click must be to toggle it, in px. */

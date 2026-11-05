@@ -1,4 +1,5 @@
 import type { Anchor, Rect, Size } from './geometry';
+import type { OptionSchema } from './options';
 import type { FontStyle, Paint, Primitive } from './primitives';
 import type { MarkmapNode } from './types';
 
@@ -9,11 +10,8 @@ export interface Measurer {
 
 export interface NodeContext {
   depth: number;
-  /**
-   * Index into the theme's branch colors (`--mm-branch-<n>` tokens). Stable per node,
-   * or shared with an ancestor when colors are frozen at a level.
-   */
-  branch: number;
+  /** Ids from the root to this node, both included. Ids are stable, so themes can hash them for colors. */
+  path: readonly string[];
   hasChildren: boolean;
   folded: boolean;
 }
@@ -27,6 +25,10 @@ export interface EdgeContext {
 
 export interface Theme {
   name: string;
+  /** Theme-specific Markdown options, such as colors. Validated before `configure` sees them. */
+  options?: OptionSchema;
+  /** A copy of the theme with validated `options` applied. */
+  configure?(options: Record<string, unknown>): Theme;
   /** Emitted as CSS variables, e.g. `{ 'mm-color': '#333' }` → `--mm-color: #333`. */
   tokens: Record<string, string>;
   font: FontStyle;

@@ -3,7 +3,7 @@ import { type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer } from '@markmap/render';
 import { afterEach, describe, expect, it } from 'vitest';
-import { applyViewOptions, Markmap, SvgDomBackend } from '.';
+import { Markmap, resolveViewOptions, SvgDomBackend } from '.';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -112,7 +112,7 @@ describe('Markmap', () => {
     const a = mm.state!.layout.nodes[1];
     const anchor = mm.theme.node.anchor(a.rect, 'source', {
       depth: a.depth,
-      branch: 0,
+      path: [],
       hasChildren: true,
       folded: false,
     });
@@ -197,7 +197,8 @@ describe('Markmap options', () => {
       maxWidth: 50,
     });
     mm.setOptions(
-      applyViewOptions({ measurer: approximateMeasurer }, { color: ['#abcdef'], zoom: false }),
+      resolveViewOptions({ measurer: approximateMeasurer }, { color: ['#abcdef'], zoom: false })
+        .options,
     );
     expect(mm.options.maxWidth).toBeUndefined();
     expect(mm.options.zoom).toBe(false);
@@ -210,5 +211,17 @@ describe('Markmap options', () => {
     const mm = new Markmap(createSvg(), { measurer: approximateMeasurer });
     mm.setData(parse(md).root, { measurer: approximateMeasurer, initialExpandLevel: 1 });
     expect(visibleIds(mm)).toHaveLength(3);
+  });
+});
+
+describe('resolveViewOptions', () => {
+  it('applies view, render and theme options and reports the rest', () => {
+    const { options, warnings } = resolveViewOptions(
+      { maxWidth: 100, zoom: true },
+      { zoom: false, initialExpandLevel: 2, maxWidth: 'x', colorFreezeLevel: 1, nope: true },
+    );
+    expect(options).toMatchObject({ maxWidth: 100, zoom: false, initialExpandLevel: 2 });
+    expect(options.theme?.name).toBe('classic');
+    expect(warnings).toEqual(['`maxWidth` must be a number', 'Unknown option `nope`']);
   });
 });

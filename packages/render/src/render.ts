@@ -1,6 +1,5 @@
 import {
   type ContentPlugin,
-  hashString,
   type Measurer,
   type MarkmapNode,
   type NodeContext,
@@ -27,8 +26,6 @@ export interface RenderOptions {
   spacingVertical?: number;
   /** Inline content renderers. Defaults to {@link defaultContentPlugins}. */
   plugins?: readonly ContentPlugin[];
-  /** Nodes deeper than this level (the root is level 1) share their ancestor's color. `0` disables. */
-  colorFreezeLevel?: number;
 }
 
 export interface RenderResult {
@@ -47,34 +44,16 @@ export interface MeasuredNode {
   box: Size;
 }
 
-/** Number of `--mm-branch-<n>` colors a theme defines, at least 1. */
-export function paletteSize(theme: Theme): number {
-  return Math.max(
-    1,
-    Object.keys(theme.tokens).filter((name) => /^mm-branch-\d+$/.test(name)).length,
-  );
-}
-
-/**
- * Branch color index of every node: a hash of the node id, so colors stay put as the
- * tree changes. With `colorFreezeLevel`, deeper nodes reuse their ancestor's color.
- */
-export function computeBranches(
-  root: MarkmapNode,
-  theme: Theme,
-  colorFreezeLevel = 0,
-): Map<string, number> {
-  const size = paletteSize(theme);
-  const branches = new Map<string, number>();
-  const visit = (node: MarkmapNode, depth: number, frozen?: number) => {
-    const branch = frozen ?? Number.parseInt(hashString(node.id), 36) % size;
-    branches.set(node.id, branch);
-    // Level n is depth n - 1; its children inherit its color.
-    const freeze = colorFreezeLevel > 0 && depth >= colorFreezeLevel - 1 ? branch : undefined;
-    for (const child of node.children) visit(child, depth + 1, freeze);
+/** Ids from the root to every node, both included. */
+export function nodePaths(root: MarkmapNode): Map<string, readonly string[]> {
+  const paths = new Map<string, readonly string[]>();
+  const visit = (node: MarkmapNode, parent: readonly string[]) => {
+    const path = [...parent, node.id];
+    paths.set(node.id, path);
+    for (const child of node.children) visit(child, path);
   };
-  visit(root, 0);
-  return branches;
+  visit(root, []);
+  return paths;
 }
 
 /** Measure the label and box of every visible node. */
@@ -82,11 +61,10 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
   const theme = options.theme ?? classicTheme;
   const [top, right, bottom, left] = theme.node.padding;
   const result = new Map<string, MeasuredNode>();
-  const branches = computeBranches(root, theme, options.colorFreezeLevel);
-  const depths = new Map<MarkmapNode, number>([[root, 0]]);
+  const paths = nodePaths(root);
   for (const node of visibleNodes(root, options.folded)) {
-    const depth = depths.get(node)!;
-    for (const child of node.children) depths.set(child, depth + 1);
+    const path = paths.get(node.id)!;
+    const depth = path.length - 1;
     const plugins = options.plugins ?? defaultContentPlugins;
     const inlineCtx = { theme, measurer: options.measurer, node };
     const text = layoutText(transformContent(plugins, inlineCtx), {
@@ -97,7 +75,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
     });
     const ctx: NodeContext = {
       depth,
-      branch: branches.get(node.id)!,
+      path,
       hasChildren: node.children.length > 0,
       folded: !!options.folded?.has(node.id),
     };
@@ -116,14 +94,14 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
 export function renderTree(root: MarkmapNode, options: RenderOptions): RenderResult {
   const theme = options.theme ?? classicTheme;
   const measured = measureTree(root, options);
-  const branches = computeBranches(root, theme, options.colorFreezeLevel);
+  const paths = nodePaths(root);
   const contexts = new Map<string, NodeContext>();
   const contextOf = (item: LayoutNode): NodeContext => {
     let ctx = contexts.get(item.node.id);
     if (!ctx) {
       ctx = {
         depth: item.depth,
-        branch: branches.get(item.node.id)!,
+        path: paths.get(item.node.id)!,
         hasChildren: item.node.children.length > 0,
         folded: item.folded,
       };

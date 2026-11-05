@@ -1,9 +1,8 @@
-/** Options that can be written in Markdown frontmatter under the `markmap` key. */
+/**
+ * Options that can be written in Markdown frontmatter under the `markmap` key and
+ * apply to every theme. Themes add their own keys, see `Theme.options`.
+ */
 export interface MarkmapJSONOptions {
-  /** Branch colors, cycled through. One color paints every branch the same. */
-  color?: string[];
-  /** Nodes deeper than this level (the root is level 1) take the color of their ancestor at this level. `0` disables. */
-  colorFreezeLevel?: number;
   /** Fold nodes at this depth and deeper when first shown. `-1` expands everything. */
   initialExpandLevel?: number;
   /** Wrap labels wider than this, in px. `0` disables wrapping. */
@@ -16,28 +15,16 @@ export interface MarkmapJSONOptions {
   maxFitScale?: number;
 }
 
-export interface JSONOptionsResult {
-  options: MarkmapJSONOptions;
-  /** Problems found, one per ignored value. */
-  warnings: string[];
-}
+/**
+ * Checks one untrusted option value. Return `value` to keep it (possibly normalized),
+ * `warning` to report a problem, or both when part of the value was dropped.
+ */
+export type OptionValidator = (
+  value: unknown,
+  key: string,
+) => { value?: unknown; warning?: string };
 
-interface NumberRule {
-  min: number;
-  integer?: boolean;
-}
-
-const NUMBERS: Record<string, NumberRule> = {
-  colorFreezeLevel: { min: 0, integer: true },
-  initialExpandLevel: { min: -1, integer: true },
-  maxWidth: { min: 0 },
-  spacingHorizontal: { min: 0 },
-  spacingVertical: { min: 0 },
-  fitPadding: { min: 0 },
-  maxFitScale: { min: 0.01 },
-};
-
-const BOOLEANS = new Set(['zoom', 'pan']);
+export type OptionSchema = Record<string, OptionValidator>;
 
 /**
  * A CSS value that cannot break out of a declaration or a `<style>` element.
@@ -47,42 +34,93 @@ export function isSafeCSSValue(value: string): boolean {
   return value.length > 0 && value.length <= 100 && !/[;{}<>\\'"]|\/\*/.test(value);
 }
 
-/** Validate untrusted options, keeping valid values and reporting the rest. */
-export function readJSONOptions(input: unknown): JSONOptionsResult {
-  const options: MarkmapJSONOptions = {};
-  const warnings: string[] = [];
-  if (input == null) return { options, warnings };
-  if (typeof input !== 'object' || Array.isArray(input)) {
-    return { options, warnings: ['`markmap` options must be an object'] };
-  }
-  const target = options as Record<string, unknown>;
-
-  for (const [key, value] of Object.entries(input)) {
-    const rule = NUMBERS[key];
-    if (rule) {
+export const validators = {
+  number(min: number, integer = false): OptionValidator {
+    return (value, key) => {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
-        warnings.push(`\`${key}\` must be a number`);
-      } else if (value < rule.min || (rule.integer && !Number.isInteger(value))) {
-        warnings.push(`\`${key}\` must be ${rule.integer ? 'an integer ' : ''}>= ${rule.min}`);
-      } else target[key] = value;
-    } else if (BOOLEANS.has(key)) {
-      if (typeof value === 'boolean') target[key] = value;
-      else warnings.push(`\`${key}\` must be true or false`);
-    } else if (key === 'color') {
+        return { warning: `\`${key}\` must be a number` };
+      }
+      if (value < min || (integer && !Number.isInteger(value))) {
+        return { warning: `\`${key}\` must be ${integer ? 'an integer ' : ''}>= ${min}` };
+      }
+      return { value };
+    };
+  },
+  boolean(): OptionValidator {
+    return (value, key) =>
+      typeof value === 'boolean' ? { value } : { warning: `\`${key}\` must be true or false` };
+  },
+  /** One CSS color or a list of them; always normalized to a list. Unsafe values are dropped. */
+  colors(): OptionValidator {
+    return (value, key) => {
       const colors = typeof value === 'string' ? [value] : value;
       if (!Array.isArray(colors) || !colors.length) {
-        warnings.push('`color` must be a color or a list of colors');
-        continue;
+        return { warning: `\`${key}\` must be a color or a list of colors` };
       }
-      const safe = colors.filter(
-        (c): c is string => typeof c === 'string' && isSafeCSSValue(c.trim()),
-      );
-      if (safe.length < colors.length)
-        warnings.push('`color` has invalid colors, which were ignored');
-      if (safe.length) options.color = safe.map((c) => c.trim());
-    } else {
-      warnings.push(`Unknown option \`${key}\``);
-    }
+      const safe = colors
+        .filter((c): c is string => typeof c === 'string' && isSafeCSSValue(c.trim()))
+        .map((c) => c.trim());
+      return {
+        value: safe.length ? safe : undefined,
+        warning:
+          safe.length < colors.length
+            ? `\`${key}\` has invalid colors, which were ignored`
+            : undefined,
+      };
+    };
+  },
+};
+
+const CORE_SCHEMA: OptionSchema = {
+  initialExpandLevel: validators.number(-1, true),
+  maxWidth: validators.number(0),
+  spacingHorizontal: validators.number(0),
+  spacingVertical: validators.number(0),
+  zoom: validators.boolean(),
+  pan: validators.boolean(),
+  fitPadding: validators.number(0),
+  maxFitScale: validators.number(0.01),
+};
+
+export interface ValidatedOptions<T> {
+  options: T;
+  /** Keys the schema does not know, left for another schema (such as the theme's). */
+  rest: Record<string, unknown>;
+  /** Problems found, one per ignored or partly ignored value. */
+  warnings: string[];
+}
+
+/** Validate untrusted options against a schema. */
+export function validateOptions<T = Record<string, unknown>>(
+  input: unknown,
+  schema: OptionSchema,
+): ValidatedOptions<T> {
+  const options: Record<string, unknown> = {};
+  const rest: Record<string, unknown> = {};
+  const warnings: string[] = [];
+  if (input == null) return { options: options as T, rest, warnings };
+  if (typeof input !== 'object' || Array.isArray(input)) {
+    return { options: options as T, rest, warnings: ['`markmap` options must be an object'] };
   }
-  return { options, warnings };
+  for (const [key, raw] of Object.entries(input)) {
+    const validate = Object.hasOwn(schema, key) ? schema[key] : undefined;
+    if (!validate) {
+      rest[key] = raw;
+      continue;
+    }
+    const { value, warning } = validate(raw, key);
+    if (warning) warnings.push(warning);
+    if (value !== undefined) options[key] = value;
+  }
+  return { options: options as T, rest, warnings };
+}
+
+/** Validate the theme-independent options. Theme keys are returned in `rest`. */
+export function readJSONOptions(input: unknown): ValidatedOptions<MarkmapJSONOptions> {
+  return validateOptions<MarkmapJSONOptions>(input, CORE_SCHEMA);
+}
+
+/** Warnings for keys that no schema claimed. */
+export function unknownOptionWarnings(rest: Record<string, unknown>): string[] {
+  return Object.keys(rest).map((key) => `Unknown option \`${key}\``);
 }

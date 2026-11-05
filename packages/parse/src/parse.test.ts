@@ -112,12 +112,9 @@ describe('parse', () => {
 });
 
 describe('markmap options and directives', () => {
-  it('reads options from the frontmatter', () => {
-    const { options, warnings } = parse(
-      '---\nmarkmap:\n  maxWidth: 200\n  color: "#f00"\n  bogus: 1\n---\n\n- a',
-    );
-    expect(options).toEqual({ maxWidth: 200, color: ['#f00'] });
-    expect(warnings).toEqual(['Unknown option `bogus`']);
+  it('leaves markmap options raw for the theme-aware resolver', () => {
+    const { frontmatter } = parse('---\nmarkmap:\n  maxWidth: 200\n  color: "#f00"\n---\n\n- a');
+    expect(frontmatter.markmap).toEqual({ maxWidth: 200, color: '#f00' });
   });
 
   it('applies fold directives from label comments', () => {

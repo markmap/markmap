@@ -1,6 +1,6 @@
 import { parse } from '@markmap/parse';
 import { toSVGString } from '@markmap/render';
-import { applyViewOptions, Markmap, type ViewOptions } from '@markmap/view';
+import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
 const STORAGE_KEY = 'markmap-next:playground';
@@ -16,8 +16,9 @@ const mm = new Markmap(svg, baseOptions);
 
 function update() {
   const start = performance.now();
-  const { root, options, warnings } = parse(editor.value);
-  mm.setData(root, applyViewOptions(baseOptions, options));
+  const { root, frontmatter } = parse(editor.value);
+  const { options, warnings } = resolveViewOptions(baseOptions, frontmatter.markmap);
+  mm.setData(root, options);
   const ms = performance.now() - start;
   stats.textContent = `${mm.state?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
   stats.title = warnings.join('\n');

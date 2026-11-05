@@ -5,4 +5,5 @@ export * from './options';
 export * from './render';
 export * from './svg';
 export * from './text';
+export * from './themes/branch';
 export * from './themes/classic';
