@@ -1,5 +1,6 @@
 import type { Primitive } from '@markmap/core';
 import { primitivesToSVG } from '@markmap/render';
+import type { ViewBackend, ViewTransform } from './backend';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -12,13 +13,28 @@ interface Item {
  * Draws primitives into an SVG element. Top-level groups with a `key` keep their
  * element between draws, so only changed transforms and contents touch the DOM.
  */
-export class SvgDomBackend {
+export class SvgDomBackend implements ViewBackend {
+  readonly element: SVGSVGElement;
+  readonly nativeLinks = true;
+  /** Group that holds the drawing and carries the zoom transform. */
   readonly root: SVGGElement;
+  private style: SVGStyleElement;
   private items = new Map<string, Item>();
 
-  constructor(parent: SVGElement) {
-    this.root = parent.ownerDocument.createElementNS(SVG_NS, 'g');
-    parent.append(this.root);
+  constructor(svg: SVGSVGElement) {
+    this.element = svg;
+    const doc = svg.ownerDocument;
+    this.style = doc.createElementNS(SVG_NS, 'style');
+    this.root = doc.createElementNS(SVG_NS, 'g');
+    svg.append(this.style, this.root);
+  }
+
+  setCSS(css: string): void {
+    this.style.textContent = css;
+  }
+
+  setTransform({ k, x, y }: ViewTransform): void {
+    this.root.setAttribute('transform', `translate(${x},${y}) scale(${k})`);
   }
 
   /** Element drawn for a keyed group, if any. */
@@ -69,6 +85,7 @@ export class SvgDomBackend {
   }
 
   destroy(): void {
+    this.style.remove();
     this.root.remove();
     this.items.clear();
   }

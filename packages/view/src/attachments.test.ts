@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import type { Primitive } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer } from '@markmap/render';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -14,7 +15,30 @@ function createSvg(): SVGSVGElement {
   return svg;
 }
 
-const dot = (mm: Markmap) => mm.svg.querySelector<SVGElement>('[data-action="attachments"]')!;
+const dot = (mm: Markmap) => mm.element.querySelector<SVGElement>('[data-action="attachments"]')!;
+
+/** Layout point at the center of the first `hit` primitive (only translated groups). */
+function hitCenter(list: Primitive[], dx = 0, dy = 0): [number, number] | undefined {
+  for (const p of list) {
+    if (p.kind === 'hit')
+      return [dx + p.rect.x + p.rect.width / 2, dy + p.rect.y + p.rect.height / 2];
+    if (p.kind === 'group') {
+      const found = hitCenter(
+        p.children,
+        dx + (p.transform?.[4] ?? 0),
+        dy + (p.transform?.[5] ?? 0),
+      );
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+/** Click where the attachment dot is drawn, as a user would. */
+function clickDot(mm: Markmap) {
+  const [clientX, clientY] = mm.transform.apply(hitCenter(mm.state!.primitives)!);
+  mm.element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX, clientY }));
+}
 const notesOf = (md: string) => parse(md).root.children[0].attachments;
 
 afterEach(() => {
@@ -99,7 +123,7 @@ describe('attachment popover', () => {
 
   it('draws one hit area per node with attachments', () => {
     const mm = create();
-    expect(mm.svg.querySelectorAll('[data-action="attachments"]')).toHaveLength(1);
+    expect(mm.element.querySelectorAll('[data-action="attachments"]')).toHaveLength(1);
     expect(dot(mm).closest('[data-node-id]')?.getAttribute('data-node-id')).toBe(
       mm.state!.layout.nodes[1].node.id,
     );
@@ -107,14 +131,14 @@ describe('attachment popover', () => {
 
   it('opens on click and closes on a second click', async () => {
     const mm = create();
-    dot(mm).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    clickDot(mm);
     await expect.poll(() => document.querySelector('.markmap-popover')).not.toBeNull();
     const popover = document.querySelector<HTMLElement>('.markmap-popover')!;
     expect(popover.innerHTML).toContain('<a href="https://x.y"');
     expect(popover.getAttribute('role')).toBe('dialog');
     expect(popover.style.getPropertyValue('--mm-link-color')).toBe('#0097e6');
     expect(mm.openAttachmentsId).toBe(mm.state!.layout.nodes[1].node.id);
-    dot(mm).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    clickDot(mm);
     expect(document.querySelector('.markmap-popover')).toBeNull();
   });
 

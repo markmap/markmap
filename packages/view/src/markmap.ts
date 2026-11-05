@@ -1,4 +1,10 @@
-import { findNode, type MarkmapNode, type Measurer, type Rect } from '@markmap/core';
+import {
+  findNode,
+  type MarkmapNode,
+  type Measurer,
+  type Primitive,
+  type Rect,
+} from '@markmap/core';
 import {
   classicTheme,
   createCanvasMeasurer,
@@ -16,8 +22,10 @@ import {
   themeCSS,
   type ColorScheme,
 } from '@markmap/render';
-import { pointer, select, type Selection } from 'd3-selection';
+import { select, type Selection } from 'd3-selection';
 import { zoom, type ZoomBehavior, zoomIdentity, type ZoomTransform, zoomTransform } from 'd3-zoom';
+import type { ViewBackend } from './backend';
+import { HitIndex, type HitTarget } from './hit-index';
 import { Popover } from './popover';
 import { SvgDomBackend } from './svg-backend';
 import { Tween } from './tween';
@@ -102,13 +110,14 @@ function walk(node: MarkmapNode, visit: (node: MarkmapNode, depth: number) => vo
 /** How close to a node's fold anchor a click must be to toggle it, in px. */
 const TOGGLE_RADIUS = 10;
 
+const isBackend = (value: Element | ViewBackend): value is ViewBackend =>
+  typeof (value as ViewBackend).draw === 'function';
+
 export class Markmap {
-  readonly svg: SVGSVGElement;
+  readonly backend: ViewBackend;
   private viewOptions: ViewOptions = DEFAULTS;
-  private backend: SvgDomBackend;
-  private style: SVGStyleElement;
-  private zoomBehavior: ZoomBehavior<SVGSVGElement, unknown>;
-  private selection: Selection<SVGSVGElement, unknown, null, undefined>;
+  private zoomBehavior: ZoomBehavior<Element, unknown>;
+  private selection: Selection<Element, unknown, null, undefined>;
   private measurer: Measurer;
   private root?: MarkmapNode;
   private folded = new Set<string>();
@@ -120,6 +129,10 @@ export class Markmap {
   private popoverRequest = 0;
   /** What is on screen: the final state, or a frame of an animation towards it. */
   private frame?: DrawState;
+  /** Primitives drawn for `frame`. */
+  private primitives: Primitive[] = [];
+  /** Hit targets of `frame`, built on the first lookup after it is drawn. */
+  private hits?: { frame: DrawState; index: HitIndex };
   private stateTween = new Tween();
   private zoomTween = new Tween();
   /** Whether the first fit has happened; it is never animated. */
@@ -127,23 +140,25 @@ export class Markmap {
   /** Where the running zoom animation ends. */
   private zoomTarget?: ZoomTransform;
   /**
-   * A node held at a fixed point in the SVG (its top-left corner) while the tree moves
+   * A node held at a fixed point in the element (its top-left corner) while the tree moves
    * around it, as when folding. Applied on every frame, so it works however the
    * frames move the node, and released when the animation ends or the user moves the view.
    */
   private pin?: { id: string; x: number; y: number };
 
-  constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
-    this.svg = svg;
-    svg.classList.add('markmap');
-    this.style = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
-    svg.append(this.style);
+  /**
+   * Show a map in an `<svg>` element, or through another backend (such as canvas from
+   * `@markmap/canvas`).
+   */
+  constructor(target: SVGSVGElement | ViewBackend, options: ViewOptions = {}) {
+    this.backend = isBackend(target) ? target : new SvgDomBackend(target);
+    const { element } = this.backend;
+    element.classList.add('markmap');
     this.measurer = options.measurer ?? createCanvasMeasurer();
     this.applyOptions(options);
-    this.backend = new SvgDomBackend(svg);
 
-    this.selection = select(svg);
-    this.zoomBehavior = zoom<SVGSVGElement, unknown>()
+    this.selection = select(element);
+    this.zoomBehavior = zoom<Element, unknown>()
       .filter((event: Event) => {
         if (event.type === 'wheel') return !!this.options.zoom;
         if (event.type === 'dblclick') return false;
@@ -156,12 +171,17 @@ export class Markmap {
           this.zoomTween.stop();
           this.pin = undefined;
         }
-        this.backend.root.setAttribute('transform', event.transform.toString());
+        this.backend.setTransform(event.transform);
         this.positionPopover();
         this.emit('zoom', event.transform);
       });
     this.selection.call(this.zoomBehavior);
-    svg.addEventListener('click', this.handleClick);
+    element.addEventListener('click', this.handleClick);
+  }
+
+  /** The element the map is shown in. */
+  get element(): Element {
+    return this.backend.element;
   }
 
   get options(): Readonly<ViewOptions> {
@@ -177,11 +197,15 @@ export class Markmap {
   private applyOptions(options: ViewOptions) {
     this.viewOptions = { ...DEFAULTS, ...options };
     if (options.measurer) this.measurer = options.measurer;
-    this.style.textContent = themeCSS(this.theme, this.viewOptions.colorScheme);
+    this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme));
   }
 
-  static create(svg: SVGSVGElement, root?: MarkmapNode, options?: ViewOptions): Markmap {
-    const mm = new Markmap(svg, options);
+  static create(
+    target: SVGSVGElement | ViewBackend,
+    root?: MarkmapNode,
+    options?: ViewOptions,
+  ): Markmap {
+    const mm = new Markmap(target, options);
     if (root) {
       mm.setData(root);
       mm.fit();
@@ -273,7 +297,8 @@ export class Markmap {
 
   private drawFrame(state: DrawState) {
     this.frame = state;
-    this.backend.draw(drawState(state, this.theme));
+    this.primitives = drawState(state, this.theme);
+    this.backend.draw(this.primitives);
     this.applyPin();
     this.positionPopover();
   }
@@ -291,7 +316,7 @@ export class Markmap {
 
   /** Animation length in ms, `0` when animations are off. */
   private get duration(): number {
-    const view = this.svg.ownerDocument.defaultView;
+    const view = this.element.ownerDocument.defaultView;
     if (view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 0;
     return this.options.duration ?? 0;
   }
@@ -391,11 +416,11 @@ export class Markmap {
   }
 
   /**
-   * Zoom by `factor` around the center of the SVG, animated. Repeated calls during an
+   * Zoom by `factor` around the center of the element, animated. Repeated calls during an
    * animation add up. The scale stays within the zoom behavior's scale extent.
    */
   zoomBy(factor: number): void {
-    const { width, height } = this.svg.getBoundingClientRect();
+    const { width, height } = this.element.getBoundingClientRect();
     const base = (this.zoomTween.running && this.zoomTarget) || this.transform;
     const [min, max] = this.zoomBehavior.scaleExtent();
     const k = Math.min(max, Math.max(min, base.k * factor));
@@ -419,7 +444,7 @@ export class Markmap {
     this.pin = undefined;
     this.zoomTarget = target;
     const from = this.transform;
-    const { width, height } = this.svg.getBoundingClientRect();
+    const { width, height } = this.element.getBoundingClientRect();
     const apply = (transform: ZoomTransform) =>
       this.zoomBehavior.transform(this.selection, transform);
     const duration = animate ? this.duration : 0;
@@ -435,12 +460,12 @@ export class Markmap {
   }
 
   /**
-   * Scale and center the drawing to fill the SVG. If the SVG has no size yet (hidden,
+   * Scale and center the drawing to fill the element. If it has no size yet (hidden,
    * or not laid out), the fit happens as soon as it gets one.
    */
   fit(): void {
     if (!this.result) return;
-    const { width, height } = this.svg.getBoundingClientRect();
+    const { width, height } = this.element.getBoundingClientRect();
     if (!width || !height) {
       this.fitWhenSized();
       return;
@@ -465,27 +490,51 @@ export class Markmap {
   private fitWhenSized() {
     if (this.pendingFit || typeof ResizeObserver === 'undefined') return;
     this.pendingFit = new ResizeObserver(() => {
-      const { width, height } = this.svg.getBoundingClientRect();
+      const { width, height } = this.element.getBoundingClientRect();
       if (width && height) this.fit();
     });
-    this.pendingFit.observe(this.svg);
+    this.pendingFit.observe(this.element);
   }
 
   /** Current zoom transform. */
   get transform() {
-    return zoomTransform(this.svg);
+    return zoomTransform(this.element);
+  }
+
+  /**
+   * What a point in layout coordinates acts on, where things are drawn right now (also
+   * mid-animation). Nodes on their way out cannot be clicked.
+   */
+  hitAt(x: number, y: number): HitTarget | undefined {
+    const { frame, result } = this;
+    if (!frame || !result) return undefined;
+    if (this.hits?.frame !== frame) {
+      const toggles = frame.nodes
+        .filter((item) => item.ctx.hasChildren)
+        .map((item) => ({
+          nodeId: item.node.id,
+          ...this.theme.node.anchor(item.rect, item.ctx.direction, item.ctx),
+        }));
+      const index = new HitIndex(this.primitives, {
+        toggles,
+        toggleRadius: TOGGLE_RADIUS,
+        include: (id) => result.layout.byId.has(id),
+      });
+      this.hits = { frame, index };
+    }
+    return this.hits.index.hit(x, y);
   }
 
   /** The node whose fold anchor is under a point in layout coordinates. */
   hitToggle(x: number, y: number): DrawNode | undefined {
-    if (!this.frame || !this.result) return undefined;
-    for (const item of this.frame.nodes) {
-      // Skip nodes that are leaving: they can no longer be toggled.
-      if (!item.ctx.hasChildren || !this.result.layout.byId.has(item.node.id)) continue;
-      const anchor = this.theme.node.anchor(item.rect, item.ctx.direction, item.ctx);
-      if (Math.hypot(anchor.x - x, anchor.y - y) <= TOGGLE_RADIUS) return item;
-    }
-    return undefined;
+    const target = this.hitAt(x, y);
+    return target?.kind === 'toggle' ? this.frameNode(target.nodeId) : undefined;
+  }
+
+  /** Layout coordinates of a pointer event. */
+  private layoutPoint(event: MouseEvent): [number, number] {
+    const box = this.element.getBoundingClientRect();
+    return this.transform.invert([event.clientX - box.x, event.clientY - box.y]);
   }
 
   /** Id of the node whose attachments are open, if any. */
@@ -505,11 +554,11 @@ export class Markmap {
       highlight: this.options.highlight,
     });
     if (request !== this.popoverRequest) return;
-    const popover = new Popover(this.svg.ownerDocument, html, this.currentTokens());
+    const popover = new Popover(this.element.ownerDocument, html, this.currentTokens());
     popover.el.setAttribute('aria-label', 'Notes');
     this.popover = { id, popover };
     this.positionPopover();
-    const doc = this.svg.ownerDocument;
+    const doc = this.element.ownerDocument;
     // A click, not pointerdown: d3-zoom swallows the click that ends a pan, so panning
     // and zooming keep the popover open while it follows the node.
     doc.addEventListener('click', this.handleOutside, true);
@@ -523,19 +572,19 @@ export class Markmap {
     if (!this.popover) return;
     this.popover.popover.destroy();
     this.popover = undefined;
-    const doc = this.svg.ownerDocument;
+    const doc = this.element.ownerDocument;
     doc.removeEventListener('click', this.handleOutside, true);
     doc.removeEventListener('keydown', this.handleKey);
     doc.defaultView?.removeEventListener('scroll', this.handleScroll, true);
   }
 
   /**
-   * Token values as the SVG resolves them right now, so the popover matches the color
+   * Token values as the element resolves them right now, so the popover matches the color
    * scheme in effect and any CSS overrides on the page.
    */
   private currentTokens(): Record<string, string> {
     const { tokens, darkTokens = {} } = this.theme;
-    const style = this.svg.ownerDocument.defaultView?.getComputedStyle(this.svg);
+    const style = this.element.ownerDocument.defaultView?.getComputedStyle(this.element);
     const result: Record<string, string> = {};
     for (const name of new Set([...Object.keys(tokens), ...Object.keys(darkTokens)])) {
       result[name] = style?.getPropertyValue(`--${name}`).trim() || tokens[name] || '';
@@ -547,7 +596,7 @@ export class Markmap {
   screenRect(id: string): Rect | undefined {
     const rect = this.frameNode(id)?.rect;
     if (!rect) return undefined;
-    const svgRect = this.svg.getBoundingClientRect();
+    const svgRect = this.element.getBoundingClientRect();
     const t = this.transform;
     return {
       x: svgRect.x + t.applyX(rect.x),
@@ -564,10 +613,13 @@ export class Markmap {
   }
 
   private handleOutside = (event: Event) => {
-    const target = event.target as Element | null;
+    const target = event.target as Node | null;
     if (this.popover?.popover.contains(target)) return;
-    // Clicking the dot again is handled by the click handler.
-    if (target?.closest?.('[data-action="attachments"]')) return;
+    // Clicking a dot is handled by the click handler.
+    if (target && this.element.contains(target) && event instanceof MouseEvent) {
+      const hit = this.hitAt(...this.layoutPoint(event));
+      if (hit?.kind === 'action' && hit.action === 'attachments') return;
+    }
     this.closeAttachments();
   };
 
@@ -586,26 +638,28 @@ export class Markmap {
     this.stateTween.stop();
     this.zoomTween.stop();
     this.closeAttachments();
-    this.svg.removeEventListener('click', this.handleClick);
+    this.element.removeEventListener('click', this.handleClick);
     this.pendingFit?.disconnect();
     this.selection.on('.zoom', null);
     this.backend.destroy();
-    this.style.remove();
-    this.svg.classList.remove('markmap');
+    this.element.classList.remove('markmap');
   }
 
-  private handleClick = (event: MouseEvent) => {
+  // Typed as a plain listener: `Element` has no `click` entry in its event map.
+  private handleClick = (event: Event) => {
     if (event.defaultPrevented) return;
-    const action = (event.target as Element | null)?.closest?.('[data-action]');
-    if (action?.getAttribute('data-action') === 'attachments') {
-      const id = action.closest('[data-node-id]')?.getAttribute('data-node-id');
-      if (id && id === this.popover?.id) this.closeAttachments();
-      else if (id) void this.openAttachments(id);
-      return;
+    const target = this.hitAt(...this.layoutPoint(event as MouseEvent));
+    if (target?.kind === 'action' && target.action === 'attachments') {
+      if (target.nodeId === this.popover?.id) this.closeAttachments();
+      else void this.openAttachments(target.nodeId);
+    } else if (target?.kind === 'link') {
+      // SVG links follow themselves; other backends draw no link elements.
+      if (!this.backend.nativeLinks) {
+        this.element.ownerDocument.defaultView?.open(target.href, '_blank', 'noopener,noreferrer');
+      }
+    } else if (target?.kind === 'toggle') {
+      this.toggle(target.nodeId);
     }
-    const [x, y] = pointer(event, this.backend.root);
-    const item = this.hitToggle(x, y);
-    if (item) this.toggle(item.node.id);
   };
 }
 

@@ -3,7 +3,7 @@ import { type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer, createImageContent } from '@markmap/render';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { interpolateZoom, Markmap, resolveViewOptions, SvgDomBackend } from '.';
+import { interpolateZoom, Markmap, resolveViewOptions, SvgDomBackend, type ViewBackend } from '.';
 import { zoomIdentity } from 'd3-zoom';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -78,10 +78,10 @@ describe('Markmap', () => {
 
   it('draws every node and edge with theme tokens', () => {
     const mm = create();
-    expect(mm.svg.classList.contains('markmap')).toBe(true);
-    expect(mm.svg.querySelector('style')?.textContent).toContain('--mm-branch-0:');
-    expect(mm.svg.querySelectorAll('[data-key^="node:"]')).toHaveLength(7);
-    expect(mm.svg.querySelectorAll('[data-key^="edge:"]')).toHaveLength(6);
+    expect(mm.element.classList.contains('markmap')).toBe(true);
+    expect(mm.element.querySelector('style')?.textContent).toContain('--mm-branch-0:');
+    expect(mm.element.querySelectorAll('[data-key^="node:"]')).toHaveLength(7);
+    expect(mm.element.querySelectorAll('[data-key^="edge:"]')).toHaveLength(6);
   });
 
   it('fits the drawing into the SVG', () => {
@@ -176,8 +176,8 @@ describe('Markmap', () => {
   it('cleans up on destroy', () => {
     const mm = create();
     mm.destroy();
-    expect(mm.svg.children).toHaveLength(0);
-    expect(mm.svg.classList.contains('markmap')).toBe(false);
+    expect(mm.element.children).toHaveLength(0);
+    expect(mm.element.classList.contains('markmap')).toBe(false);
   });
 });
 
@@ -210,8 +210,8 @@ describe('Markmap options', () => {
     expect(mm.options.maxWidth).toBeUndefined();
     expect(mm.options.zoom).toBe(false);
     expect(mm.options.pan).toBe(true);
-    expect(mm.svg.querySelector('style')?.textContent).toContain('--mm-branch-0:#abcdef;');
-    expect(mm.svg.innerHTML).not.toContain('--mm-branch-1)');
+    expect(mm.element.querySelector('style')?.textContent).toContain('--mm-branch-0:#abcdef;');
+    expect(mm.element.innerHTML).not.toContain('--mm-branch-1)');
   });
 
   it('applies options passed with data', () => {
@@ -252,15 +252,15 @@ describe('animation', () => {
     mm.toggle(a);
 
     vi.advanceTimersByTime(150);
-    const mid = mm.svg.querySelector(`[data-key="node:${leaving}"]`);
+    const mid = mm.element.querySelector(`[data-key="node:${leaving}"]`);
     expect(Number(mid?.getAttribute('opacity'))).toBeGreaterThan(0);
     expect(Number(mid?.getAttribute('opacity'))).toBeLessThan(1);
     expect(mm.screenRect(a)!.x).toBeCloseTo(before.x);
     expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
 
     vi.advanceTimersByTime(300);
-    expect(mm.svg.querySelector(`[data-key="node:${leaving}"]`)).toBeNull();
-    expect(mm.svg.querySelectorAll('[opacity]')).toHaveLength(0);
+    expect(mm.element.querySelector(`[data-key="node:${leaving}"]`)).toBeNull();
+    expect(mm.element.querySelectorAll('[opacity]')).toHaveLength(0);
     expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
   });
 
@@ -273,8 +273,8 @@ describe('animation', () => {
     vi.advanceTimersByTime(100);
     mm.toggle(a);
     vi.advanceTimersByTime(400);
-    expect(mm.svg.querySelectorAll('[data-key^="node:"]')).toHaveLength(5);
-    expect(mm.svg.querySelectorAll('[opacity]')).toHaveLength(0);
+    expect(mm.element.querySelectorAll('[data-key^="node:"]')).toHaveLength(5);
+    expect(mm.element.querySelectorAll('[opacity]')).toHaveLength(0);
     expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
   });
 
@@ -282,7 +282,7 @@ describe('animation', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
     const mm = create({ duration: 300 });
     mm.toggle(mm.state!.layout.nodes[1].node.id);
-    expect(mm.svg.querySelectorAll('[data-key^="node:"]')).toHaveLength(3);
+    expect(mm.element.querySelectorAll('[data-key^="node:"]')).toHaveLength(3);
   });
 
   it('interpolates zoom transforms', () => {
@@ -401,7 +401,7 @@ describe('events and color scheme', () => {
 
   it('switches token sets with colorScheme', () => {
     const mm = create();
-    const css = () => mm.svg.querySelector('style')!.textContent!;
+    const css = () => mm.element.querySelector('style')!.textContent!;
     expect(css()).not.toContain('#1e1e1e');
     mm.setOptions({ ...mm.options, colorScheme: 'dark' });
     expect(css()).toContain('--mm-bg:#1e1e1e;');
@@ -423,9 +423,139 @@ describe('images', () => {
       duration: 0,
       plugins,
     });
-    const width = () => mm.svg.querySelector('image')?.getAttribute('width');
+    const width = () => mm.element.querySelector('image')?.getAttribute('width');
     expect(width()).toBe('40');
     resolve({ width: 120, height: 60 });
     await expect.poll(width).toBe('120');
+  });
+});
+
+/** Layout point at the center of the first primitive of `kind` (only translated groups). */
+function centerOf(
+  list: Primitive[],
+  kind: 'hit' | 'link',
+  dx = 0,
+  dy = 0,
+): [number, number] | undefined {
+  for (const p of list) {
+    if (p.kind === kind)
+      return [dx + p.rect.x + p.rect.width / 2, dy + p.rect.y + p.rect.height / 2];
+    if (p.kind === 'group') {
+      const tx = dx + (p.transform?.[4] ?? 0);
+      const found = centerOf(p.children, kind, tx, dy + (p.transform?.[5] ?? 0));
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+function click(mm: Markmap, [x, y]: [number, number]) {
+  const [clientX, clientY] = mm.transform.apply([x, y]);
+  mm.element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX, clientY }));
+}
+
+/** A backend that only records what the view asks of it. */
+function fakeBackend() {
+  const element = document.createElement('div');
+  element.getBoundingClientRect = () => ({ x: 0, y: 0, width: 800, height: 600 }) as DOMRect;
+  document.body.append(element);
+  const calls = { draws: [] as Primitive[][], css: '', transform: '', destroyed: false };
+  const backend: ViewBackend = {
+    element,
+    draw: (primitives) => calls.draws.push(primitives),
+    setTransform: ({ k, x, y }) => (calls.transform = `${x},${y},${k}`),
+    setCSS: (css) => (calls.css = css),
+    destroy: () => (calls.destroyed = true),
+  };
+  return { backend, calls };
+}
+
+describe('backends', () => {
+  const md = '# Root\n\n## A\n\n- a1\n- a2\n  - a2x\n\n## B\n\n- b1';
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('drives any backend through the interface', () => {
+    const { backend, calls } = fakeBackend();
+    const mm = Markmap.create(backend, parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+    });
+    expect(mm.element).toBe(backend.element);
+    expect(mm.element.classList.contains('markmap')).toBe(true);
+    expect(calls.css).toContain('--mm-branch-0:');
+    expect(
+      calls.draws.at(-1)!.filter((p) => p.kind === 'group' && p.key?.startsWith('node:')),
+    ).toHaveLength(7);
+    const { k, x, y } = mm.transform;
+    expect(calls.transform).toBe(`${x},${y},${k}`);
+    mm.destroy();
+    expect(calls.destroyed).toBe(true);
+    expect(mm.element.classList.contains('markmap')).toBe(false);
+  });
+
+  it('toggles a fold by clicking its anchor', () => {
+    const { backend } = fakeBackend();
+    const mm = Markmap.create(backend, parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+    });
+    const a = mm.state!.layout.nodes[1];
+    const anchor = mm.theme.node.anchor(a.rect, 'right', {
+      depth: a.depth,
+      path: [],
+      hasChildren: true,
+      folded: false,
+      direction: 'right',
+    });
+    click(mm, [anchor.x, anchor.y]);
+    expect(mm.foldedIds.has(a.node.id)).toBe(true);
+  });
+
+  it('opens links itself only when the backend has no link elements', () => {
+    const open = vi.fn<(url: string, target: string, features: string) => void>();
+    vi.stubGlobal('open', open);
+    const linkMd = '# Root\n\n- [docs](https://example.com/docs)';
+    const options = { measurer: approximateMeasurer, duration: 0 };
+
+    const svg = Markmap.create(createSvg(), parse(linkMd).root, options);
+    click(svg, centerOf(svg.state!.primitives, 'link')!);
+    expect(open).not.toHaveBeenCalled();
+
+    const mm = Markmap.create(fakeBackend().backend, parse(linkMd).root, options);
+    click(mm, centerOf(mm.state!.primitives, 'link')!);
+    expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
+  });
+
+  it('hit-tests where nodes are drawn mid-animation', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const tall = '# Root\n\n## A\n\n- a1\n- a2\n- a3\n- a4\n- a5\n- a6\n\n## B\n\n- b1';
+    const mm = Markmap.create(createSvg(), parse(tall).root, {
+      measurer: approximateMeasurer,
+      duration: 400,
+    });
+    const nodeB = mm.state!.layout.nodes.find((n) => toPlainText(n.node.content) === 'B')!;
+    const anchorOf = (rect: { x: number; y: number; width: number; height: number }) =>
+      mm.theme.node.anchor(rect, 'right', {
+        depth: nodeB.depth,
+        path: [],
+        hasChildren: true,
+        folded: false,
+        direction: 'right',
+      });
+    mm.toggle(mm.state!.layout.nodes[1].node.id);
+    vi.advanceTimersByTime(200);
+    // Where B is drawn now, in layout coordinates.
+    const screen = mm.screenRect(nodeB.node.id)!;
+    const { k } = mm.transform;
+    const [x, y] = mm.transform.invert([screen.x, screen.y]);
+    const mid = anchorOf({ x, y, width: screen.width / k, height: screen.height / k });
+    const end = anchorOf(mm.state!.layout.byId.get(nodeB.node.id)!.rect);
+    // Further than the toggle radius from where it ends up, so the final layout would miss it.
+    expect(Math.hypot(mid.x - end.x, mid.y - end.y)).toBeGreaterThan(10);
+    expect(mm.hitToggle(mid.x, mid.y)?.node.id).toBe(nodeB.node.id);
   });
 });

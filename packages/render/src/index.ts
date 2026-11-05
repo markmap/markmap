@@ -4,6 +4,7 @@ export * from './image';
 export * from './layouts';
 export * from './measure';
 export * from './options';
+export * from './paint';
 export * from './render';
 export * from './svg';
 export * from './text';
