@@ -1,12 +1,6 @@
+import { type MarkmapJSONOptions, type MarkmapNode, type Measurer, type Rect } from '@markmap/core';
 import {
-  type MarkmapNode,
-  type Measurer,
-  type NodeContext,
-  type Rect,
-  walkTree,
-} from '@markmap/core';
-import {
-  branchOf,
+  applyRenderOptions,
   classicTheme,
   createCanvasMeasurer,
   type LayoutNode,
@@ -34,12 +28,29 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
   initialExpandLevel?: number;
 }
 
+const DEFAULTS: ViewOptions = {
+  zoom: true,
+  pan: true,
+  fitPadding: 20,
+  maxFitScale: 2,
+  initialExpandLevel: -1,
+};
+
+/** View options with Markdown options (usually from frontmatter) applied on top. */
+export function applyViewOptions(base: ViewOptions, json: MarkmapJSONOptions): ViewOptions {
+  const result = applyRenderOptions(base, json);
+  for (const key of ['zoom', 'pan', 'fitPadding', 'maxFitScale', 'initialExpandLevel'] as const) {
+    if (json[key] != null) (result as Record<string, unknown>)[key] = json[key];
+  }
+  return result;
+}
+
 /** How close to a node's fold anchor a click must be to toggle it, in px. */
 const TOGGLE_RADIUS = 10;
 
 export class Markmap {
   readonly svg: SVGSVGElement;
-  readonly options: ViewOptions;
+  private viewOptions: ViewOptions = DEFAULTS;
   private backend: SvgDomBackend;
   private style: SVGStyleElement;
   private zoomBehavior: ZoomBehavior<SVGSVGElement, unknown>;
@@ -53,20 +64,11 @@ export class Markmap {
 
   constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
     this.svg = svg;
-    this.options = {
-      zoom: true,
-      pan: true,
-      fitPadding: 20,
-      maxFitScale: 2,
-      initialExpandLevel: -1,
-      ...options,
-    };
-    this.measurer = options.measurer ?? createCanvasMeasurer();
     svg.classList.add('markmap');
-
     this.style = svg.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
-    this.style.textContent = `.markmap{${tokensToCSS(this.theme)}}`;
     svg.append(this.style);
+    this.measurer = options.measurer ?? createCanvasMeasurer();
+    this.applyOptions(options);
     this.backend = new SvgDomBackend(svg);
 
     this.selection = select(svg);
@@ -82,6 +84,22 @@ export class Markmap {
       });
     this.selection.call(this.zoomBehavior);
     svg.addEventListener('click', this.handleClick);
+  }
+
+  get options(): Readonly<ViewOptions> {
+    return this.viewOptions;
+  }
+
+  /** Replace all options (defaults fill the gaps) and redraw. */
+  setOptions(options: ViewOptions): void {
+    this.applyOptions(options);
+    this.render();
+  }
+
+  private applyOptions(options: ViewOptions) {
+    this.viewOptions = { ...DEFAULTS, ...options };
+    if (options.measurer) this.measurer = options.measurer;
+    this.style.textContent = `.markmap{${tokensToCSS(this.theme)}}`;
   }
 
   static create(svg: SVGSVGElement, root?: MarkmapNode, options?: ViewOptions): Markmap {
@@ -107,18 +125,25 @@ export class Markmap {
   }
 
   /**
-   * Show a new tree. Fold state is kept for ids that still exist, so live editing
-   * does not reset what the user folded.
+   * Show a new tree, optionally replacing all options at the same time. Fold state is
+   * kept for ids that still exist, so live editing does not reset what the user folded.
+   * New nodes start folded if `data.fold` or an ancestor's `data.foldAll` is set, or
+   * they are below `initialExpandLevel`.
    */
-  setData(root: MarkmapNode): void {
+  setData(root: MarkmapNode, options?: ViewOptions): void {
+    if (options) this.applyOptions(options);
     this.root = root;
     const ids = new Set<string>();
     const level = this.options.initialExpandLevel ?? -1;
-    walkTree(root, (node, _parent, depth) => {
+    const visit = (node: MarkmapNode, depth: number, foldAll: boolean) => {
       ids.add(node.id);
-      if (this.known.has(node.id) || !node.children.length) return;
-      if (node.data.fold || (level >= 0 && depth >= level)) this.folded.add(node.id);
-    });
+      const all = foldAll || !!node.data.foldAll;
+      if (!this.known.has(node.id) && node.children.length) {
+        if (all || node.data.fold || (level >= 0 && depth >= level)) this.folded.add(node.id);
+      }
+      for (const child of node.children) visit(child, depth + 1, all);
+    };
+    visit(root, 0, false);
     for (const id of this.folded) if (!ids.has(id)) this.folded.delete(id);
     this.known = ids;
     this.render();
@@ -128,7 +153,7 @@ export class Markmap {
   render(): RenderResult | undefined {
     if (!this.root) return undefined;
     this.result = renderTree(this.root, {
-      ...this.options,
+      ...this.viewOptions,
       measurer: this.measurer,
       folded: this.folded,
     });
@@ -198,7 +223,8 @@ export class Markmap {
     if (!this.result) return undefined;
     for (const item of this.result.layout.nodes) {
       if (!item.node.children.length) continue;
-      const anchor = this.theme.node.anchor(item.rect, 'source', this.contextOf(item));
+      const ctx = this.result.contexts.get(item.node.id)!;
+      const anchor = this.theme.node.anchor(item.rect, 'source', ctx);
       if (Math.hypot(anchor.x - x, anchor.y - y) <= TOGGLE_RADIUS) return item;
     }
     return undefined;
@@ -211,15 +237,6 @@ export class Markmap {
     this.backend.destroy();
     this.style.remove();
     this.svg.classList.remove('markmap');
-  }
-
-  private contextOf(item: LayoutNode): NodeContext {
-    return {
-      depth: item.depth,
-      branch: branchOf(item.node),
-      hasChildren: item.node.children.length > 0,
-      folded: item.folded,
-    };
   }
 
   private handleClick = (event: MouseEvent) => {

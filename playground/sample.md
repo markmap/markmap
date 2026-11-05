@@ -1,3 +1,8 @@
+---
+markmap:
+  colorFreezeLevel: 2
+---
+
 # markmap next
 
 ## Parse
@@ -17,7 +22,7 @@
   - Curved edges
   - Fold circles
 
-## View
+## View <!-- markmap: fold -->
 
 - Zoom and pan
 - Fold and fit

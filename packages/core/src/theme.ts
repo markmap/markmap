@@ -9,7 +9,10 @@ export interface Measurer {
 
 export interface NodeContext {
   depth: number;
-  /** Stable per-node number for picking a branch color. */
+  /**
+   * Index into the theme's branch colors (`--mm-branch-<n>` tokens). Stable per node,
+   * or shared with an ancestor when colors are frozen at a level.
+   */
   branch: number;
   hasChildren: boolean;
   folded: boolean;

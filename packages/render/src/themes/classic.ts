@@ -18,7 +18,8 @@ const CIRCLE_RADIUS = 6;
 /** Line width shrinks with depth: 4, 2.5, 1.75, … */
 const lineWidth = (depth: number) => 1 + 3 / 2 ** depth;
 
-const branchColor = (branch: number) => `var(--mm-branch-${branch % BRANCH_COLORS.length})`;
+/** `branch` is already an index into the theme's branch colors. */
+const branchColor = (branch: number) => `var(--mm-branch-${branch})`;
 
 /** The original markmap look: underlined labels, curved edges and fold circles. */
 export const classicTheme: Theme = {

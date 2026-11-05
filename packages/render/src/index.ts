@@ -1,6 +1,7 @@
 export * from './content';
 export * from './layout';
 export * from './measure';
+export * from './options';
 export * from './render';
 export * from './svg';
 export * from './text';

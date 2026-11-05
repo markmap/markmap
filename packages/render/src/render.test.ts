@@ -115,8 +115,9 @@ describe('toSVGString', () => {
   });
 
   it('escapes text and attributes', () => {
-    const svg = toSVGString(render('- <b>&"\'</b> [x](https://a.b/?q=1&r=2)'));
-    expect(svg).toContain('&lt;b&gt;&amp;&quot;&#39;&lt;/b&gt;');
+    const svg = toSVGString(render('- 1 < 2 & "a" \'b\' [x](https://a.b/?q=1&r=2)'));
+    expect(svg).toContain('1 &lt; 2 &amp; &quot;a&quot; &#39;b&#39;');
+    expect(svg).toContain('href="https://a.b/?q=1&amp;r=2"');
   });
 
   it('skips primitives for other backends and overlays', () => {

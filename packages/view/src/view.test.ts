@@ -3,7 +3,7 @@ import { type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer } from '@markmap/render';
 import { afterEach, describe, expect, it } from 'vitest';
-import { Markmap, SvgDomBackend } from '.';
+import { applyViewOptions, Markmap, SvgDomBackend } from '.';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -171,5 +171,44 @@ describe('Markmap', () => {
     mm.destroy();
     expect(mm.svg.children).toHaveLength(0);
     expect(mm.svg.classList.contains('markmap')).toBe(false);
+  });
+});
+
+describe('Markmap options', () => {
+  const md = '# Root\n\n## A\n\n- a1\n  - a1x\n\n## B\n\n- b1';
+
+  it('folds a node and everything below with foldAll', () => {
+    const { root } = parse(
+      '# R\n\n## A <!-- markmap: foldAll -->\n\n- a1\n  - a1x\n\n## B\n\n- b1',
+    );
+    const mm = Markmap.create(createSvg(), root, { measurer: approximateMeasurer });
+    const [a] = root.children;
+    expect(mm.foldedIds.has(a.id)).toBe(true);
+    expect(mm.foldedIds.has(a.children[0].id)).toBe(true);
+    mm.toggle(a.id);
+    // Children stay folded after the parent opens.
+    expect(visibleIds(mm)).toContain(a.children[0].id);
+    expect(visibleIds(mm)).not.toContain(a.children[0].children[0].id);
+  });
+
+  it('replaces options and redraws', () => {
+    const mm = Markmap.create(createSvg(), parse(md).root, {
+      measurer: approximateMeasurer,
+      maxWidth: 50,
+    });
+    mm.setOptions(
+      applyViewOptions({ measurer: approximateMeasurer }, { color: ['#abcdef'], zoom: false }),
+    );
+    expect(mm.options.maxWidth).toBeUndefined();
+    expect(mm.options.zoom).toBe(false);
+    expect(mm.options.pan).toBe(true);
+    expect(mm.svg.querySelector('style')?.textContent).toContain('--mm-branch-0:#abcdef;');
+    expect(mm.svg.innerHTML).not.toContain('--mm-branch-1)');
+  });
+
+  it('applies options passed with data', () => {
+    const mm = new Markmap(createSvg(), { measurer: approximateMeasurer });
+    mm.setData(parse(md).root, { measurer: approximateMeasurer, initialExpandLevel: 1 });
+    expect(visibleIds(mm)).toHaveLength(3);
   });
 });

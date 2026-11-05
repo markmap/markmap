@@ -1,4 +1,11 @@
-import { expandRect, type Primitive, type Rect, type TextRun, type Theme } from '@markmap/core';
+import {
+  expandRect,
+  isSafeCSSValue,
+  type Primitive,
+  type Rect,
+  type TextRun,
+  type Theme,
+} from '@markmap/core';
 import type { RenderResult } from './render';
 
 export interface SVGStringOptions {
@@ -108,6 +115,7 @@ export function primitivesToSVG(primitives: Primitive[]): string {
 /** Theme tokens as CSS custom property declarations. */
 export function tokensToCSS(theme: Theme): string {
   return Object.entries(theme.tokens)
+    .filter(([name, value]) => /^[\w-]+$/.test(name) && isSafeCSSValue(value))
     .map(([name, value]) => `--${name}:${value};`)
     .join('');
 }

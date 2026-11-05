@@ -1,6 +1,6 @@
 import { parse } from '@markmap/parse';
 import { toSVGString } from '@markmap/render';
-import { Markmap } from '@markmap/view';
+import { applyViewOptions, Markmap, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
 const STORAGE_KEY = 'markmap-next:playground';
@@ -11,14 +11,18 @@ const stats = document.querySelector<HTMLSpanElement>('#stats')!;
 
 editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
 
-const mm = new Markmap(svg, { maxWidth: 300 });
+const baseOptions: ViewOptions = { maxWidth: 300 };
+const mm = new Markmap(svg, baseOptions);
 
 function update() {
   const start = performance.now();
-  const { root } = parse(editor.value);
-  mm.setData(root);
+  const { root, options, warnings } = parse(editor.value);
+  mm.setData(root, applyViewOptions(baseOptions, options));
   const ms = performance.now() - start;
   stats.textContent = `${mm.state?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
+  stats.title = warnings.join('\n');
+  stats.style.color = warnings.length ? '#c0392b' : '';
+  if (warnings.length) stats.textContent += ` · ${warnings.length} option warning(s)`;
 }
 
 update();

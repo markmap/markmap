@@ -110,3 +110,30 @@ describe('parse', () => {
     expect(root.attachments[0].block.type).toBe('thematicBreak');
   });
 });
+
+describe('markmap options and directives', () => {
+  it('reads options from the frontmatter', () => {
+    const { options, warnings } = parse(
+      '---\nmarkmap:\n  maxWidth: 200\n  color: "#f00"\n  bogus: 1\n---\n\n- a',
+    );
+    expect(options).toEqual({ maxWidth: 200, color: ['#f00'] });
+    expect(warnings).toEqual(['Unknown option `bogus`']);
+  });
+
+  it('applies fold directives from label comments', () => {
+    const { root } = parse(
+      '# Root\n\n## A <!-- markmap: fold -->\n\n- a1 <!--markmap:foldAll-->\n  - a2\n- b <!-- other -->',
+    );
+    const [a] = root.children;
+    expect(a.data).toEqual({ depth: 2, fold: true });
+    expect(a.content).toEqual([{ type: 'text', value: 'A' }]);
+    expect(a.children[0].data).toEqual({ foldAll: true });
+    expect(a.children[1].content).toEqual([{ type: 'text', value: 'b' }]);
+  });
+
+  it('drops raw HTML from labels but keeps the text inside', () => {
+    const { root } = parse('- a <b>bold</b> c');
+    expect(toPlainText(root.children[0].content)).toBe('a bold c');
+    expect(JSON.stringify(root)).not.toContain('"html"');
+  });
+});

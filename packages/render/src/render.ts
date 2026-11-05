@@ -27,6 +27,8 @@ export interface RenderOptions {
   spacingVertical?: number;
   /** Inline content renderers. Defaults to {@link defaultContentPlugins}. */
   plugins?: readonly ContentPlugin[];
+  /** Nodes deeper than this level (the root is level 1) share their ancestor's color. `0` disables. */
+  colorFreezeLevel?: number;
 }
 
 export interface RenderResult {
@@ -36,6 +38,8 @@ export interface RenderResult {
   primitives: Primitive[];
   /** Area covered by the drawing, including strokes and fold circles. */
   bounds: Rect;
+  /** Theme context of every visible node, by id. */
+  contexts: Map<string, NodeContext>;
 }
 
 export interface MeasuredNode {
@@ -43,18 +47,34 @@ export interface MeasuredNode {
   box: Size;
 }
 
-/** Stable number per node, for branch colors. */
-export function branchOf(node: MarkmapNode): number {
-  return Number.parseInt(hashString(node.id), 36);
+/** Number of `--mm-branch-<n>` colors a theme defines, at least 1. */
+export function paletteSize(theme: Theme): number {
+  return Math.max(
+    1,
+    Object.keys(theme.tokens).filter((name) => /^mm-branch-\d+$/.test(name)).length,
+  );
 }
 
-function nodeContext(item: LayoutNode): NodeContext {
-  return {
-    depth: item.depth,
-    branch: branchOf(item.node),
-    hasChildren: item.node.children.length > 0,
-    folded: item.folded,
+/**
+ * Branch color index of every node: a hash of the node id, so colors stay put as the
+ * tree changes. With `colorFreezeLevel`, deeper nodes reuse their ancestor's color.
+ */
+export function computeBranches(
+  root: MarkmapNode,
+  theme: Theme,
+  colorFreezeLevel = 0,
+): Map<string, number> {
+  const size = paletteSize(theme);
+  const branches = new Map<string, number>();
+  const visit = (node: MarkmapNode, depth: number, frozen?: number) => {
+    const branch = frozen ?? Number.parseInt(hashString(node.id), 36) % size;
+    branches.set(node.id, branch);
+    // Level n is depth n - 1; its children inherit its color.
+    const freeze = colorFreezeLevel > 0 && depth >= colorFreezeLevel - 1 ? branch : undefined;
+    for (const child of node.children) visit(child, depth + 1, freeze);
   };
+  visit(root, 0);
+  return branches;
 }
 
 /** Measure the label and box of every visible node. */
@@ -62,6 +82,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
   const theme = options.theme ?? classicTheme;
   const [top, right, bottom, left] = theme.node.padding;
   const result = new Map<string, MeasuredNode>();
+  const branches = computeBranches(root, theme, options.colorFreezeLevel);
   const depths = new Map<MarkmapNode, number>([[root, 0]]);
   for (const node of visibleNodes(root, options.folded)) {
     const depth = depths.get(node)!;
@@ -76,7 +97,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
     });
     const ctx: NodeContext = {
       depth,
-      branch: branchOf(node),
+      branch: branches.get(node.id)!,
       hasChildren: node.children.length > 0,
       folded: !!options.folded?.has(node.id),
     };
@@ -95,10 +116,19 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
 export function renderTree(root: MarkmapNode, options: RenderOptions): RenderResult {
   const theme = options.theme ?? classicTheme;
   const measured = measureTree(root, options);
-  const contexts = new Map<LayoutNode, NodeContext>();
-  const contextOf = (item: LayoutNode) => {
-    let ctx = contexts.get(item);
-    if (!ctx) contexts.set(item, (ctx = nodeContext(item)));
+  const branches = computeBranches(root, theme, options.colorFreezeLevel);
+  const contexts = new Map<string, NodeContext>();
+  const contextOf = (item: LayoutNode): NodeContext => {
+    let ctx = contexts.get(item.node.id);
+    if (!ctx) {
+      ctx = {
+        depth: item.depth,
+        branch: branches.get(item.node.id)!,
+        hasChildren: item.node.children.length > 0,
+        folded: item.folded,
+      };
+      contexts.set(item.node.id, ctx);
+    }
     return ctx;
   };
   const layout = layoutTree(root, {
@@ -141,7 +171,8 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
 
   const primitives = [...edges, ...nodes];
   const bounds = unionRects([layout.bounds, primitiveBounds(primitives)]);
-  return { theme, layout, primitives, bounds };
+  for (const item of layout.nodes) contextOf(item);
+  return { theme, layout, primitives, bounds, contexts };
 }
 
 /** Absolute points of a path made of `M`, `L`, `H`, `V` and `C` commands. */

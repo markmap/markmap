@@ -6,3 +6,4 @@ export type * from './types';
 export * from './geometry';
 export * from './id';
 export * from './tree';
+export * from './options';
