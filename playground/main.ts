@@ -39,6 +39,14 @@ editor.addEventListener('input', () => {
 });
 
 document.querySelector('#fit')!.addEventListener('click', () => mm.fit());
+document.querySelector('#zoom-in')!.addEventListener('click', () => mm.zoomIn());
+document.querySelector('#zoom-out')!.addEventListener('click', () => mm.zoomOut());
+document.querySelector('#expand-all')!.addEventListener('click', () => mm.expandAll());
+const level = document.querySelector<HTMLSelectElement>('#level')!;
+level.addEventListener('change', () => {
+  if (level.value) mm.foldToLevel(Number(level.value));
+  level.value = '';
+});
 
 document.querySelector('#download')!.addEventListener('click', () => {
   if (!mm.state) return;

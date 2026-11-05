@@ -1,4 +1,4 @@
-import type { MarkmapNode, Measurer, Rect } from '@markmap/core';
+import { findNode, type MarkmapNode, type Measurer, type Rect } from '@markmap/core';
 import {
   classicTheme,
   createCanvasMeasurer,
@@ -71,6 +71,15 @@ export function resolveViewOptions(
   return { options, warnings };
 }
 
+/** Scale change of one `zoomIn()` or `zoomOut()` step. */
+const ZOOM_STEP = 1.25;
+
+/** Visit a node and its descendants, depth-first. `depth` counts from `node` (0). */
+function walk(node: MarkmapNode, visit: (node: MarkmapNode, depth: number) => void, depth = 0) {
+  visit(node, depth);
+  for (const child of node.children) walk(child, visit, depth + 1);
+}
+
 /** How close to a node's fold anchor a click must be to toggle it, in px. */
 const TOGGLE_RADIUS = 10;
 
@@ -96,6 +105,8 @@ export class Markmap {
   private zoomTween = new Tween();
   /** Whether the first fit has happened; it is never animated. */
   private placed = false;
+  /** Where the running zoom animation ends. */
+  private zoomTarget?: ZoomTransform;
   /**
    * A node held at a fixed point in the SVG (its top-left corner) while the tree moves
    * around it, as when folding. Applied on every frame, so it works however the
@@ -259,20 +270,100 @@ export class Markmap {
   /** Fold or unfold a node, keeping it in place on screen. */
   setFolded(id: string, folded: boolean): void {
     if (folded === this.folded.has(id)) return;
-    const rect = this.frameNode(id)?.rect;
-    if (rect) {
-      const [x, y] = this.transform.apply([rect.x, rect.y]);
+    this.updateFolded(id, () => {
+      if (folded) this.folded.add(id);
+      else this.folded.delete(id);
+    });
+  }
+
+  /** Unfold a node and everything below it. Defaults to the whole tree. */
+  expandAll(id?: string): void {
+    const node = this.subtree(id);
+    if (!node) return;
+    this.updateFolded(node.id, () => {
+      walk(node, (child) => this.folded.delete(child.id));
+    });
+  }
+
+  /**
+   * Fold a node and every node below it that has children, so unfolding later reveals
+   * one level at a time. Defaults to the whole tree, leaving only the root.
+   */
+  foldAll(id?: string): void {
+    const node = this.subtree(id);
+    if (!node) return;
+    this.updateFolded(node.id, () => {
+      walk(node, (child) => {
+        if (child.children.length) this.folded.add(child.id);
+      });
+    });
+  }
+
+  /**
+   * Show the tree down to `level`: nodes at that depth and deeper are folded, the rest
+   * unfolded. The root is depth 0, so `1` shows only the root's children. `-1` expands
+   * everything. Same meaning as the `initialExpandLevel` option.
+   */
+  foldToLevel(level: number): void {
+    if (!this.root) return;
+    this.updateFolded(this.root.id, () => {
+      walk(this.root!, (node, depth) => {
+        if (level >= 0 && depth >= level && node.children.length) this.folded.add(node.id);
+        else this.folded.delete(node.id);
+      });
+    });
+  }
+
+  private subtree(id?: string): MarkmapNode | undefined {
+    if (!this.root) return undefined;
+    return id == null ? this.root : findNode(this.root, id);
+  }
+
+  /**
+   * Change fold state and redraw once, animated, keeping `pinId` still on screen. If that
+   * node is not drawn (inside a folded branch), the root stays still instead.
+   */
+  private updateFolded(pinId: string, change: () => void) {
+    const before = new Set(this.folded);
+    change();
+    if (before.size === this.folded.size && [...before].every((id) => this.folded.has(id))) return;
+    const pinned = this.frameNode(pinId) ?? (this.root && this.frameNode(this.root.id));
+    if (pinned) {
+      const [x, y] = this.transform.apply([pinned.rect.x, pinned.rect.y]);
       this.zoomTween.stop();
-      this.pin = { id, x, y };
+      this.pin = { id: pinned.node.id, x, y };
     }
-    if (folded) this.folded.add(id);
-    else this.folded.delete(id);
     this.render();
+  }
+
+  /**
+   * Zoom by `factor` around the center of the SVG, animated. Repeated calls during an
+   * animation add up. The scale stays within the zoom behavior's scale extent.
+   */
+  zoomBy(factor: number): void {
+    const { width, height } = this.svg.getBoundingClientRect();
+    const base = (this.zoomTween.running && this.zoomTarget) || this.transform;
+    const [min, max] = this.zoomBehavior.scaleExtent();
+    const k = Math.min(max, Math.max(min, base.k * factor));
+    const cx = width / 2;
+    const cy = height / 2;
+    const x = (cx - base.x) / base.k;
+    const y = (cy - base.y) / base.k;
+    this.zoomTo(zoomIdentity.translate(cx - x * k, cy - y * k).scale(k));
+  }
+
+  zoomIn(): void {
+    this.zoomBy(ZOOM_STEP);
+  }
+
+  zoomOut(): void {
+    this.zoomBy(1 / ZOOM_STEP);
   }
 
   /** Move the view to `target`, animated unless animations are off. */
   private zoomTo(target: ZoomTransform, animate = true) {
     this.pin = undefined;
+    this.zoomTarget = target;
     const from = this.transform;
     const { width, height } = this.svg.getBoundingClientRect();
     const apply = (transform: ZoomTransform) =>

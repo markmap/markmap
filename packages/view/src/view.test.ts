@@ -295,3 +295,71 @@ describe('animation', () => {
     expect(pan.x).toBeCloseTo(15);
   });
 });
+
+describe('view API', () => {
+  // Root > A > (a1, a2 > a2x), B > b1
+  const md = '# Root\n\n## A\n\n- a1\n- a2\n  - a2x\n\n## B\n\n- b1';
+  const create = () =>
+    Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer, duration: 0 });
+  const labels = (mm: Markmap) => mm.state!.layout.nodes.map((n) => toPlainText(n.node.content));
+
+  it('folds to a level and expands everything again', () => {
+    const mm = create();
+    mm.foldToLevel(1);
+    expect(labels(mm)).toEqual(['Root', 'A', 'B']);
+    mm.foldToLevel(2);
+    expect(labels(mm)).toEqual(['Root', 'A', 'a1', 'a2', 'B', 'b1']);
+    mm.foldToLevel(0);
+    expect(labels(mm)).toEqual(['Root']);
+    mm.expandAll();
+    expect(labels(mm)).toHaveLength(7);
+    expect(mm.foldedIds.size).toBe(0);
+  });
+
+  it('folds and expands one subtree, one level at a time when reopened', () => {
+    const mm = create();
+    const a = mm.state!.layout.nodes[1].node.id;
+    mm.foldAll(a);
+    expect(labels(mm)).toEqual(['Root', 'A', 'B', 'b1']);
+    mm.toggle(a);
+    expect(labels(mm)).toEqual(['Root', 'A', 'a1', 'a2', 'B', 'b1']);
+    mm.expandAll(a);
+    expect(labels(mm)).toHaveLength(7);
+    mm.foldAll();
+    expect(labels(mm)).toEqual(['Root']);
+  });
+
+  it('keeps the node it acts on still', () => {
+    const mm = create();
+    const a = mm.state!.layout.nodes[1].node.id;
+    const before = mm.screenRect(a)!;
+    mm.foldAll(a);
+    expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
+    const root = mm.screenRect('root')!;
+    mm.foldToLevel(1);
+    expect(mm.screenRect('root')!.y).toBeCloseTo(root.y);
+  });
+
+  it('zooms in and out around the center', () => {
+    const mm = create();
+    const t = mm.transform;
+    const center = t.invert([400, 300]);
+    mm.zoomIn();
+    expect(mm.transform.k).toBeCloseTo(t.k * 1.25);
+    expect(mm.transform.invert([400, 300])).toEqual(center.map((v) => expect.closeTo(v)));
+    mm.zoomOut();
+    expect(mm.transform.k).toBeCloseTo(t.k);
+  });
+
+  it('adds up zoom steps taken during an animation', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const mm = Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer });
+    const k = mm.transform.k;
+    mm.zoomIn();
+    vi.advanceTimersByTime(100);
+    mm.zoomIn();
+    vi.advanceTimersByTime(1000);
+    expect(mm.transform.k).toBeCloseTo(k * 1.25 * 1.25);
+    vi.useRealTimers();
+  });
+});
