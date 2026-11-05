@@ -2,8 +2,9 @@
 import { type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer } from '@markmap/render';
-import { afterEach, describe, expect, it } from 'vitest';
-import { Markmap, resolveViewOptions, SvgDomBackend } from '.';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { interpolateZoom, Markmap, resolveViewOptions, SvgDomBackend } from '.';
+import { zoomIdentity } from 'd3-zoom';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -68,7 +69,11 @@ describe('SvgDomBackend', () => {
 describe('Markmap', () => {
   const md = '# Root\n\n## A\n\n- a1\n- a2\n  - a2x\n\n## B\n\n- b1';
   const create = (options = {}) =>
-    Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer, ...options });
+    Markmap.create(createSvg(), parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+      ...options,
+    });
 
   it('draws every node and edge with theme tokens', () => {
     const mm = create();
@@ -223,5 +228,70 @@ describe('resolveViewOptions', () => {
     expect(options).toMatchObject({ maxWidth: 100, zoom: false, initialExpandLevel: 2 });
     expect(options.theme?.name).toBe('classic');
     expect(warnings).toEqual(['`maxWidth` must be a number', 'Unknown option `nope`']);
+  });
+});
+
+describe('animation', () => {
+  const md = '# Root\n\n## A\n\n- a1\n- a2\n\n## B';
+  const create = (options = {}) =>
+    Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer, ...options });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('animates folding while the toggled node stays still on screen', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const mm = create({ duration: 300 });
+    const a = mm.state!.layout.nodes[1].node.id;
+    const leaving = mm.state!.layout.nodes[3].node.id;
+    const before = mm.screenRect(a)!;
+    mm.toggle(a);
+
+    vi.advanceTimersByTime(150);
+    const mid = mm.svg.querySelector(`[data-key="node:${leaving}"]`);
+    expect(Number(mid?.getAttribute('opacity'))).toBeGreaterThan(0);
+    expect(Number(mid?.getAttribute('opacity'))).toBeLessThan(1);
+    expect(mm.screenRect(a)!.x).toBeCloseTo(before.x);
+    expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
+
+    vi.advanceTimersByTime(300);
+    expect(mm.svg.querySelector(`[data-key="node:${leaving}"]`)).toBeNull();
+    expect(mm.svg.querySelectorAll('[opacity]')).toHaveLength(0);
+    expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
+  });
+
+  it('can reverse a fold half way through', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const mm = create({ duration: 300 });
+    const a = mm.state!.layout.nodes[1].node.id;
+    const before = mm.screenRect(a)!;
+    mm.toggle(a);
+    vi.advanceTimersByTime(100);
+    mm.toggle(a);
+    vi.advanceTimersByTime(400);
+    expect(mm.svg.querySelectorAll('[data-key^="node:"]')).toHaveLength(5);
+    expect(mm.svg.querySelectorAll('[opacity]')).toHaveLength(0);
+    expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
+  });
+
+  it('draws at once when the user prefers reduced motion', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
+    const mm = create({ duration: 300 });
+    mm.toggle(mm.state!.layout.nodes[1].node.id);
+    expect(mm.svg.querySelectorAll('[data-key^="node:"]')).toHaveLength(3);
+  });
+
+  it('interpolates zoom transforms', () => {
+    const a = zoomIdentity.translate(10, 20);
+    const b = zoomIdentity.translate(100, 50).scale(4);
+    expect(interpolateZoom(a, b, 0, 400, 300)).toEqual(a);
+    const end = interpolateZoom(a, b, 1, 400, 300);
+    expect([end.x, end.y, end.k]).toEqual([b.x, b.y, b.k].map((v) => expect.closeTo(v)));
+    expect(interpolateZoom(a, b, 0.5, 400, 300).k).toBeCloseTo(2);
+    // A pure pan moves linearly.
+    const pan = interpolateZoom(a, zoomIdentity.translate(30, 20), 0.25, 400, 300);
+    expect(pan.x).toBeCloseTo(15);
   });
 });

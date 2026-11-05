@@ -37,6 +37,8 @@ export interface RenderResult {
   bounds: Rect;
   /** Theme context of every visible node, by id. */
   contexts: Map<string, NodeContext>;
+  /** The final frame, as a starting point for animations. */
+  state: DrawState;
 }
 
 export interface MeasuredNode {
@@ -117,40 +119,78 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
     anchor: (rect, role, item) => theme.node.anchor(rect, role, contextOf(item)),
   });
 
-  const edges: Primitive[] = layout.edges.map((edge) => ({
-    kind: 'group',
-    key: `edge:${edge.target.node.id}`,
-    nodeId: edge.target.node.id,
-    children: theme.edge.render(edge.from, edge.to, {
-      source: edge.source.node,
-      target: edge.target.node,
-      node: contextOf(edge.target),
-    }),
-  }));
+  const state: DrawState = {
+    nodes: layout.nodes.map((item) => ({
+      node: item.node,
+      parentId: item.parent?.node.id,
+      rect: item.rect,
+      ctx: contextOf(item),
+      text: measured.get(item.node.id)!.text,
+      opacity: 1,
+    })),
+  };
+  const primitives = drawState(state, theme);
+  const bounds = unionRects([layout.bounds, primitiveBounds(primitives)]);
+  return { theme, layout, primitives, bounds, contexts, state };
+}
+
+/** A node as drawn in one frame: final, or somewhere along an animation. */
+export interface DrawNode {
+  node: MarkmapNode;
+  /** Parent in the same state; nodes without one get no edge. */
+  parentId?: string;
+  rect: Rect;
+  ctx: NodeContext;
+  text: TextLayout;
+  opacity: number;
+}
+
+/** Everything needed to draw one frame. Parents come before their children. */
+export interface DrawState {
+  nodes: DrawNode[];
+}
+
+/**
+ * Draw a state as primitives: edges first, then nodes, each in a keyed group so
+ * backends can patch them. Edge anchors come from the theme, so animating node rects
+ * moves edges along with them.
+ */
+export function drawState(state: DrawState, theme: Theme): Primitive[] {
+  const byId = new Map(state.nodes.map((item) => [item.node.id, item]));
+  const edges: Primitive[] = [];
+  for (const target of state.nodes) {
+    const source = target.parentId ? byId.get(target.parentId) : undefined;
+    if (!source) continue;
+    edges.push({
+      kind: 'group',
+      key: `edge:${target.node.id}`,
+      nodeId: target.node.id,
+      ...(target.opacity < 1 && { opacity: target.opacity }),
+      children: theme.edge.render(
+        theme.node.anchor(source.rect, 'source', source.ctx),
+        theme.node.anchor(target.rect, 'target', target.ctx),
+        { source: source.node, target: target.node, node: target.ctx },
+      ),
+    });
+  }
 
   const [top, , , left] = theme.node.padding;
-  const nodes: Primitive[] = layout.nodes.map((item) => {
-    const { text } = measured.get(item.node.id)!;
-    return {
-      kind: 'group',
-      key: `node:${item.node.id}`,
-      nodeId: item.node.id,
-      transform: translate(item.rect.x, item.rect.y),
-      children: [
-        ...theme.node.render(
-          item.node,
-          { width: item.rect.width, height: item.rect.height },
-          contextOf(item),
-        ),
-        { kind: 'group', transform: translate(left, top), children: text.primitives },
-      ],
-    };
-  });
-
-  const primitives = [...edges, ...nodes];
-  const bounds = unionRects([layout.bounds, primitiveBounds(primitives)]);
-  for (const item of layout.nodes) contextOf(item);
-  return { theme, layout, primitives, bounds, contexts };
+  const nodes: Primitive[] = state.nodes.map((item) => ({
+    kind: 'group',
+    key: `node:${item.node.id}`,
+    nodeId: item.node.id,
+    transform: translate(item.rect.x, item.rect.y),
+    ...(item.opacity < 1 && { opacity: item.opacity }),
+    children: [
+      ...theme.node.render(
+        item.node,
+        { width: item.rect.width, height: item.rect.height },
+        item.ctx,
+      ),
+      { kind: 'group', transform: translate(left, top), children: item.text.primitives },
+    ],
+  }));
+  return [...edges, ...nodes];
 }
 
 /** Absolute points of a path made of `M`, `L`, `H`, `V` and `C` commands. */

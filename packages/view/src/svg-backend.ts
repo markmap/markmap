@@ -50,7 +50,8 @@ export class SvgDomBackend {
 
       const markup = primitivesToSVG(isGroup ? p.children : [p], { interactive: true });
       if (markup !== item.markup) {
-        el.innerHTML = markup;
+        // Animated edges only change their path data: update it in place.
+        if (!patchPath(el, item.markup, markup)) el.innerHTML = markup;
         item.markup = markup;
       }
 
@@ -76,4 +77,17 @@ export class SvgDomBackend {
 function setAttr(el: Element, name: string, value: string | null) {
   if (value == null) el.removeAttribute(name);
   else if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
+const SINGLE_PATH = /^<path d="([^"]*)"([^>]*)\/>$/;
+
+/** If both markups are one path that differs only in `d`, set `d` and return true. */
+function patchPath(el: Element, before: string, after: string): boolean {
+  const a = SINGLE_PATH.exec(before);
+  const b = SINGLE_PATH.exec(after);
+  const path = el.firstElementChild;
+  if (!a || !b || a[2] !== b[2] || b[1].includes('&')) return false;
+  if (!path || path !== el.lastElementChild) return false;
+  path.setAttribute('d', b[1]);
+  return true;
 }

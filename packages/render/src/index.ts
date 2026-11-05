@@ -7,3 +7,4 @@ export * from './svg';
 export * from './text';
 export * from './themes/branch';
 export * from './themes/classic';
+export * from './animate';

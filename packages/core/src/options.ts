@@ -13,6 +13,8 @@ export interface MarkmapJSONOptions {
   pan?: boolean;
   fitPadding?: number;
   maxFitScale?: number;
+  /** Length of fold, update and fit animations, in ms. `0` disables them. */
+  duration?: number;
 }
 
 /**
@@ -80,6 +82,7 @@ const CORE_SCHEMA: OptionSchema = {
   pan: validators.boolean(),
   fitPadding: validators.number(0),
   maxFitScale: validators.number(0.01),
+  duration: validators.number(0),
 };
 
 export interface ValidatedOptions<T> {

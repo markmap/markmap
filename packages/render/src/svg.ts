@@ -74,10 +74,30 @@ export interface PrimitivesToSVGOptions {
   interactive?: boolean;
 }
 
+/** Markup per primitive list, so unchanged content is not serialized on every frame. */
+const markupCache = {
+  plain: new WeakMap<Primitive[], string>(),
+  interactive: new WeakMap<Primitive[], string>(),
+};
+
+/**
+ * Serialize primitives as SVG markup. Primitive lists are treated as immutable: the
+ * markup of each list is cached, which makes redrawing animation frames cheap.
+ */
 export function primitivesToSVG(
   primitives: Primitive[],
   options: PrimitivesToSVGOptions = {},
 ): string {
+  const cache = options.interactive ? markupCache.interactive : markupCache.plain;
+  let out = cache.get(primitives);
+  if (out == null) {
+    out = serialize(primitives, options);
+    cache.set(primitives, out);
+  }
+  return out;
+}
+
+function serialize(primitives: Primitive[], options: PrimitivesToSVGOptions): string {
   let out = '';
   for (const p of primitives) {
     if (p.backends && !p.backends.includes('svg')) continue;

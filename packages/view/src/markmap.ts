@@ -2,7 +2,11 @@ import type { MarkmapNode, Measurer, Rect } from '@markmap/core';
 import {
   classicTheme,
   createCanvasMeasurer,
-  type LayoutNode,
+  type DrawNode,
+  type DrawState,
+  drawState,
+  easeCubicInOut,
+  interpolateStates,
   type RenderOptions,
   type RenderResult,
   renderTree,
@@ -10,9 +14,10 @@ import {
   tokensToCSS,
 } from '@markmap/render';
 import { pointer, select, type Selection } from 'd3-selection';
-import { zoom, type ZoomBehavior, zoomIdentity, zoomTransform } from 'd3-zoom';
+import { zoom, type ZoomBehavior, zoomIdentity, type ZoomTransform, zoomTransform } from 'd3-zoom';
 import { Popover } from './popover';
 import { SvgDomBackend } from './svg-backend';
+import { Tween } from './tween';
 
 export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> {
   /** Defaults to a canvas measurer. */
@@ -27,6 +32,11 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
   maxFitScale?: number;
   /** Fold nodes at this depth and deeper when first seen. `-1` expands everything. */
   initialExpandLevel?: number;
+  /**
+   * Length of fold, update and fit animations, in ms. `0` disables them, and so does
+   * the user's `prefers-reduced-motion` setting.
+   */
+  duration?: number;
 }
 
 const DEFAULTS: ViewOptions = {
@@ -35,6 +45,7 @@ const DEFAULTS: ViewOptions = {
   fitPadding: 20,
   maxFitScale: 2,
   initialExpandLevel: -1,
+  duration: 500,
 };
 
 /**
@@ -46,7 +57,15 @@ export function resolveViewOptions(
   input: unknown,
 ): { options: ViewOptions; warnings: string[] } {
   const { options, json, warnings } = resolveRenderOptions(base, input);
-  for (const key of ['zoom', 'pan', 'fitPadding', 'maxFitScale', 'initialExpandLevel'] as const) {
+  const keys = [
+    'zoom',
+    'pan',
+    'fitPadding',
+    'maxFitScale',
+    'initialExpandLevel',
+    'duration',
+  ] as const;
+  for (const key of keys) {
     if (json[key] != null) (options as Record<string, unknown>)[key] = json[key];
   }
   return { options, warnings };
@@ -71,6 +90,12 @@ export class Markmap {
   private popover?: { id: string; popover: Popover };
   /** Bumped on every open/close, so a slow lazy import cannot open a stale popover. */
   private popoverRequest = 0;
+  /** What is on screen: the final state, or a frame of an animation towards it. */
+  private frame?: DrawState;
+  private stateTween = new Tween();
+  private zoomTween = new Tween();
+  /** Whether the first fit has happened; it is never animated. */
+  private placed = false;
 
   constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
     this.svg = svg;
@@ -89,7 +114,9 @@ export class Markmap {
         const { button = 0, ctrlKey = false } = event as MouseEvent;
         return !!this.options.pan && !ctrlKey && !button;
       })
-      .on('zoom', (event: { transform: { toString(): string } }) => {
+      .on('zoom', (event: { transform: ZoomTransform; sourceEvent: unknown }) => {
+        // The user took over: stop moving the view under them.
+        if (event.sourceEvent) this.zoomTween.stop();
         this.backend.root.setAttribute('transform', event.transform.toString());
         this.positionPopover();
       });
@@ -168,7 +195,18 @@ export class Markmap {
       measurer: this.measurer,
       folded: this.folded,
     });
-    this.backend.draw(this.result.primitives);
+    const target = this.result.state;
+    const from = this.frame;
+    const duration = this.duration;
+    if (from && duration > 0) {
+      const theme = this.theme;
+      this.stateTween.start(duration, (t) =>
+        this.drawFrame(t < 1 ? interpolateStates(from, target, easeCubicInOut(t), theme) : target),
+      );
+    } else {
+      this.stateTween.stop();
+      this.drawFrame(target);
+    }
     if (this.popover) {
       const item = this.result.layout.byId.get(this.popover.id);
       if (item?.node.attachments.length) this.positionPopover();
@@ -177,16 +215,49 @@ export class Markmap {
     return this.result;
   }
 
+  private drawFrame(state: DrawState) {
+    this.frame = state;
+    this.backend.draw(drawState(state, this.theme));
+    this.positionPopover();
+  }
+
+  /** Animation length in ms, `0` when animations are off. */
+  private get duration(): number {
+    const view = this.svg.ownerDocument.defaultView;
+    if (view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return 0;
+    return this.options.duration ?? 0;
+  }
+
+  /** Where a node is drawn right now, possibly mid-animation. */
+  private frameNode(id: string): DrawNode | undefined {
+    return this.frame?.nodes.find((item) => item.node.id === id);
+  }
+
   /** Fold or unfold a node, keeping it in place on screen. */
   setFolded(id: string, folded: boolean): void {
     if (folded === this.folded.has(id)) return;
-    const before = this.result?.layout.byId.get(id)?.rect;
+    const before = this.frameNode(id)?.rect;
     if (folded) this.folded.add(id);
     else this.folded.delete(id);
     const after = this.render()?.layout.byId.get(id)?.rect;
     if (before && after) {
-      this.zoomBehavior.translateBy(this.selection, before.x - after.x, before.y - after.y);
+      // Moves exactly as fast as the node does in layout space, so it stays still.
+      this.zoomTo(this.transform.translate(before.x - after.x, before.y - after.y));
     }
+  }
+
+  /** Move the view to `target`, animated unless animations are off. */
+  private zoomTo(target: ZoomTransform, animate = true) {
+    const from = this.transform;
+    const { width, height } = this.svg.getBoundingClientRect();
+    const apply = (transform: ZoomTransform) =>
+      this.zoomBehavior.transform(this.selection, transform);
+    const duration = animate ? this.duration : 0;
+    this.zoomTween.start(duration, (t) =>
+      apply(
+        t < 1 ? interpolateZoom(from, target, easeCubicInOut(t), width / 2, height / 2) : target,
+      ),
+    );
   }
 
   toggle(id: string): void {
@@ -217,7 +288,8 @@ export class Markmap {
       .translate(width / 2, height / 2)
       .scale(scale)
       .translate(-(box.x + box.width / 2), -(box.y + box.height / 2));
-    this.zoomBehavior.transform(this.selection, transform);
+    this.zoomTo(transform, this.placed);
+    this.placed = true;
   }
 
   private fitWhenSized() {
@@ -235,12 +307,12 @@ export class Markmap {
   }
 
   /** The node whose fold anchor is under a point in layout coordinates. */
-  hitToggle(x: number, y: number): LayoutNode | undefined {
-    if (!this.result) return undefined;
-    for (const item of this.result.layout.nodes) {
-      if (!item.node.children.length) continue;
-      const ctx = this.result.contexts.get(item.node.id)!;
-      const anchor = this.theme.node.anchor(item.rect, 'source', ctx);
+  hitToggle(x: number, y: number): DrawNode | undefined {
+    if (!this.frame || !this.result) return undefined;
+    for (const item of this.frame.nodes) {
+      // Skip nodes that are leaving: they can no longer be toggled.
+      if (!item.ctx.hasChildren || !this.result.layout.byId.has(item.node.id)) continue;
+      const anchor = this.theme.node.anchor(item.rect, 'source', item.ctx);
       if (Math.hypot(anchor.x - x, anchor.y - y) <= TOGGLE_RADIUS) return item;
     }
     return undefined;
@@ -287,9 +359,9 @@ export class Markmap {
     doc.defaultView?.removeEventListener('scroll', this.handleScroll, true);
   }
 
-  /** A node's box in viewport coordinates. */
+  /** A node's box in viewport coordinates, where it is drawn right now. */
   screenRect(id: string): Rect | undefined {
-    const rect = this.result?.layout.byId.get(id)?.rect;
+    const rect = this.frameNode(id)?.rect;
     if (!rect) return undefined;
     const svgRect = this.svg.getBoundingClientRect();
     const t = this.transform;
@@ -324,6 +396,8 @@ export class Markmap {
   };
 
   destroy(): void {
+    this.stateTween.stop();
+    this.zoomTween.stop();
     this.closeAttachments();
     this.svg.removeEventListener('click', this.handleClick);
     this.pendingFit?.disconnect();
@@ -346,4 +420,22 @@ export class Markmap {
     const item = this.hitToggle(x, y);
     if (item) this.toggle(item.node.id);
   };
+}
+
+/**
+ * A zoom transform `t` of the way from `a` to `b`. The scale changes geometrically and
+ * the layout point under (`cx`, `cy`) moves in a straight line, so a pure pan moves at a
+ * constant speed and zooming does not swing sideways.
+ */
+export function interpolateZoom(
+  a: ZoomTransform,
+  b: ZoomTransform,
+  t: number,
+  cx: number,
+  cy: number,
+): ZoomTransform {
+  const k = a.k * (b.k / a.k) ** t;
+  const x = ((cx - a.x) / a.k) * (1 - t) + ((cx - b.x) / b.k) * t;
+  const y = ((cy - a.y) / a.k) * (1 - t) + ((cy - b.y) / b.k) * t;
+  return zoomIdentity.translate(cx - x * k, cy - y * k).scale(k);
 }
