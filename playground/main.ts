@@ -1,5 +1,5 @@
 import { parse } from '@markmap/parse';
-import { toSVGString } from '@markmap/render';
+import { toSVGString, treeLayout, twoSidedLayout } from '@markmap/render';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
@@ -11,13 +11,16 @@ const stats = document.querySelector<HTMLSpanElement>('#stats')!;
 
 editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
 
+const LAYOUTS = { tree: treeLayout, 'two-sided': twoSidedLayout };
+const layoutSelect = document.querySelector<HTMLSelectElement>('#layout')!;
 const baseOptions: ViewOptions = { maxWidth: 300 };
 const mm = new Markmap(svg, baseOptions);
 
 function update() {
   const start = performance.now();
   const { root, frontmatter } = parse(editor.value);
-  const { options, warnings } = resolveViewOptions(baseOptions, frontmatter.markmap);
+  const layout = LAYOUTS[layoutSelect.value as keyof typeof LAYOUTS];
+  const { options, warnings } = resolveViewOptions({ ...baseOptions, layout }, frontmatter.markmap);
   mm.setData(root, options);
   const ms = performance.now() - start;
   stats.textContent = `${mm.state?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
@@ -38,6 +41,10 @@ editor.addEventListener('input', () => {
   }, 150);
 });
 
+layoutSelect.addEventListener('change', () => {
+  update();
+  mm.fit();
+});
 document.querySelector('#fit')!.addEventListener('click', () => mm.fit());
 document.querySelector('#zoom-in')!.addEventListener('click', () => mm.zoomIn());
 document.querySelector('#zoom-out')!.addEventListener('click', () => mm.zoomOut());
