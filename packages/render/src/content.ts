@@ -113,5 +113,3 @@ export const attachmentContent: ContentPlugin = {
     },
   },
 };
-
-export const defaultContentPlugins: readonly ContentPlugin[] = [basicContent, attachmentContent];

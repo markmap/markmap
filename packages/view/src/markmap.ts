@@ -257,6 +257,14 @@ export class Markmap {
       else this.closeAttachments();
     }
     this.emit('render', this.result);
+    const { pending } = this.result;
+    // Placeholder sizes (such as loading images): render again, animated, once they settle.
+    if (pending) {
+      const result = this.result;
+      void pending.then(() => {
+        if (this.result === result) this.render();
+      });
+    }
     return this.result;
   }
 
@@ -569,6 +577,8 @@ export class Markmap {
   };
 
   destroy(): void {
+    // Late callbacks (such as images finishing loading) find nothing to render.
+    this.root = undefined;
     this.listeners.clear();
     this.stateTween.stop();
     this.zoomTween.stop();

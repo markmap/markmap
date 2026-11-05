@@ -52,4 +52,14 @@ markmap:
   | ----- | ----------- |
   | Table | the popover |
 
+## Images
+
+- Sized: <img src="sample.png" width="48" height="32" alt="sized">
+- Loaded first ![natural](sample.png)
+- Width only <img src="sample.png" width="72">
+- Broken ![alt text instead](missing.png)
+- In notes
+
+  <img src="sample.png" width="120">
+
 [docs]: https://markmap.js.org

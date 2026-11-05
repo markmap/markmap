@@ -1,6 +1,7 @@
 import {
   type ContentPlugin,
   type FrameNode,
+  type InlineContext,
   type Layout,
   type LayoutNode,
   type LayoutResult,
@@ -20,7 +21,7 @@ import {
   unionRects,
 } from '@markmap/core';
 import { treeLayout, visibleNodes } from './layouts/tree';
-import { defaultContentPlugins } from './content';
+import { defaultContentPlugins } from './default-plugins';
 import { layoutText, type TextLayout, transformContent } from './text';
 import { classicTheme } from './themes/classic';
 
@@ -50,6 +51,11 @@ export interface RenderResult {
   contexts: Map<string, NodeContext>;
   /** The final frame, as a starting point for animations. */
   state: DrawState;
+  /**
+   * Settles when content that was measured with a placeholder (such as an image of
+   * unknown size) is ready. Render again then to get the final layout.
+   */
+  pending?: Promise<void>;
 }
 
 export interface MeasuredNode {
@@ -75,9 +81,16 @@ function labelLayout(
   theme: Theme,
   options: RenderOptions,
   align?: TextAlign,
+  defer?: (task: Promise<unknown>) => void,
 ): TextLayout {
   const plugins = options.plugins ?? defaultContentPlugins;
-  const ctx = { theme, measurer: options.measurer, node };
+  const ctx: InlineContext = {
+    theme,
+    measurer: options.measurer,
+    node,
+    maxWidth: options.maxWidth,
+    defer,
+  };
   return layoutText(transformContent(plugins, ctx), {
     style: { font: theme.font, fill: theme.textFill },
     maxWidth: options.maxWidth,
@@ -87,8 +100,15 @@ function labelLayout(
   });
 }
 
-/** Measure the label and box of every visible node. */
-export function measureTree(root: MarkmapNode, options: RenderOptions): Map<string, MeasuredNode> {
+/**
+ * Measure the label and box of every visible node. Content that is not ready yet (see
+ * {@link InlineContext.defer}) is reported to `defer`.
+ */
+export function measureTree(
+  root: MarkmapNode,
+  options: RenderOptions,
+  defer?: (task: Promise<unknown>) => void,
+): Map<string, MeasuredNode> {
   const theme = options.theme ?? classicTheme;
   const [top, right, bottom, left] = theme.node.padding;
   const result = new Map<string, MeasuredNode>();
@@ -96,7 +116,7 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
   for (const node of visibleNodes(root, options.folded)) {
     const path = paths.get(node.id)!;
     const depth = path.length - 1;
-    const text = labelLayout(node, theme, options);
+    const text = labelLayout(node, theme, options, undefined, defer);
     const ctx: MeasureContext = {
       depth,
       path,
@@ -117,7 +137,8 @@ export function measureTree(root: MarkmapNode, options: RenderOptions): Map<stri
 /** Measure, lay out and draw a tree as backend-neutral primitives. */
 export function renderTree(root: MarkmapNode, options: RenderOptions): RenderResult {
   const theme = options.theme ?? classicTheme;
-  const measured = measureTree(root, options);
+  const tasks: Promise<unknown>[] = [];
+  const measured = measureTree(root, options, (task) => tasks.push(task));
   const paths = nodePaths(root);
   const contexts = new Map<string, NodeContext>();
   const contextOf = (item: LayoutNode): NodeContext => {
@@ -160,7 +181,26 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
   };
   const primitives = drawState(state, theme);
   const bounds = unionRects([layout.bounds, primitiveBounds(primitives)]);
-  return { theme, layout, primitives, bounds, contexts, state };
+  const pending = tasks.length ? Promise.allSettled(tasks).then(() => undefined) : undefined;
+  return { theme, layout, primitives, bounds, contexts, state, ...(pending && { pending }) };
+}
+
+/**
+ * Render, wait for content that was measured with a placeholder, and render again, until
+ * everything is final (at most `rounds` times). Useful outside a live view, e.g. for
+ * exporting SVG with images.
+ */
+export async function renderTreeAsync(
+  root: MarkmapNode,
+  options: RenderOptions,
+  rounds = 3,
+): Promise<RenderResult> {
+  let result = renderTree(root, options);
+  for (let i = 1; i < rounds && result.pending; i++) {
+    await result.pending;
+    result = renderTree(root, options);
+  }
+  return result;
 }
 
 /** A node as drawn in one frame: final, or somewhere along an animation. */

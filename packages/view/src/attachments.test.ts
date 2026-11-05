@@ -43,10 +43,16 @@ describe('attachmentsToHtml', () => {
     expect(html).not.toContain('javascript:');
   });
 
-  it('never contains raw HTML', () => {
-    const html = attachmentsToHtml(notesOf('- a\n\n  x <img src=x onerror=alert(1)> y'));
+  it('never contains raw HTML; sized <img> tags come through clean', () => {
+    const html = attachmentsToHtml(
+      notesOf(
+        '- a\n\n  x <img src=x.png width=40 onerror=alert(1)> <b>y</b> <img src="javascript:alert(1)">',
+      ),
+    );
+    expect(html).toContain('<img src="x.png" alt="" width="40">');
     expect(html).not.toContain('onerror');
-    expect(html).not.toContain('<img');
+    expect(html).not.toContain('<b>');
+    expect(html).not.toContain('javascript:');
   });
 });
 

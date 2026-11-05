@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { type PluggableList, unified } from 'unified';
 import { parse as parseYaml } from 'yaml';
+import { remarkHtmlImages } from './html-image';
 import { remarkMark, remarkResolveReferences } from './plugins';
 import { toTree } from './to-tree';
 
@@ -24,6 +25,7 @@ export function parse(markdown: string, options: ParseOptions = {}): ParseResult
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkFrontmatter, ['yaml'])
+    .use(remarkHtmlImages)
     .use(remarkMark)
     .use(remarkResolveReferences)
     .use(options.plugins ?? []);

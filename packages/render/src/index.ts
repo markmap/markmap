@@ -1,4 +1,6 @@
 export * from './content';
+export * from './default-plugins';
+export * from './image';
 export * from './layouts';
 export * from './measure';
 export * from './options';

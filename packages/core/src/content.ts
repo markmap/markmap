@@ -33,6 +33,14 @@ export interface InlineContext {
   theme: Theme;
   measurer: Measurer;
   node: MarkmapNode;
+  /** Label wrap width in px; `0` or missing when labels do not wrap. */
+  maxWidth?: number;
+  /**
+   * Report work that will change a measurement, such as an image loading to learn its
+   * size. The caller renders again once it settles; plugins should cache the result so
+   * the next measurement is final.
+   */
+  defer?(task: Promise<unknown>): void;
 }
 
 export interface AtomSize extends Size {

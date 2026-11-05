@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
-import { approximateMeasurer } from '@markmap/render';
+import { approximateMeasurer, createImageContent } from '@markmap/render';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { interpolateZoom, Markmap, resolveViewOptions, SvgDomBackend } from '.';
 import { zoomIdentity } from 'd3-zoom';
@@ -411,5 +411,21 @@ describe('events and color scheme', () => {
     expect(resolveViewOptions({}, { colorScheme: 'dim' }).warnings).toEqual([
       '`colorScheme` must be one of `light`, `dark`, `auto`',
     ]);
+  });
+});
+
+describe('images', () => {
+  it('renders again once image sizes arrive', async () => {
+    let resolve!: (size: { width: number; height: number }) => void;
+    const plugins = [createImageContent({ loadSize: () => new Promise((r) => (resolve = r)) })];
+    const mm = Markmap.create(createSvg(), parse('# ![a](a.png)').root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+      plugins,
+    });
+    const width = () => mm.svg.querySelector('image')?.getAttribute('width');
+    expect(width()).toBe('40');
+    resolve({ width: 120, height: 60 });
+    await expect.poll(width).toBe('120');
   });
 });
