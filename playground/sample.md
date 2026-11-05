@@ -38,4 +38,18 @@ markmap:
 - [x] Done task
 - [ ] Open task with **==bold highlight==**
 
+## Attachments
+
+- Notes under a node
+
+  Extra paragraphs, `code`, ==highlights== and [links](https://markmap.js.org) open in a popover.
+
+  ```js
+  const mm = Markmap.create(svg, root);
+  ```
+
+  | Block | Shown in    |
+  | ----- | ----------- |
+  | Table | the popover |
+
 [docs]: https://markmap.js.org

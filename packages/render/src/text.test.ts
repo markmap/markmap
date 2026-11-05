@@ -229,3 +229,29 @@ describe('sanitizeUrl', () => {
     expect(sanitizeUrl(url) !== undefined).toBe(safe);
   });
 });
+
+describe('attachment marker', () => {
+  const withNotes: MarkmapNode = {
+    ...node,
+    content: text('label'),
+    attachments: [{ block: { type: 'paragraph', children: text('note') }, after: 0 }],
+  };
+
+  it('adds a dot and a hit area after the label', () => {
+    const ctx = { theme, measurer: mono, node: withNotes };
+    const content = transformContent(defaultContentPlugins, ctx);
+    expect(content.at(-1)).toEqual({ type: 'attachmentMarker', count: 1 });
+    const { primitives, width } = layout(content, { ctx });
+    const dot = primitives.find((p) => p.kind === 'rect');
+    const hit = primitives.find((p) => p.kind === 'hit');
+    expect(dot).toMatchObject({ fill: 'var(--mm-attachment)' });
+    expect((dot as { x: number }).x).toBeGreaterThan(50);
+    expect(width).toBeGreaterThan(50);
+    expect(hit).toMatchObject({ action: 'attachments' });
+  });
+
+  it('adds nothing without attachments', () => {
+    const content = transformContent(defaultContentPlugins, { theme, measurer: mono, node });
+    expect(content).toEqual([]);
+  });
+});

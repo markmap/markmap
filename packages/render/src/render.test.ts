@@ -3,7 +3,14 @@ import { join } from 'node:path';
 import type { MarkmapNode, Primitive } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { describe, expect, it } from 'vitest';
-import { approximateMeasurer, layoutTree, primitiveBounds, renderTree, toSVGString } from '.';
+import {
+  approximateMeasurer,
+  layoutTree,
+  primitiveBounds,
+  primitivesToSVG,
+  renderTree,
+  toSVGString,
+} from '.';
 
 const sample = readFileSync(join(import.meta.dirname, '../test/sample.md'), 'utf8');
 const render = (md: string, folded?: Set<string>) =>
@@ -118,6 +125,14 @@ describe('toSVGString', () => {
     const svg = toSVGString(render('- 1 < 2 & "a" \'b\' [x](https://a.b/?q=1&r=2)'));
     expect(svg).toContain('1 &lt; 2 &amp; &quot;a&quot; &#39;b&#39;');
     expect(svg).toContain('href="https://a.b/?q=1&amp;r=2"');
+  });
+
+  it('emits hit areas only when interactive', () => {
+    const hit: Primitive = { kind: 'hit', action: 'x', rect: { x: 1, y: 2, width: 3, height: 4 } };
+    expect(primitivesToSVG([hit])).toBe('');
+    expect(primitivesToSVG([hit], { interactive: true })).toBe(
+      '<rect x="1" y="2" width="3" height="4" data-action="x" style="fill:transparent;cursor:pointer"/>',
+    );
   });
 
   it('skips primitives for other backends and overlays', () => {

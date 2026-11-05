@@ -1,0 +1,112 @@
+// @vitest-environment happy-dom
+import { parse } from '@markmap/parse';
+import { approximateMeasurer } from '@markmap/render';
+import { afterEach, describe, expect, it } from 'vitest';
+import { Markmap } from '.';
+import { attachmentsToHtml } from './attachments-html';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createSvg(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.getBoundingClientRect = () => ({ x: 0, y: 0, width: 800, height: 600 }) as DOMRect;
+  document.body.append(svg);
+  return svg;
+}
+
+const dot = (mm: Markmap) => mm.svg.querySelector<SVGElement>('[data-action="attachments"]')!;
+const notesOf = (md: string) => parse(md).root.children[0].attachments;
+
+afterEach(() => {
+  document.body.innerHTML = '';
+});
+
+describe('attachmentsToHtml', () => {
+  it('renders blocks, including GFM and highlights', () => {
+    const html = attachmentsToHtml(
+      notesOf(
+        '- a\n\n  Some **text** and ==mark==.\n\n  ```js\n  x\n  ```\n\n  | h |\n  | - |\n  | c |',
+      ),
+    );
+    expect(html).toContain('<p>Some <strong>text</strong> and <mark>mark</mark>.</p>');
+    expect(html).toContain('<pre><code class="language-js">x\n</code></pre>');
+    expect(html).toContain('<td>c</td>');
+  });
+
+  it('opens links in a new tab and drops unsafe URLs', () => {
+    const html = attachmentsToHtml(
+      notesOf('- a\n\n  [ok](https://x.y) [bad](javascript:alert(1))'),
+    );
+    expect(html).toContain(
+      '<a href="https://x.y" target="_blank" rel="noopener noreferrer">ok</a>',
+    );
+    expect(html).not.toContain('javascript:');
+  });
+
+  it('never contains raw HTML', () => {
+    const html = attachmentsToHtml(notesOf('- a\n\n  x <img src=x onerror=alert(1)> y'));
+    expect(html).not.toContain('onerror');
+    expect(html).not.toContain('<img');
+  });
+});
+
+describe('attachment popover', () => {
+  const md = '# R\n\n- with notes\n\n  A note with [a link](https://x.y).\n\n- plain';
+  const create = () =>
+    Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer });
+
+  it('draws one hit area per node with attachments', () => {
+    const mm = create();
+    expect(mm.svg.querySelectorAll('[data-action="attachments"]')).toHaveLength(1);
+    expect(dot(mm).closest('[data-node-id]')?.getAttribute('data-node-id')).toBe(
+      mm.state!.layout.nodes[1].node.id,
+    );
+  });
+
+  it('opens on click and closes on a second click', async () => {
+    const mm = create();
+    dot(mm).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await expect.poll(() => document.querySelector('.markmap-popover')).not.toBeNull();
+    const popover = document.querySelector<HTMLElement>('.markmap-popover')!;
+    expect(popover.innerHTML).toContain('<a href="https://x.y"');
+    expect(popover.getAttribute('role')).toBe('dialog');
+    expect(popover.style.getPropertyValue('--mm-link-color')).toBe('#0097e6');
+    expect(mm.openAttachmentsId).toBe(mm.state!.layout.nodes[1].node.id);
+    dot(mm).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(document.querySelector('.markmap-popover')).toBeNull();
+  });
+
+  it('closes on Escape, outside clicks and when the node goes away', async () => {
+    const mm = create();
+    const id = mm.state!.layout.nodes[1].node.id;
+    await mm.openAttachments(id);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(mm.openAttachmentsId).toBeUndefined();
+
+    await mm.openAttachments(id);
+    document
+      .querySelector('.markmap-popover')!
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(mm.openAttachmentsId).toBe(id);
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(mm.openAttachmentsId).toBeUndefined();
+
+    await mm.openAttachments(id);
+    mm.setData(parse('# R\n\n- plain').root);
+    expect(document.querySelector('.markmap-popover')).toBeNull();
+  });
+
+  it('ignores a popover that finished loading after it was closed', async () => {
+    const mm = create();
+    const opening = mm.openAttachments(mm.state!.layout.nodes[1].node.id);
+    mm.closeAttachments();
+    await opening;
+    expect(document.querySelector('.markmap-popover')).toBeNull();
+  });
+
+  it('does nothing for nodes without attachments', async () => {
+    const mm = create();
+    await mm.openAttachments(mm.state!.layout.nodes[2].node.id);
+    expect(mm.openAttachmentsId).toBeUndefined();
+  });
+});

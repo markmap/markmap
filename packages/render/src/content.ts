@@ -1,4 +1,4 @@
-import type { Checkbox, ContentPlugin, Inline } from '@markmap/core';
+import type { AttachmentMarker, Checkbox, ContentPlugin, Inline } from '@markmap/core';
 
 const SAFE_URL = /^(?:https?:|mailto:|tel:|#|\/|\.{1,2}\/|[^:/?#]*(?:[/?#]|$))/i;
 
@@ -73,4 +73,45 @@ export const basicContent: ContentPlugin = {
   },
 };
 
-export const defaultContentPlugins: readonly ContentPlugin[] = [basicContent];
+/**
+ * Adds a dot after the label of nodes with attachments, with a hit area that asks the
+ * view to open them. The dot is exported; the hit area is interactive-only.
+ */
+export const attachmentContent: ContentPlugin = {
+  name: 'attachments',
+  transform(content, node) {
+    const count = node.attachments.length;
+    if (!count) return content;
+    return [...content, { type: 'attachmentMarker', count } satisfies AttachmentMarker] as Inline[];
+  },
+  atoms: {
+    attachmentMarker: {
+      measure(_inline, style) {
+        const dot = Math.round(style.font.size * 0.4);
+        const gap = style.font.size * 0.35;
+        // Center the dot on the middle of lowercase letters.
+        return { width: gap + dot, height: dot, baseline: dot / 2 + style.font.size * 0.27 };
+      },
+      render(_inline, box) {
+        const dot = box.height;
+        const x = box.x + box.width - dot;
+        const hit = Math.max(16, dot * 2.5);
+        return [
+          { kind: 'rect', x, y: box.y, w: dot, h: dot, r: dot / 2, fill: 'var(--mm-attachment)' },
+          {
+            kind: 'hit',
+            action: 'attachments',
+            rect: {
+              x: x + dot / 2 - hit / 2,
+              y: box.y + dot / 2 - hit / 2,
+              width: hit,
+              height: hit,
+            },
+          },
+        ];
+      },
+    },
+  },
+};
+
+export const defaultContentPlugins: readonly ContentPlugin[] = [basicContent, attachmentContent];

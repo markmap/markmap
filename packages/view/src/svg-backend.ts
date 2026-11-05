@@ -48,7 +48,7 @@ export class SvgDomBackend {
       setAttr(el, 'data-node-id', isGroup ? (p.nodeId ?? null) : null);
       setAttr(el, 'data-key', key);
 
-      const markup = primitivesToSVG(isGroup ? p.children : [p]);
+      const markup = primitivesToSVG(isGroup ? p.children : [p], { interactive: true });
       if (markup !== item.markup) {
         el.innerHTML = markup;
         item.markup = markup;

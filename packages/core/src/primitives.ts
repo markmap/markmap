@@ -83,6 +83,16 @@ export interface LinkPrimitive extends PrimitiveBase {
   rect: Rect;
 }
 
+/**
+ * An interactive-only hit area that triggers a view action, such as opening a node's
+ * attachments. Draws nothing and is never exported.
+ */
+export interface HitPrimitive extends PrimitiveBase {
+  kind: 'hit';
+  rect: Rect;
+  action: string;
+}
+
 /** Interactive-only HTML. Never exported. */
 export interface OverlayPrimitive extends PrimitiveBase {
   kind: 'overlay';
@@ -105,5 +115,6 @@ export type Primitive =
   | TextPrimitive
   | ImagePrimitive
   | LinkPrimitive
+  | HitPrimitive
   | OverlayPrimitive
   | CustomPrimitive;

@@ -69,7 +69,15 @@ function runToSVG(run: TextRun): string {
   })}>${escapeXml(run.text)}</tspan>`;
 }
 
-export function primitivesToSVG(primitives: Primitive[]): string {
+export interface PrimitivesToSVGOptions {
+  /** Emit hit areas for view actions. Off for exports. */
+  interactive?: boolean;
+}
+
+export function primitivesToSVG(
+  primitives: Primitive[],
+  options: PrimitivesToSVGOptions = {},
+): string {
   let out = '';
   for (const p of primitives) {
     if (p.backends && !p.backends.includes('svg')) continue;
@@ -79,7 +87,7 @@ export function primitivesToSVG(primitives: Primitive[]): string {
           transform: p.transform && `matrix(${p.transform.map(num).join(' ')})`,
           opacity: p.opacity,
           'data-node-id': p.nodeId,
-        })}>${primitivesToSVG(p.children)}</g>`;
+        })}>${primitivesToSVG(p.children, options)}</g>`;
         break;
       case 'rect':
         out += `<rect${attrs({ x: p.x, y: p.y, width: p.w, height: p.h, rx: p.r, style: paint(p) })}/>`;
@@ -104,6 +112,18 @@ export function primitivesToSVG(primitives: Primitive[]): string {
         break;
       case 'custom':
         out += p.svg?.() ?? '';
+        break;
+      case 'hit':
+        if (options.interactive) {
+          out += `<rect${attrs({
+            x: p.rect.x,
+            y: p.rect.y,
+            width: p.rect.width,
+            height: p.rect.height,
+            'data-action': p.action,
+            style: 'fill:transparent;cursor:pointer',
+          })}/>`;
+        }
         break;
       case 'overlay':
         break;

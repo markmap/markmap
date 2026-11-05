@@ -11,6 +11,7 @@ import {
 } from '@markmap/render';
 import { pointer, select, type Selection } from 'd3-selection';
 import { zoom, type ZoomBehavior, zoomIdentity, zoomTransform } from 'd3-zoom';
+import { Popover } from './popover';
 import { SvgDomBackend } from './svg-backend';
 
 export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> {
@@ -67,6 +68,9 @@ export class Markmap {
   private known = new Set<string>();
   private result?: RenderResult;
   private pendingFit?: ResizeObserver;
+  private popover?: { id: string; popover: Popover };
+  /** Bumped on every open/close, so a slow lazy import cannot open a stale popover. */
+  private popoverRequest = 0;
 
   constructor(svg: SVGSVGElement, options: ViewOptions = {}) {
     this.svg = svg;
@@ -87,6 +91,7 @@ export class Markmap {
       })
       .on('zoom', (event: { transform: { toString(): string } }) => {
         this.backend.root.setAttribute('transform', event.transform.toString());
+        this.positionPopover();
       });
     this.selection.call(this.zoomBehavior);
     svg.addEventListener('click', this.handleClick);
@@ -164,6 +169,11 @@ export class Markmap {
       folded: this.folded,
     });
     this.backend.draw(this.result.primitives);
+    if (this.popover) {
+      const item = this.result.layout.byId.get(this.popover.id);
+      if (item?.node.attachments.length) this.positionPopover();
+      else this.closeAttachments();
+    }
     return this.result;
   }
 
@@ -236,7 +246,85 @@ export class Markmap {
     return undefined;
   }
 
+  /** Id of the node whose attachments are open, if any. */
+  get openAttachmentsId(): string | undefined {
+    return this.popover?.id;
+  }
+
+  /** Show a node's attachments in a popover next to it. */
+  async openAttachments(id: string): Promise<void> {
+    const item = this.result?.layout.byId.get(id);
+    if (!item?.node.attachments.length) return;
+    this.closeAttachments();
+    const request = this.popoverRequest;
+    const { attachmentsToHtml } = await import('./attachments-html');
+    if (request !== this.popoverRequest) return;
+    const popover = new Popover(
+      this.svg.ownerDocument,
+      attachmentsToHtml(item.node.attachments),
+      this.theme.tokens,
+    );
+    popover.el.setAttribute('aria-label', 'Notes');
+    this.popover = { id, popover };
+    this.positionPopover();
+    const doc = this.svg.ownerDocument;
+    // A click, not pointerdown: d3-zoom swallows the click that ends a pan, so panning
+    // and zooming keep the popover open while it follows the node.
+    doc.addEventListener('click', this.handleOutside, true);
+    doc.addEventListener('keydown', this.handleKey);
+    doc.defaultView?.addEventListener('scroll', this.handleScroll, true);
+    popover.el.focus({ preventScroll: true });
+  }
+
+  closeAttachments(): void {
+    this.popoverRequest += 1;
+    if (!this.popover) return;
+    this.popover.popover.destroy();
+    this.popover = undefined;
+    const doc = this.svg.ownerDocument;
+    doc.removeEventListener('click', this.handleOutside, true);
+    doc.removeEventListener('keydown', this.handleKey);
+    doc.defaultView?.removeEventListener('scroll', this.handleScroll, true);
+  }
+
+  /** A node's box in viewport coordinates. */
+  screenRect(id: string): Rect | undefined {
+    const rect = this.result?.layout.byId.get(id)?.rect;
+    if (!rect) return undefined;
+    const svgRect = this.svg.getBoundingClientRect();
+    const t = this.transform;
+    return {
+      x: svgRect.x + t.applyX(rect.x),
+      y: svgRect.y + t.applyY(rect.y),
+      width: rect.width * t.k,
+      height: rect.height * t.k,
+    };
+  }
+
+  private positionPopover() {
+    if (!this.popover) return;
+    const rect = this.screenRect(this.popover.id);
+    if (rect) this.popover.popover.position(rect);
+  }
+
+  private handleOutside = (event: Event) => {
+    const target = event.target as Element | null;
+    if (this.popover?.popover.contains(target)) return;
+    // Clicking the dot again is handled by the click handler.
+    if (target?.closest?.('[data-action="attachments"]')) return;
+    this.closeAttachments();
+  };
+
+  private handleKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') this.closeAttachments();
+  };
+
+  private handleScroll = (event: Event) => {
+    if (!this.popover?.popover.contains(event.target as Node)) this.closeAttachments();
+  };
+
   destroy(): void {
+    this.closeAttachments();
     this.svg.removeEventListener('click', this.handleClick);
     this.pendingFit?.disconnect();
     this.selection.on('.zoom', null);
@@ -247,6 +335,13 @@ export class Markmap {
 
   private handleClick = (event: MouseEvent) => {
     if (event.defaultPrevented) return;
+    const action = (event.target as Element | null)?.closest?.('[data-action]');
+    if (action?.getAttribute('data-action') === 'attachments') {
+      const id = action.closest('[data-node-id]')?.getAttribute('data-node-id');
+      if (id && id === this.popover?.id) this.closeAttachments();
+      else if (id) void this.openAttachments(id);
+      return;
+    }
     const [x, y] = pointer(event, this.backend.root);
     const item = this.hitToggle(x, y);
     if (item) this.toggle(item.node.id);

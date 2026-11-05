@@ -26,12 +26,17 @@
     "@markmap/core": "workspace:*",
     "@markmap/render": "workspace:*",
     "d3-selection": "^3.0.1",
-    "d3-zoom": "^3.0.1"
+    "d3-zoom": "^3.0.1",
+    "hast-util-sanitize": "^5.0.2",
+    "hast-util-to-html": "^9.0.6",
+    "mdast-util-to-hast": "^13.2.1"
   },
   "devDependencies": {
     "@markmap/parse": "workspace:*",
     "@types/d3-selection": "^3.0.12",
     "@types/d3-zoom": "^3.0.9",
+    "@types/hast": "^3.0.5",
+    "@types/mdast": "^4.0.4",
     "happy-dom": "^21.0.4"
   }
 }

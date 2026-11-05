@@ -50,6 +50,7 @@ export function createClassicTheme(options: ClassicThemeOptions = {}): Theme {
       'mm-code-color': '#555',
       'mm-mark-bg': '#ffeaa7',
       'mm-checkbox': '#555',
+      'mm-attachment': '#999',
       ...Object.fromEntries(colors.map((color, i) => [`mm-branch-${i}`, color])),
     },
     font: {
