@@ -4,7 +4,7 @@ import pkg from './package.json' with { type: 'json' };
 
 const external = [...Object.keys(pkg.dependencies), ...Object.keys(pkg.optionalDependencies)];
 
-/** The command, for Node. The pages it writes use `vite.client.config.ts`. */
+/** The command, for Node. */
 export default defineConfig({
   build: {
     emptyOutDir: false,

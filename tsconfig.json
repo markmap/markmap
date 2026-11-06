@@ -10,6 +10,7 @@
     { "path": "./packages/toolbar" },
     { "path": "./packages/element" },
     { "path": "./packages/autoloader" },
+    { "path": "./packages/page" },
     { "path": "./packages/cli" }
   ]
 }

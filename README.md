@@ -99,10 +99,11 @@ This writes `notes.html`, one file that works offline, and opens it. Use `--svg`
 | `@markmap/render`      | Layouts, themes and SVG output     |
 | `@markmap/view`        | The interactive map                |
 | `@markmap/canvas`      | Canvas renderer and PNG export     |
-| `@markmap/plugin-math` | Math with MathJax                 |
+| `@markmap/plugin-math` | Math with MathJax                  |
 | `@markmap/element`     | The `<markmap-view>` web component |
 | `@markmap/toolbar`     | Zoom and fold controls             |
 | `@markmap/autoloader`  | One script for any web page        |
+| `@markmap/page`        | One offline HTML file              |
 | `@markmap/cli`         | The `markmap` command              |
 
 ## License

@@ -21,18 +21,17 @@
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "build:types": "tsc -b",
-    "build:js": "vite build && vite build -c vite.client.config.ts && vite build -c vite.client.config.ts --mode math"
+    "build:js": "vite build"
   },
   "dependencies": {
     "@markmap/canvas": "workspace:*",
     "@markmap/core": "workspace:*",
+    "@markmap/page": "workspace:*",
     "@markmap/parse": "workspace:*",
     "@markmap/plugin-math": "workspace:*",
     "@markmap/render": "workspace:*"
   },
   "devDependencies": {
-    "@markmap/element": "workspace:*",
-    "@markmap/view": "workspace:*",
     "@types/mdast": "^4.0.4"
   },
   "optionalDependencies": {

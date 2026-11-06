@@ -1,0 +1,40 @@
+{
+  "name": "@markmap/page",
+  "version": "0.0.0",
+  "description": "Write a map as one HTML file that works offline",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/page"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client.js": "./dist/client.js",
+    "./client-math.js": "./dist/client-math.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build -c vite.client.config.ts && vite build -c vite.client.config.ts --mode math && vite build"
+  },
+  "devDependencies": {
+    "@markmap/element": "workspace:*",
+    "@markmap/parse": "workspace:*",
+    "@markmap/plugin-math": "workspace:*",
+    "@markmap/render": "workspace:*",
+    "@markmap/view": "workspace:*",
+    "@types/mdast": "^4.0.4"
+  }
+}

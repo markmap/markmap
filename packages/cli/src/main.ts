@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { basename, dirname, extname, join, parse as parsePath, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { type MarkmapNode, toPlainText } from '@markmap/core';
+import { createPage, remarkReplaceImages, walk } from '@markmap/page';
 import { parse, type ParseResult } from '@markmap/parse';
 import { mathContent, remarkMath } from '@markmap/plugin-math';
 import {
@@ -17,8 +19,6 @@ import {
 } from '@markmap/render';
 import type { Image, Nodes } from 'mdast';
 import { inlineImages, localPath } from './inline-images';
-import { remarkReplaceImages, walk } from './mdast-images';
-import { createPage } from './page';
 
 const USAGE = `Usage: markmap [options] <file.md>
 
@@ -45,8 +45,7 @@ export interface Io {
   open(file: string): void;
 }
 
-/** Scripts sit beside this file once built. */
-const distFile = (name: string) => join(dirname(fileURLToPath(import.meta.url)), name);
+const require = createRequire(import.meta.url);
 
 /** Open a file with whatever the system uses for it. Failing is not worth stopping for. */
 function openFile(file: string) {
@@ -69,7 +68,8 @@ const defaultIo: Io = {
   },
   stdout: (data) => void process.stdout.write(data),
   stderr: (text) => void process.stderr.write(text),
-  client: (math) => readFile(distFile(math ? 'client-math.js' : 'client.js'), 'utf8'),
+  client: (math) =>
+    readFile(require.resolve(`@markmap/page/${math ? 'client-math' : 'client'}.js`), 'utf8'),
   open: openFile,
 };
 
@@ -192,7 +192,8 @@ async function conflict({ markdown, file }: Source, output: string) {
 }
 
 async function version() {
-  const pkg = JSON.parse(await readFile(distFile('../package.json'), 'utf8')) as {
+  const file = join(dirname(fileURLToPath(import.meta.url)), '../package.json');
+  const pkg = JSON.parse(await readFile(file, 'utf8')) as {
     version: string;
   };
   return pkg.version;

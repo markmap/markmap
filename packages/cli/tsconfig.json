@@ -8,12 +8,23 @@
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../canvas" },
-    { "path": "../core" },
-    { "path": "../element" },
-    { "path": "../parse" },
-    { "path": "../plugin-math" },
-    { "path": "../render" },
-    { "path": "../view" }
+    {
+      "path": "../canvas"
+    },
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../page"
+    },
+    {
+      "path": "../parse"
+    },
+    {
+      "path": "../plugin-math"
+    },
+    {
+      "path": "../render"
+    }
   ]
 }

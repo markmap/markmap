@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 /**
- * The script inlined in the pages the command writes: one file, everything bundled, as
+ * The script inlined in a page: one file, everything bundled, as
  * the page must work offline. `--mode math` builds the variant with math.
  */
 export default defineConfig(({ mode }) => {
