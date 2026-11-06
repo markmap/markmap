@@ -3,7 +3,7 @@ markmap:
   colorDepth: 2
 ---
 
-# markmap next
+# markmap
 
 ## Parse
 

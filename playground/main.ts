@@ -6,7 +6,7 @@ import { createToolbar, type Toolbar } from '@markmap/toolbar';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
-const STORAGE_KEY = 'markmap-next:playground';
+const STORAGE_KEY = 'markmap:playground';
 
 const editor = document.querySelector<HTMLTextAreaElement>('#editor')!;
 const stage = document.querySelector<HTMLDivElement>('#stage')!;
