@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Parse Markdown into a Markmap tree",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/parse"
+  },
   "files": [
     "dist"
   ],

@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Zoom and fold controls for a Markmap view",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/toolbar"
+  },
   "files": [
     "dist"
   ],
@@ -29,6 +34,6 @@
     "happy-dom": "^21.0.4"
   },
   "peerDependencies": {
-    "@markmap/view": "workspace:*"
+    "@markmap/view": "workspace:^"
   }
 }

@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "One script tag that turns .markmap blocks into maps",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/autoloader"
+  },
   "files": [
     "dist"
   ],

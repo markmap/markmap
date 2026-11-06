@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Canvas backend for Markmap",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/canvas"
+  },
   "files": [
     "dist"
   ],
@@ -38,7 +43,7 @@
     "happy-dom": "^21.0.4"
   },
   "peerDependencies": {
-    "@markmap/view": "workspace:*",
+    "@markmap/view": "workspace:^",
     "@napi-rs/canvas": "^1.1.0"
   },
   "peerDependenciesMeta": {

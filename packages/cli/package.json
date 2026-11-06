@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Turn Markdown into a map from the command line",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markmap/markmap.git",
+    "directory": "packages/cli"
+  },
   "bin": {
     "markmap": "./dist/cli.js"
   },

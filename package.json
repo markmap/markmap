@@ -13,9 +13,13 @@
     "typecheck": "tsc -p tsconfig.test.json",
     "clean": "pnpm -r clean",
     "build:types": "tsc -b",
-    "build:js": "pnpm -r build:js"
+    "build:js": "pnpm -r build:js",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "pnpm build && changeset publish --no-git-tag"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^26.6.6",
     "oxfmt": "^0.76.0",
     "oxlint": "^1.91.0",
