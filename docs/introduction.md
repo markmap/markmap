@@ -24,6 +24,7 @@ The easiest way to try it is the 👉 [editor](/editor). You can also use it in:
 - [VS Code](https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode) 🚀
 - the command line, with [@markmap/cli](packages/cli.md)
 - Vim / Neovim, with [coc-markmap](packages/coc-markmap.md)
+- [many other tools](related-projects.md)
 
 ## Learn the basics
 
