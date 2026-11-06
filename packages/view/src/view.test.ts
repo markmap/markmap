@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { type Primitive, toPlainText } from '@markmap/core';
+import { type MarkmapNode, type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer, createImageContent } from '@markmap/render';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -566,5 +566,104 @@ describe('backends', () => {
     // Further than the toggle radius from where it ends up, so the final layout would miss it.
     expect(Math.hypot(mid.x - end.x, mid.y - end.y)).toBeGreaterThan(10);
     expect(mm.hitToggle(mid.x, mid.y)?.node.id).toBe(nodeB.node.id);
+  });
+});
+
+const idOf = (mm: Markmap, label: string) => {
+  let found = '';
+  const visit = (node: MarkmapNode) => {
+    if (toPlainText(node.content) === label) found = node.id;
+    node.children.forEach(visit);
+  };
+  visit(mm.state!.layout.nodes[0].node);
+  return found;
+};
+
+const scope = (mm: Markmap) => [...mm.element.classList].find((c) => c !== 'markmap')!;
+
+describe('deep link APIs', () => {
+  const md = '# Root\n\n## A\n\n- a1\n- a2\n  - a2x\n\n## B\n\n- b1';
+  const create = (options = {}) =>
+    Markmap.create(createSvg(), parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+      ...options,
+    });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('replaces the fold state in one redraw and one event', () => {
+    const mm = create();
+    const [a, b] = [idOf(mm, 'A'), idOf(mm, 'B')];
+    mm.setFolded(a, true);
+    const renders = vi.fn<() => void>();
+    const folds = vi.fn<() => void>();
+    mm.on('render', renders);
+    mm.on('fold', folds);
+    mm.setFoldedIds([b, 'gone']);
+    expect([...mm.foldedIds]).toEqual([b]);
+    expect(renders).toHaveBeenCalledOnce();
+    expect(folds).toHaveBeenCalledOnce();
+    mm.setFoldedIds([b]);
+    expect(renders).toHaveBeenCalledOnce();
+  });
+
+  it('ignores nodes with no children', () => {
+    const mm = create();
+    mm.setFoldedIds([idOf(mm, 'b1')]);
+    expect(mm.foldedIds.size).toBe(0);
+  });
+
+  it('can restore a fold state without animating', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
+    const mm = create({ duration: 300 });
+    const leaf = idOf(mm, 'a2x');
+    mm.setFoldedIds([idOf(mm, 'A')], { animate: false });
+    expect(mm.element.querySelector(`[data-key="node:${leaf}"]`)).toBeNull();
+  });
+
+  it('unfolds ancestors and centers on a node', () => {
+    const mm = create();
+    const leaf = idOf(mm, 'a2x');
+    mm.setFolded(idOf(mm, 'a2'), true);
+    mm.setFolded(idOf(mm, 'A'), true);
+    expect(mm.focusNode(leaf, { animate: false })).toBe(true);
+    expect(mm.foldedIds.size).toBe(0);
+    const rect = mm.screenRect(leaf)!;
+    expect(rect.x + rect.width / 2).toBeCloseTo(400);
+    expect(rect.y + rect.height / 2).toBeCloseTo(300);
+  });
+
+  it('keeps the zoom unless given a scale, within the zoom limits', () => {
+    const mm = create();
+    const { k } = mm.transform;
+    mm.focusNode(idOf(mm, 'B'), { animate: false });
+    expect(mm.transform.k).toBe(k);
+    mm.focusNode(idOf(mm, 'B'), { animate: false, scale: 1.5 });
+    expect(mm.transform.k).toBe(1.5);
+  });
+
+  it('keeps a focused node folded, and reports unknown ids', () => {
+    const mm = create();
+    const a = idOf(mm, 'A');
+    mm.setFolded(a, true);
+    mm.focusNode(a, { animate: false });
+    expect(mm.foldedIds.has(a)).toBe(true);
+    expect(mm.focusNode('gone')).toBe(false);
+  });
+});
+
+describe('themes per map', () => {
+  it('scopes theme CSS to each map and cleans up', () => {
+    const options = { measurer: approximateMeasurer, duration: 0 };
+    const a = Markmap.create(createSvg(), parse('# A').root, options);
+    const b = Markmap.create(createSvg(), parse('# B').root, options);
+    expect(scope(a)).not.toBe(scope(b));
+    const css = a.element.querySelector('style')!.textContent!;
+    expect(css.startsWith(`.${scope(a)}{`)).toBe(true);
+    expect(css).not.toContain(scope(b));
+    a.destroy();
+    expect(a.element.classList).toHaveLength(0);
   });
 });

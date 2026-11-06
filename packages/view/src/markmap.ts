@@ -110,11 +110,25 @@ function walk(node: MarkmapNode, visit: (node: MarkmapNode, depth: number) => vo
 /** How close to a node's fold anchor a click must be to toggle it, in px. */
 const TOGGLE_RADIUS = 10;
 
+/** A class of its own for a map's theme CSS, so maps on one page keep their themes apart. */
+const uniqueClass = () => `markmap-${Math.random().toString(36).slice(2, 10)}`;
+
+/** The nodes from `node` down to the one with `id`, or `undefined` if it is not there. */
+function pathTo(node: MarkmapNode, id: string): MarkmapNode[] | undefined {
+  if (node.id === id) return [node];
+  for (const child of node.children) {
+    const path = pathTo(child, id);
+    if (path) return [node, ...path];
+  }
+  return undefined;
+}
+
 const isBackend = (value: Element | ViewBackend): value is ViewBackend =>
   typeof (value as ViewBackend).draw === 'function';
 
 export class Markmap {
   readonly backend: ViewBackend;
+  private scopeClass = uniqueClass();
   private viewOptions: ViewOptions = DEFAULTS;
   private zoomBehavior: ZoomBehavior<Element, unknown>;
   private selection: Selection<Element, unknown, null, undefined>;
@@ -153,7 +167,7 @@ export class Markmap {
   constructor(target: SVGSVGElement | ViewBackend, options: ViewOptions = {}) {
     this.backend = isBackend(target) ? target : new SvgDomBackend(target);
     const { element } = this.backend;
-    element.classList.add('markmap');
+    element.classList.add('markmap', this.scopeClass);
     this.measurer = options.measurer ?? createCanvasMeasurer();
     this.applyOptions(options);
 
@@ -198,7 +212,7 @@ export class Markmap {
   private applyOptions(options: ViewOptions) {
     this.viewOptions = { ...DEFAULTS, ...options };
     if (options.measurer) this.measurer = options.measurer;
-    this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme));
+    this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme, `.${this.scopeClass}`));
   }
 
   static create(
@@ -254,8 +268,8 @@ export class Markmap {
     if (!sameSet(before, this.folded)) this.emit('fold', this.folded);
   }
 
-  /** Re-measure, lay out and draw the current tree. */
-  render(): RenderResult | undefined {
+  /** Re-measure, lay out and draw the current tree, animated unless `animate` is `false`. */
+  render({ animate = true }: { animate?: boolean } = {}): RenderResult | undefined {
     if (!this.root) return undefined;
     this.result = renderTree(this.root, {
       ...this.viewOptions,
@@ -264,7 +278,7 @@ export class Markmap {
     });
     const target = this.result.state;
     const from = this.frame;
-    const duration = this.duration;
+    const duration = animate ? this.duration : 0;
     if (from && duration > 0) {
       const theme = this.theme;
       const layout = this.options.layout;
@@ -336,6 +350,49 @@ export class Markmap {
     });
   }
 
+  /**
+   * Replace the set of folded nodes, as when restoring a saved state: one redraw, keeping
+   * the root still. Ids that no longer exist, and nodes with no children, are ignored.
+   */
+  setFoldedIds(ids: Iterable<string>, { animate = true }: { animate?: boolean } = {}): void {
+    if (!this.root) return;
+    const wanted = new Set(ids);
+    const update = () => {
+      this.folded.clear();
+      walk(this.root!, (node) => {
+        if (wanted.has(node.id) && node.children.length) this.folded.add(node.id);
+      });
+    };
+    this.updateFolded(this.root.id, update, animate);
+  }
+
+  /**
+   * Unfold a node's ancestors and center on it, as for a link to a node. Keeps the current
+   * zoom unless `scale` is given. Returns whether the node exists; a view with no size
+   * yet unfolds but cannot center.
+   */
+  focusNode(id: string, options: { scale?: number; animate?: boolean } = {}): boolean {
+    const path = this.root && pathTo(this.root, id);
+    if (!path) return false;
+    const { animate = true } = options;
+    const hidden = path.slice(0, -1).filter((node) => this.folded.has(node.id));
+    if (hidden.length) {
+      for (const node of hidden) this.folded.delete(node.id);
+      this.render({ animate });
+      this.emit('fold', this.folded);
+    }
+    const rect = this.result?.layout.byId.get(id)?.rect;
+    const { width, height } = this.element.getBoundingClientRect();
+    if (rect && width && height) {
+      const [min, max] = this.zoomBehavior.scaleExtent();
+      const k = Math.min(max, Math.max(min, options.scale ?? this.transform.k));
+      const x = width / 2 - (rect.x + rect.width / 2) * k;
+      const y = height / 2 - (rect.y + rect.height / 2) * k;
+      this.zoomTo(zoomIdentity.translate(x, y).scale(k), animate);
+    }
+    return true;
+  }
+
   /** Unfold a node and everything below it. Defaults to the whole tree. */
   expandAll(id?: string): void {
     const node = this.subtree(id);
@@ -383,7 +440,7 @@ export class Markmap {
    * Change fold state and redraw once, animated, keeping `pinId` still on screen. If that
    * node is not drawn (inside a folded branch), the root stays still instead.
    */
-  private updateFolded(pinId: string, change: () => void) {
+  private updateFolded(pinId: string, change: () => void, animate = true) {
     const before = new Set(this.folded);
     change();
     if (sameSet(before, this.folded)) return;
@@ -393,7 +450,7 @@ export class Markmap {
       this.zoomTween.stop();
       this.pin = { id: pinned.node.id, x, y };
     }
-    this.render();
+    this.render({ animate });
     this.emit('fold', this.folded);
   }
 
@@ -645,7 +702,7 @@ export class Markmap {
     this.pendingFit?.disconnect();
     this.selection.on('.zoom', null);
     this.backend.destroy();
-    this.element.classList.remove('markmap');
+    this.element.classList.remove('markmap', this.scopeClass);
   }
 
   /** Show that a target is clickable, whatever the backend draws it with. */

@@ -14,7 +14,7 @@ export interface ViewTransform {
 export interface ViewBackend {
   /**
    * The element on the page: it receives pointer events, its size is the viewport, and
-   * it gets the `markmap` class that theme CSS applies to.
+   * it gets the `markmap` class and the class of its own that theme CSS applies to.
    */
   readonly element: Element;
   /**
@@ -26,7 +26,7 @@ export interface ViewBackend {
   draw(primitives: Primitive[]): void;
   /** Move the drawing; called whenever the view zooms or pans. */
   setTransform(transform: ViewTransform): void;
-  /** Theme CSS (custom properties on `.markmap`), whenever the theme or color scheme changes. */
+  /** Theme CSS (custom properties on the map's class), whenever the theme or color scheme changes. */
   setCSS(css: string): void;
   /** Remove everything the backend added to the page. */
   destroy(): void;
