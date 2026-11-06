@@ -90,6 +90,57 @@ const mathCode = (tex: string) => ({
   children: [{ type: 'text' as const, value: tex }],
 });
 
+describe('math per backend', () => {
+  const md = '# Root\n\n- $x^2$';
+  const options = {
+    measurer: approximateMeasurer,
+    plugins: [createMathContent()],
+  };
+
+  const atom = (primitives: Primitive[]): Primitive[] =>
+    primitives.flatMap((p) => {
+      if (p.backends) return [p];
+      return p.kind === 'group' ? atom(p.children) : [];
+    });
+
+  it('emits SVG markup and primitives, one for each backend', async () => {
+    const result = await renderTreeAsync(tree(md), options);
+    const variants = atom(result.primitives);
+    expect(variants.map((p) => [p.kind, p.backends])).toEqual([
+      ['custom', ['svg']],
+      ['group', ['canvas']],
+    ]);
+    const svg = toSVGString(result);
+    expect(svg).toContain('viewBox');
+    expect(JSON.stringify(variants[1])).toContain('var(--mm-color)');
+    expect(JSON.stringify(variants[1])).not.toContain('currentColor');
+  });
+
+  it('keeps formulas inside the layout bounds', async () => {
+    const result = await renderTreeAsync(tree(md), options);
+    expect(result.bounds.width).toBeLessThan(result.layout.bounds.width + 20);
+    expect(result.bounds.height).toBeLessThan(result.layout.bounds.height + 20);
+  });
+
+  it('shows the source on canvas when a formula has no primitives', async () => {
+    const svg = {
+      body: '<text>x</text>',
+      viewBox: '0 0 10 10',
+      width: 1,
+      height: 1,
+      verticalAlign: 0,
+    };
+    const plugin = createMathContent({
+      load: () => Promise.resolve({ texToSvg: () => svg }),
+    });
+    const result = await renderTreeAsync(tree(md), { ...options, plugins: [plugin] });
+    expect(atom(result.primitives).map((p) => [p.kind, p.backends])).toEqual([
+      ['custom', ['svg']],
+      ['text', ['canvas']],
+    ]);
+  });
+});
+
 describe('math in popovers', () => {
   it('replaces inline and display math with SVG and keeps invalid TeX', async () => {
     const hast: HastRoot = {

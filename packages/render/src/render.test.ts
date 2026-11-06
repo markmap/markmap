@@ -137,6 +137,37 @@ describe('toSVGString', () => {
     );
   });
 
+  it('finds bounds through scaled and flipped groups', () => {
+    const path: Primitive = { kind: 'path', d: 'M0,0H1000V500', fill: 'red' };
+    const group: Primitive = {
+      kind: 'group',
+      transform: [0.01, 0, 0, -0.01, 5, 20],
+      children: [path],
+    };
+    const bounds = primitiveBounds([group]);
+    expect(bounds.x).toBeCloseTo(5);
+    expect(bounds.y).toBeCloseTo(15);
+    expect(bounds.width).toBeCloseTo(10);
+    expect(bounds.height).toBeCloseTo(5);
+  });
+
+  it('stops bounds at a clip', () => {
+    const path: Primitive = { kind: 'path', d: 'M-500,0H500', fill: 'red' };
+    const clip = { x: 0, y: 0, width: 10, height: 5 };
+    expect(primitiveBounds([{ kind: 'group', clip, children: [path] }])).toEqual(clip);
+  });
+
+  it('clips groups with a nested svg', () => {
+    const group: Primitive = {
+      kind: 'group',
+      clip: { x: 1, y: 2, width: 3, height: 4 },
+      children: [{ kind: 'path', d: 'M0,0', stroke: 'red' }],
+    };
+    expect(primitivesToSVG([group])).toBe(
+      '<g><svg x="1" y="2" width="3" height="4" viewBox="1 2 3 4"><path d="M0,0" style="fill:none;stroke:red"/></svg></g>',
+    );
+  });
+
   it('skips primitives for other backends and overlays', () => {
     const result = render('- a');
     result.primitives.push(

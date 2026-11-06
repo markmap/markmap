@@ -36,6 +36,8 @@ export interface GroupPrimitive extends PrimitiveBase {
   nodeId?: string;
   transform?: Matrix;
   opacity?: number;
+  /** Hide what falls outside this rectangle, in the group's own coordinates. */
+  clip?: Rect;
   children: Primitive[];
 }
 

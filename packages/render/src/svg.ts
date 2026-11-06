@@ -107,13 +107,15 @@ function serialize(primitives: Primitive[], options: PrimitivesToSVGOptions): st
   for (const p of primitives) {
     if (p.backends && !p.backends.includes('svg')) continue;
     switch (p.kind) {
-      case 'group':
+      case 'group': {
+        const content = primitivesToSVG(p.children, options);
         out += `<g${attrs({
           transform: p.transform && `matrix(${p.transform.map(num).join(' ')})`,
           opacity: p.opacity,
           'data-node-id': p.nodeId,
-        })}>${primitivesToSVG(p.children, options)}</g>`;
+        })}>${p.clip ? clipped(content, p.clip) : content}</g>`;
         break;
+      }
       case 'rect':
         out += `<rect${attrs({ x: p.x, y: p.y, width: p.w, height: p.h, rx: p.r, style: paint(p) })}/>`;
         break;
@@ -155,6 +157,12 @@ function serialize(primitives: Primitive[], options: PrimitivesToSVGOptions): st
     }
   }
   return out;
+}
+
+/** A nested `<svg>` hides what overflows it, without needing an id like `<clipPath>`. */
+function clipped(content: string, { x, y, width, height }: Rect): string {
+  const viewBox = [x, y, width, height].map(num).join(' ');
+  return `<svg${attrs({ x, y, width, height, viewBox })}>${content}</svg>`;
 }
 
 /** Theme tokens as CSS custom property declarations. */

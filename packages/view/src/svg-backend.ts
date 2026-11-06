@@ -64,7 +64,12 @@ export class SvgDomBackend implements ViewBackend {
       setAttr(el, 'data-node-id', isGroup ? (p.nodeId ?? null) : null);
       setAttr(el, 'data-key', key);
 
-      const markup = primitivesToSVG(isGroup ? p.children : [p], { interactive: true });
+      const content = !isGroup
+        ? [p]
+        : p.clip
+          ? [{ ...p, transform: undefined, opacity: undefined }]
+          : p.children;
+      const markup = primitivesToSVG(content, { interactive: true });
       if (markup !== item.markup) {
         // Animated edges only change their path data: update it in place.
         if (!patchPath(el, item.markup, markup)) el.innerHTML = markup;

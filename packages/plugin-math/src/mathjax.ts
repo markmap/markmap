@@ -5,6 +5,8 @@ import { TeX } from 'mathjax-full/js/input/tex.js';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
 import { mathjax } from 'mathjax-full/js/mathjax.js';
 import { SVG } from 'mathjax-full/js/output/svg.js';
+import type { Primitive } from '@markmap/core';
+import { type SvgNode, svgToPrimitives } from './shapes';
 
 /** A formula as self-contained SVG, measured in ex. */
 export interface MathSvg {
@@ -15,6 +17,12 @@ export interface MathSvg {
   height: number;
   /** Distance of the baseline below the bottom edge (usually negative), from `vertical-align`. */
   verticalAlign: number;
+  /**
+   * The formula as primitives in `viewBox` coordinates, for backends that cannot use SVG
+   * markup, with `currentColor` standing for the text color. `undefined` when the
+   * formula uses something that has no primitive.
+   */
+  shapes?: Primitive[];
 }
 
 /**
@@ -36,6 +44,18 @@ const doc = mathjax.document('', {
 
 const ex = (value: string | null | undefined) => Number.parseFloat(value ?? '') || 0;
 
+/** MathJax's element tree in the form {@link svgToPrimitives} takes. */
+function toSvgNode(node: LiteElement): SvgNode {
+  const attrs: Record<string, string> = {};
+  for (const { name, value } of adaptor.allAttributes(node)) attrs[name] = value;
+  const children = adaptor.childNodes(node).map((child) => {
+    const tag = adaptor.kind(child);
+    // No element takes text: a <text> or stray node rejects the whole formula.
+    return tag.startsWith('#') ? { tag, attrs: {}, children: [] } : toSvgNode(child as LiteElement);
+  });
+  return { tag: adaptor.kind(node), attrs, children };
+}
+
 /** Convert TeX to SVG. Throws on TeX errors. */
 export function texToSvg(tex: string, display: boolean): MathSvg {
   const container = doc.convert(tex, { display });
@@ -56,5 +76,6 @@ export function texToSvg(tex: string, display: boolean): MathSvg {
     width: ex(adaptor.getAttribute(svg, 'width')),
     height: ex(adaptor.getAttribute(svg, 'height')),
     verticalAlign: ex(/vertical-align:\s*([-\d.]+)ex/.exec(style)?.[1]),
+    shapes: svgToPrimitives(toSvgNode(svg).children),
   };
 }

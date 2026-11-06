@@ -60,6 +60,15 @@ describe('SvgDomBackend', () => {
     expect(backend.get('b')).toBeUndefined();
   });
 
+  it('clips top-level groups in their own coordinates', () => {
+    const backend = new SvgDomBackend(createSvg());
+    backend.draw([{ ...group('a', 10), clip: { x: 0, y: 0, width: 5, height: 5 } } as Primitive]);
+    const el = backend.get('a')!;
+    expect(el.getAttribute('transform')).toBe('matrix(1 0 0 1 10 0)');
+    expect(el.querySelector('g')?.getAttribute('transform')).toBeNull();
+    expect(el.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 5 5');
+  });
+
   it('skips primitives for other backends', () => {
     const backend = new SvgDomBackend(createSvg());
     backend.draw([{ ...group('a', 0), backends: ['canvas'] }]);

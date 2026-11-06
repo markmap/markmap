@@ -83,17 +83,20 @@ export function drawPrimitives(
 
   const draw = (list: readonly Primitive[]) => {
     for (const p of list) {
-      if (p.backends && !p.backends.includes('canvas')) {
-        warn(`Skipped a ${p.kind} primitive that does not support canvas`);
-        continue;
-      }
+      // Excluded on purpose, usually next to a variant for canvas.
+      if (p.backends && !p.backends.includes('canvas')) continue;
       switch (p.kind) {
         case 'group': {
-          const isolated = p.transform || p.opacity != null;
+          const isolated = p.transform || p.opacity != null || p.clip;
           const outerFont = currentFont;
           if (isolated) ctx.save();
           if (p.transform) ctx.transform(...p.transform);
           if (p.opacity != null) ctx.globalAlpha *= p.opacity;
+          if (p.clip) {
+            ctx.beginPath();
+            ctx.rect(p.clip.x, p.clip.y, p.clip.width, p.clip.height);
+            ctx.clip();
+          }
           draw(p.children);
           if (isolated) {
             ctx.restore();

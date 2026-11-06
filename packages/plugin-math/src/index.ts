@@ -1,7 +1,17 @@
-import type { AtomSize, ContentPlugin, InlineContext, Primitive, TextStyle } from '@markmap/core';
+import type {
+  AtomSize,
+  ContentPlugin,
+  InlineContext,
+  Matrix,
+  Primitive,
+  Rect,
+  TextPrimitive,
+  TextStyle,
+} from '@markmap/core';
 import type { Element, ElementContent, Root as HastRoot } from 'hast';
 import type { InlineMath } from 'mdast-util-math';
 import type { MathSvg } from './mathjax';
+import { withColor } from './shapes';
 
 /** Parses `$…$` (and `$$…$$`) into math nodes. Pass it to `parse(md, { plugins })`. */
 export { default as remarkMath } from 'remark-math';
@@ -37,6 +47,20 @@ function sourceSize(tex: string, style: TextStyle, ctx: InlineContext): AtomSize
 interface RawNode {
   type: 'raw';
   value: string;
+}
+
+/** Fit a `viewBox` in `box`, centered and keeping its aspect ratio, like SVG does. */
+function fitViewBox(viewBox: string, box: Rect): Matrix {
+  const [minX, minY, width, height] = viewBox.split(/\s+/).map(Number);
+  const k = Math.min(box.width / width, box.height / height);
+  return [
+    k,
+    0,
+    0,
+    k,
+    box.x + (box.width - width * k) / 2 - minX * k,
+    box.y + (box.height - height * k) / 2 - minY * k,
+  ];
 }
 
 const escapeAttr = (value: string) => value.replace(/[&"<>]/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -160,12 +184,13 @@ export function createMathContent(options: MathContentOptions = {}): ContentPlug
         },
         render(inline, box, style, ctx): Primitive[] {
           const svg = formulas.get(inline.value);
-          if (!svg || svg instanceof Error) {
+          const sourceText = (): TextPrimitive => {
             const source = sourceStyle(style, ctx);
             const { baseline } = sourceSize(inline.value, style, ctx);
             const run = { text: inline.value, x: 0, y: baseline, ...source };
-            return [{ kind: 'text', x: box.x, y: box.y, runs: [run] }];
-          }
+            return { kind: 'text', x: box.x, y: box.y, runs: [run] };
+          };
+          if (!svg || svg instanceof Error) return [sourceText()];
           const attrs = [
             `x="${box.x}"`,
             `y="${box.y}"`,
@@ -175,7 +200,17 @@ export function createMathContent(options: MathContentOptions = {}): ContentPlug
             // MathJax paints with currentColor.
             `style="color:${escapeAttr(style.fill)};overflow:visible"`,
           ].join(' ');
-          return [{ kind: 'custom', svg: () => `<svg ${attrs}>${svg.body}</svg>` }];
+          return [
+            { kind: 'custom', backends: ['svg'], svg: () => `<svg ${attrs}>${svg.body}</svg>` },
+            svg.shapes
+              ? {
+                  kind: 'group',
+                  backends: ['canvas'],
+                  transform: fitViewBox(svg.viewBox, box),
+                  children: withColor(svg.shapes, style.fill),
+                }
+              : { ...sourceText(), backends: ['canvas'] },
+          ];
         },
       },
     },

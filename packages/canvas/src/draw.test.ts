@@ -17,6 +17,7 @@ function recorder() {
     ...state,
     beginPath() {},
     rect: record('rect'),
+    clip: record('clip'),
     roundRect: record('roundRect'),
     transform: record('transform'),
     fillText(text: string, x: number, y: number) {
@@ -135,6 +136,24 @@ describe('drawPrimitives', () => {
     expect(calls.filter(([name]) => name === 'restore')).toHaveLength(2);
   });
 
+  it('clips groups in their own coordinates', () => {
+    const calls = draw([
+      {
+        kind: 'group',
+        transform: [2, 0, 0, 2, 0, 0],
+        clip: { x: 1, y: 2, width: 3, height: 4 },
+        children: [],
+      },
+    ]);
+    expect(calls).toEqual([
+      ['save'],
+      ['transform', 2, 0, 0, 2, 0, 0],
+      ['rect', 1, 2, 3, 4],
+      ['clip'],
+      ['restore'],
+    ]);
+  });
+
   it('leaves plain groups without saving the context', () => {
     const calls = draw([{ kind: 'group', children: [] }]);
     expect(calls).toEqual([]);
@@ -147,7 +166,7 @@ describe('drawPrimitives', () => {
     expect(calls).toEqual([['save'], ['restore']]);
   });
 
-  it('skips what canvas cannot draw, and warns', () => {
+  it('skips what is not for canvas, and warns about what cannot be drawn', () => {
     const warn = vi.fn<(message: string) => void>();
     const calls = draw(
       [
@@ -158,7 +177,7 @@ describe('drawPrimitives', () => {
       { warn },
     );
     expect(calls).toEqual([]);
-    expect(warn).toHaveBeenCalledTimes(3);
+    expect(warn).toHaveBeenCalledTimes(2);
   });
 
   it('draws nothing for hit areas and links', () => {

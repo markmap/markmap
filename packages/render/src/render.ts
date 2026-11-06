@@ -5,6 +5,7 @@ import {
   type Layout,
   type LayoutNode,
   type LayoutResult,
+  type Matrix,
   multiply,
   oppositeSide,
   type PresenceStyle,
@@ -296,23 +297,39 @@ function pathPoints(d: string): [number, number][] {
  */
 export function primitiveBounds(primitives: Primitive[]): Rect {
   const rects: Rect[] = [];
-  const visit = (items: Primitive[], dx: number, dy: number) => {
+  /** Add a box around a point, whose stroke scales with the matrix. */
+  const addPoint = ([a, b, c, d, e, f]: Matrix, x: number, y: number, size: number) => {
+    const s = size * Math.max(Math.hypot(a, b), Math.hypot(c, d));
+    rects.push({
+      x: a * x + c * y + e - s,
+      y: b * x + d * y + f - s,
+      width: 2 * s,
+      height: 2 * s,
+    });
+  };
+  const addBox = (matrix: Matrix, { x, y, width, height }: Rect, size: number) => {
+    addPoint(matrix, x, y, size);
+    addPoint(matrix, x + width, y, size);
+    addPoint(matrix, x, y + height, size);
+    addPoint(matrix, x + width, y + height, size);
+  };
+  const visit = (items: Primitive[], outer: Matrix) => {
     for (const p of items) {
       if (p.kind === 'group') {
-        const [, , , , e, f] = p.transform ?? translate(0, 0);
-        visit(p.children, dx + e, dy + f);
+        const matrix = p.transform ? multiply(outer, p.transform) : outer;
+        // Nothing shows outside a clip, however far the content reaches.
+        if (p.clip) addBox(matrix, p.clip, 0);
+        else visit(p.children, matrix);
       } else if (p.kind === 'rect' || p.kind === 'image') {
-        const s = p.kind === 'rect' ? strokeOf(p) : 0;
-        rects.push({ x: dx + p.x - s, y: dy + p.y - s, width: p.w + 2 * s, height: p.h + 2 * s });
+        const box = { x: p.x, y: p.y, width: p.w, height: p.h };
+        addBox(outer, box, p.kind === 'rect' ? strokeOf(p) : 0);
       } else if (p.kind === 'path') {
         const s = strokeOf(p);
-        for (const [x, y] of pathPoints(p.d)) {
-          rects.push({ x: dx + x - s, y: dy + y - s, width: 2 * s, height: 2 * s });
-        }
+        for (const [x, y] of pathPoints(p.d)) addPoint(outer, x, y, s);
       }
     }
   };
-  visit(primitives, 0, 0);
+  visit(primitives, translate(0, 0));
   return unionRects(rects);
 }
 
