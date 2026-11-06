@@ -289,7 +289,7 @@ export class MarkmapViewElement extends Base {
       ...attributes,
     });
     this.optionWarnings = warnings;
-    map.setData(root, options);
+    map.setTree(root, options);
     if (this.needsFit) {
       this.needsFit = false;
       map.fit();

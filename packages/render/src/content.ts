@@ -1,4 +1,4 @@
-import type { AttachmentMarker, Checkbox, ContentPlugin, Inline } from '@markmap/core';
+import type { NoteMarker, Checkbox, ContentPlugin, Inline } from '@markmap/core';
 
 const SAFE_URL = /^(?:https?:|mailto:|tel:|#|\/|\.{1,2}\/|[^:/?#]*(?:[/?#]|$))/i;
 
@@ -28,12 +28,12 @@ export const basicContent: ContentPlugin = {
         weight: 400,
         style: 'normal',
       },
-      fill: 'var(--mm-code-color)',
+      fill: 'var(--mm-code-text)',
       decoration: { background: 'var(--mm-code-bg)', radius: 3, padding: style.font.size * 0.2 },
     }),
     link: (inline) => {
       const href = sanitizeUrl(inline.url);
-      return { fill: 'var(--mm-link-color)', decoration: href ? { href } : undefined };
+      return { fill: 'var(--mm-link)', decoration: href ? { href } : undefined };
     },
   },
   atoms: {
@@ -74,18 +74,18 @@ export const basicContent: ContentPlugin = {
 };
 
 /**
- * Adds a dot after the label of nodes with attachments, with a hit area that asks the
+ * Adds a dot after the label of nodes with notes, with a hit area that asks the
  * view to open them. The dot is exported; the hit area is interactive-only.
  */
-export const attachmentContent: ContentPlugin = {
-  name: 'attachments',
+export const noteContent: ContentPlugin = {
+  name: 'notes',
   transform(content, node) {
-    const count = node.attachments.length;
+    const count = node.notes.length;
     if (!count) return content;
-    return [...content, { type: 'attachmentMarker', count } satisfies AttachmentMarker] as Inline[];
+    return [...content, { type: 'noteMarker', count } satisfies NoteMarker] as Inline[];
   },
   atoms: {
-    attachmentMarker: {
+    noteMarker: {
       measure(_inline, style) {
         const dot = Math.round(style.font.size * 0.4);
         const gap = style.font.size * 0.35;
@@ -97,10 +97,10 @@ export const attachmentContent: ContentPlugin = {
         const x = box.x + box.width - dot;
         const hit = Math.max(16, dot * 2.5);
         return [
-          { kind: 'rect', x, y: box.y, w: dot, h: dot, r: dot / 2, fill: 'var(--mm-attachment)' },
+          { kind: 'rect', x, y: box.y, w: dot, h: dot, r: dot / 2, fill: 'var(--mm-note-dot)' },
           {
             kind: 'hit',
-            action: 'attachments',
+            action: 'notes',
             rect: {
               x: x + dot / 2 - hit / 2,
               y: box.y + dot / 2 - hit / 2,

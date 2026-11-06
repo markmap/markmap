@@ -10,18 +10,18 @@ import { flextree, type FlextreeNode } from 'd3-flextree';
 
 /**
  * Siblings sit side by side here, and labels need more room across than above each
- * other, so the sibling gap is this many times `spacingVertical`.
+ * other, so the sibling gap is this many times `siblingGap`.
  */
 const SIBLING_GAP_FACTOR = 3;
 
 /**
  * Top-down tidy tree: the root at the top, children in a row below their parent.
- * `spacingHorizontal` is the gap between levels; siblings are `spacingVertical × 3`
+ * `levelGap` is the gap between levels; siblings are `siblingGap × 3`
  * apart, doubled between cousins.
  */
 export function layoutOrgChart(root: MarkmapNode, options: LayoutOptions): LayoutResult {
-  const { sizes, folded, spacingHorizontal = 80, spacingVertical = 5 } = options;
-  const siblingGap = spacingVertical * SIBLING_GAP_FACTOR;
+  const { sizes, folded, levelGap = 80, siblingGap = 5 } = options;
+  const scaledGap = siblingGap * SIBLING_GAP_FACTOR;
   const sizeOf = (node: MarkmapNode) => {
     const size = sizes.get(node.id);
     if (!size) throw new Error(`Missing size for node ${node.id}`);
@@ -32,9 +32,9 @@ export function layoutOrgChart(root: MarkmapNode, options: LayoutOptions): Layou
     children: (node) => (folded?.has(node.id) ? undefined : node.children),
     nodeSize: (h) => {
       const { width, height } = sizeOf(h.data);
-      return [width, height + spacingHorizontal];
+      return [width, height + levelGap];
     },
-    spacing: (a, b) => (a.parent === b.parent ? siblingGap : siblingGap * 2),
+    spacing: (a, b) => (a.parent === b.parent ? scaledGap : scaledGap * 2),
   });
   const tree = layout.hierarchy(root);
   layout(tree);

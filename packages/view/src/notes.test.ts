@@ -4,7 +4,7 @@ import { parse } from '@markmap/parse';
 import { approximateMeasurer } from '@markmap/render';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Markmap } from '.';
-import { attachmentsToHtml } from './attachments-html';
+import { notesToHtml } from './notes-html';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -15,7 +15,7 @@ function createSvg(): SVGSVGElement {
   return svg;
 }
 
-const dot = (mm: Markmap) => mm.element.querySelector<SVGElement>('[data-action="attachments"]')!;
+const dot = (mm: Markmap) => mm.element.querySelector<SVGElement>('[data-action="notes"]')!;
 
 /** Layout point at the center of the first `hit` primitive (only translated groups). */
 function hitCenter(list: Primitive[], dx = 0, dy = 0): [number, number] | undefined {
@@ -34,20 +34,20 @@ function hitCenter(list: Primitive[], dx = 0, dy = 0): [number, number] | undefi
   return undefined;
 }
 
-/** Click where the attachment dot is drawn, as a user would. */
+/** Click where the note dot is drawn, as a user would. */
 function clickDot(mm: Markmap) {
-  const [clientX, clientY] = mm.transform.apply(hitCenter(mm.state!.primitives)!);
+  const [clientX, clientY] = mm.transform.apply(hitCenter(mm.result!.primitives)!);
   mm.element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX, clientY }));
 }
-const notesOf = (md: string) => parse(md).root.children[0].attachments;
+const notesOf = (md: string) => parse(md).root.children[0].notes;
 
 afterEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('attachmentsToHtml', () => {
+describe('notesToHtml', () => {
   it('renders blocks, including GFM and highlights', async () => {
-    const html = await attachmentsToHtml(
+    const html = await notesToHtml(
       notesOf(
         '- a\n\n  Some **text** and ==mark==.\n\n  ```js\n  const x = 1;\n  ```\n\n  | h |\n  | - |\n  | c |',
       ),
@@ -60,7 +60,7 @@ describe('attachmentsToHtml', () => {
   });
 
   it('opens links in a new tab and drops unsafe URLs', async () => {
-    const html = await attachmentsToHtml(
+    const html = await notesToHtml(
       notesOf('- a\n\n  [ok](https://x.y) [bad](javascript:alert(1))'),
     );
     expect(html).toContain(
@@ -70,7 +70,7 @@ describe('attachmentsToHtml', () => {
   });
 
   it('never contains raw HTML; sized <img> tags come through clean', async () => {
-    const html = await attachmentsToHtml(
+    const html = await notesToHtml(
       notesOf(
         '- a\n\n  x <img src=x.png width=40 onerror=alert(1)> <b>y</b> <img src="javascript:alert(1)">',
       ),
@@ -85,16 +85,16 @@ describe('attachmentsToHtml', () => {
 describe('code highlighting', () => {
   it('leaves unknown languages, plain blocks and opted-out popovers alone', async () => {
     const notes = notesOf('- a\n\n  ```nosuchlang\n  if\n  ```\n\n  ```\n  if\n  ```');
-    const html = await attachmentsToHtml(notes);
+    const html = await notesToHtml(notes);
     expect(html).not.toContain('hljs');
-    const off = await attachmentsToHtml(notesOf('- a\n\n  ```js\n  if\n  ```'), {
+    const off = await notesToHtml(notesOf('- a\n\n  ```js\n  if\n  ```'), {
       highlight: false,
     });
     expect(off).toBe('<pre><code class="language-js">if\n</code></pre>');
   });
 
   it('only adds spans: markup in code stays text', async () => {
-    const html = await attachmentsToHtml(
+    const html = await notesToHtml(
       notesOf('- a\n\n  ```html\n  <img src=x onerror=alert(1)>\n  ```'),
     );
     expect(html).toContain('&#x3C;');
@@ -102,7 +102,7 @@ describe('code highlighting', () => {
   });
 
   it('runs plugin popover hooks after sanitizing', async () => {
-    const html = await attachmentsToHtml(notesOf('- a\n\n  text'), {
+    const html = await notesToHtml(notesOf('- a\n\n  text'), {
       plugins: [
         {
           name: 'raw',
@@ -116,16 +116,16 @@ describe('code highlighting', () => {
   });
 });
 
-describe('attachment popover', () => {
+describe('note popover', () => {
   const md = '# R\n\n- with notes\n\n  A note with [a link](https://x.y).\n\n- plain';
   const create = () =>
     Markmap.create(createSvg(), parse(md).root, { measurer: approximateMeasurer });
 
-  it('draws one hit area per node with attachments', () => {
+  it('draws one hit area per node with notes', () => {
     const mm = create();
-    expect(mm.element.querySelectorAll('[data-action="attachments"]')).toHaveLength(1);
+    expect(mm.element.querySelectorAll('[data-action="notes"]')).toHaveLength(1);
     expect(dot(mm).closest('[data-node-id]')?.getAttribute('data-node-id')).toBe(
-      mm.state!.layout.nodes[1].node.id,
+      mm.result!.layout.nodes[1].node.id,
     );
   });
 
@@ -136,43 +136,43 @@ describe('attachment popover', () => {
     const popover = document.querySelector<HTMLElement>('.markmap-popover')!;
     expect(popover.innerHTML).toContain('<a href="https://x.y"');
     expect(popover.getAttribute('role')).toBe('dialog');
-    expect(popover.style.getPropertyValue('--mm-link-color')).toBe('#0097e6');
-    expect(mm.openAttachmentsId).toBe(mm.state!.layout.nodes[1].node.id);
+    expect(popover.style.getPropertyValue('--mm-link')).toBe('#0097e6');
+    expect(mm.openNoteId).toBe(mm.result!.layout.nodes[1].node.id);
     clickDot(mm);
     expect(document.querySelector('.markmap-popover')).toBeNull();
   });
 
   it('closes on Escape, outside clicks and when the node goes away', async () => {
     const mm = create();
-    const id = mm.state!.layout.nodes[1].node.id;
-    await mm.openAttachments(id);
+    const id = mm.result!.layout.nodes[1].node.id;
+    await mm.openNotes(id);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    expect(mm.openAttachmentsId).toBeUndefined();
+    expect(mm.openNoteId).toBeUndefined();
 
-    await mm.openAttachments(id);
+    await mm.openNotes(id);
     document
       .querySelector('.markmap-popover')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(mm.openAttachmentsId).toBe(id);
+    expect(mm.openNoteId).toBe(id);
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(mm.openAttachmentsId).toBeUndefined();
+    expect(mm.openNoteId).toBeUndefined();
 
-    await mm.openAttachments(id);
-    mm.setData(parse('# R\n\n- plain').root);
+    await mm.openNotes(id);
+    mm.setTree(parse('# R\n\n- plain').root);
     expect(document.querySelector('.markmap-popover')).toBeNull();
   });
 
   it('ignores a popover that finished loading after it was closed', async () => {
     const mm = create();
-    const opening = mm.openAttachments(mm.state!.layout.nodes[1].node.id);
-    mm.closeAttachments();
+    const opening = mm.openNotes(mm.result!.layout.nodes[1].node.id);
+    mm.closeNotes();
     await opening;
     expect(document.querySelector('.markmap-popover')).toBeNull();
   });
 
-  it('does nothing for nodes without attachments', async () => {
+  it('does nothing for nodes without notes', async () => {
     const mm = create();
-    await mm.openAttachments(mm.state!.layout.nodes[2].node.id);
-    expect(mm.openAttachmentsId).toBeUndefined();
+    await mm.openNotes(mm.result!.layout.nodes[2].node.id);
+    expect(mm.openNoteId).toBeUndefined();
   });
 });

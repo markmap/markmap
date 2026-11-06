@@ -20,7 +20,7 @@ export interface ImageContentOptions {
   loadSize?: (src: string) => Promise<Size>;
   /** Return `false` to show an image's alt text instead, e.g. to block remote images. */
   allow?: (src: string) => boolean;
-  /** Width cap when labels do not wrap, in px. With wrapping, `maxWidth` caps images too. */
+  /** Width cap when labels do not wrap, in px. With wrapping, `wrapWidth` caps images too. */
   maxWidth?: number;
 }
 
@@ -132,7 +132,7 @@ export function createImageContent(options: ImageContentOptions = {}): ContentPl
       size = guess(given);
     }
     const max =
-      ctx.maxWidth && ctx.maxWidth > 0 ? ctx.maxWidth : (options.maxWidth ?? DEFAULT_MAX_WIDTH);
+      ctx.wrapWidth && ctx.wrapWidth > 0 ? ctx.wrapWidth : (options.maxWidth ?? DEFAULT_MAX_WIDTH);
     return size.width > max ? { width: max, height: (size.height * max) / size.width } : size;
   };
 

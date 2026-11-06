@@ -33,7 +33,7 @@ const node: MarkmapNode = {
   id: 'n',
   type: 'listItem',
   content: [],
-  attachments: [],
+  notes: [],
   data: {},
   children: [],
 };
@@ -46,8 +46,8 @@ const options = (extra: Partial<TextLayoutOptions> = {}): TextLayoutOptions => (
 });
 const layout = (content: Inline[], extra?: Partial<TextLayoutOptions>) =>
   layoutText(content, options(extra));
-const lines = (content: Inline[], maxWidth: number) => {
-  const result = layout(content, { maxWidth });
+const lines = (content: Inline[], wrapWidth: number) => {
+  const result = layout(content, { wrapWidth });
   const byLine = new Map<number, string>();
   for (const run of result.runs) byLine.set(run.y, (byLine.get(run.y) ?? '') + run.text);
   return [...byLine.values()];
@@ -93,7 +93,7 @@ describe('layoutText', () => {
 
   it('wraps at spaces and trims them at line ends', () => {
     expect(lines(text('aaa bbb ccc'), 70)).toEqual(['aaa bbb', 'ccc']);
-    expect(layout(text('aaa bbb ccc'), { maxWidth: 70 }).width).toBe(70);
+    expect(layout(text('aaa bbb ccc'), { wrapWidth: 70 }).width).toBe(70);
   });
 
   it('breaks words longer than the line', () => {
@@ -134,7 +134,7 @@ describe('layoutText', () => {
       ['a ', 0, 400, 'normal', 'black'],
       ['b', 20, 700, 'normal', 'black'],
       ['c', 30, 400, 'italic', 'black'],
-      ['d', 40, 400, 'normal', 'var(--mm-link-color)'],
+      ['d', 40, 400, 'normal', 'var(--mm-link)'],
     ]);
   });
 
@@ -156,7 +156,7 @@ describe('layoutText', () => {
   it('decorates spans across lines and nested styles', () => {
     const { primitives } = layout(
       [{ type: 'delete', children: [...text('aa '), { type: 'mark', children: text('bb cc') }] }],
-      { maxWidth: 50 },
+      { wrapWidth: 50 },
     );
     const of = (kind: Primitive['kind']) => primitives.filter((p) => p.kind === kind);
     // Strike on both lines; highlight on both lines, starting at "bb".
@@ -230,27 +230,27 @@ describe('sanitizeUrl', () => {
   });
 });
 
-describe('attachment marker', () => {
+describe('note marker', () => {
   const withNotes: MarkmapNode = {
     ...node,
     content: text('label'),
-    attachments: [{ block: { type: 'paragraph', children: text('note') }, after: 0 }],
+    notes: [{ block: { type: 'paragraph', children: text('note') }, after: 0 }],
   };
 
   it('adds a dot and a hit area after the label', () => {
     const ctx = { theme, measurer: mono, node: withNotes };
     const content = transformContent(defaultContentPlugins, ctx);
-    expect(content.at(-1)).toEqual({ type: 'attachmentMarker', count: 1 });
+    expect(content.at(-1)).toEqual({ type: 'noteMarker', count: 1 });
     const { primitives, width } = layout(content, { ctx });
     const dot = primitives.find((p) => p.kind === 'rect');
     const hit = primitives.find((p) => p.kind === 'hit');
-    expect(dot).toMatchObject({ fill: 'var(--mm-attachment)' });
+    expect(dot).toMatchObject({ fill: 'var(--mm-note-dot)' });
     expect((dot as { x: number }).x).toBeGreaterThan(50);
     expect(width).toBeGreaterThan(50);
-    expect(hit).toMatchObject({ action: 'attachments' });
+    expect(hit).toMatchObject({ action: 'notes' });
   });
 
-  it('adds nothing without attachments', () => {
+  it('adds nothing without notes', () => {
     const content = transformContent(defaultContentPlugins, { theme, measurer: mono, node });
     expect(content).toEqual([]);
   });

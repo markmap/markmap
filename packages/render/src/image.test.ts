@@ -1,7 +1,7 @@
 import type { Primitive, Size } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { describe, expect, it } from 'vitest';
-import { attachmentContent, basicContent } from './content';
+import { noteContent, basicContent } from './content';
 import { createImageContent, type ImageContentOptions, sanitizeImageUrl } from './image';
 import { approximateMeasurer } from './measure';
 import { renderTree, renderTreeAsync } from './render';
@@ -11,10 +11,10 @@ const images = (primitives: Primitive[]): Extract<Primitive, { kind: 'image' }>[
     p.kind === 'image' ? [p] : p.kind === 'group' ? images(p.children) : [],
   );
 
-function setup(options: ImageContentOptions = {}, maxWidth = 0) {
-  const plugins = [basicContent, createImageContent(options), attachmentContent];
+function setup(options: ImageContentOptions = {}, wrapWidth = 0) {
+  const plugins = [basicContent, createImageContent(options), noteContent];
   return (md: string) =>
-    renderTree(parse(md).root, { measurer: approximateMeasurer, plugins, maxWidth });
+    renderTree(parse(md).root, { measurer: approximateMeasurer, plugins, wrapWidth });
 }
 
 const loader = (sizes: Record<string, Size>) => {
@@ -61,7 +61,7 @@ describe('image content', () => {
     expect(images(result.primitives)[0]).toMatchObject({ w: 80, h: 20 });
   });
 
-  it('caps the width at maxWidth', () => {
+  it('caps the width at wrapWidth', () => {
     const result = setup({}, 100)('# <img src="d.png" width="400" height="200">');
     expect(images(result.primitives)[0]).toMatchObject({ w: 100, h: 50 });
   });

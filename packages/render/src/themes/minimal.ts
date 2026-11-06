@@ -17,20 +17,20 @@ const DOT_RADIUS = 3.5;
 export const minimalTheme: Theme = {
   name: 'minimal',
   tokens: {
-    'mm-color': '#333',
+    'mm-text': '#333',
     'mm-bg': '#fff',
     'mm-edge': '#c4c4c4',
     ...CONTENT_TOKENS,
   },
   darkTokens: {
-    'mm-color': '#ddd',
+    'mm-text': '#ddd',
     'mm-bg': '#1e1e1e',
     'mm-edge': '#555',
     ...DARK_CONTENT_TOKENS,
   },
   font: SYSTEM_FONT,
   codeFontFamily: CODE_FONT,
-  textFill: 'var(--mm-color)',
+  textFill: 'var(--mm-text)',
   node: {
     padding: [2, 4, 2, 4],
     textAlign: (ctx) => alignFor(ctx.direction),

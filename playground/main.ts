@@ -17,7 +17,7 @@ const layoutSelect = document.querySelector<HTMLSelectElement>('#layout')!;
 const themeSelect = document.querySelector<HTMLSelectElement>('#theme')!;
 const schemeSelect = document.querySelector<HTMLSelectElement>('#scheme')!;
 const baseOptions: ViewOptions = {
-  maxWidth: 300,
+  wrapWidth: 300,
   plugins: [...defaultContentPlugins, mathContent],
 };
 const rendererSelect = document.querySelector<HTMLSelectElement>('#renderer')!;
@@ -48,9 +48,9 @@ function update() {
     },
     frontmatter.markmap,
   );
-  mm.setData(root, options);
+  mm.setTree(root, options);
   const ms = performance.now() - start;
-  stats.textContent = `${mm.state?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
+  stats.textContent = `${mm.result?.layout.nodes.length ?? 0} nodes · ${ms.toFixed(1)} ms`;
   stats.title = warnings.join('\n');
   stats.style.color = warnings.length ? '#c0392b' : '';
   if (warnings.length) stats.textContent += ` · ${warnings.length} option warning(s)`;
@@ -101,17 +101,17 @@ function download(blob: Blob, name: string) {
 }
 
 document.querySelector('#download')!.addEventListener('click', () => {
-  if (!mm.state) return;
-  const svgText = toSVGString(mm.state, { colorScheme: mm.options.colorScheme });
+  if (!mm.result) return;
+  const svgText = toSVGString(mm.result, { colorScheme: mm.options.colorScheme });
   download(new Blob([svgText], { type: 'image/svg+xml' }), 'markmap.svg');
 });
 
 document.querySelector('#download-png')!.addEventListener('click', async () => {
-  if (!mm.state) return;
+  if (!mm.result) return;
   const { colorScheme } = mm.options;
   const dark = matchMedia('(prefers-color-scheme: dark)').matches;
   const scheme = colorScheme === 'auto' ? (dark ? 'dark' : 'light') : colorScheme;
-  download(await toPNG(mm.state, { colorScheme: scheme }), 'markmap.png');
+  download(await toPNG(mm.result, { colorScheme: scheme }), 'markmap.png');
 });
 
 Object.assign(window, { mm });

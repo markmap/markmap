@@ -48,9 +48,9 @@ describe('parse with <img>', () => {
     expect(toPlainText(root.children[1].content)).toBe('a bold');
   });
 
-  it('keeps sized images in attachments', () => {
+  it('keeps sized images in notes', () => {
     const { root } = parse('- a\n\n  <img src="c.png" width="200">');
-    const block = root.children[0].attachments[0].block as Paragraph;
+    const block = root.children[0].notes[0].block as Paragraph;
     expect(block.children[0]).toMatchObject({ type: 'image', url: 'c.png', data: { width: 200 } });
   });
 });

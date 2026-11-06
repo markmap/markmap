@@ -103,11 +103,11 @@ describe('withColor', () => {
           ],
         },
       ],
-      'var(--mm-color)',
+      'var(--mm-text)',
     );
     expect(colored).toMatchObject([
       {
-        children: [{ fill: 'var(--mm-color)', stroke: 'red' }, { stroke: 'var(--mm-color)' }],
+        children: [{ fill: 'var(--mm-text)', stroke: 'red' }, { stroke: 'var(--mm-text)' }],
       },
     ]);
   });

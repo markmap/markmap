@@ -10,14 +10,14 @@ import {
 describe('readJSONOptions', () => {
   it('keeps valid shared options and leaves other keys for the theme', () => {
     const input = {
-      initialExpandLevel: -1,
-      maxWidth: 300,
-      spacingHorizontal: 60,
-      spacingVertical: 8,
+      foldLevel: 1,
+      wrapWidth: 300,
+      levelGap: 60,
+      siblingGap: 8,
       zoom: false,
       pan: true,
       fitPadding: 10,
-      maxFitScale: 1.5,
+      fitMaxScale: 1.5,
       color: ['#f00'],
     };
     const { color, ...shared } = input;
@@ -26,16 +26,16 @@ describe('readJSONOptions', () => {
 
   it('reports and drops invalid values', () => {
     const { options, warnings } = readJSONOptions({
-      maxWidth: '300',
-      initialExpandLevel: 1.5,
-      spacingVertical: -1,
+      wrapWidth: '300',
+      foldLevel: 1.5,
+      siblingGap: -1,
       zoom: 'yes',
     });
     expect(options).toEqual({});
     expect(warnings).toEqual([
-      '`maxWidth` must be a number',
-      '`initialExpandLevel` must be an integer >= -1',
-      '`spacingVertical` must be >= 0',
+      '`wrapWidth` must be a number',
+      '`foldLevel` must be an integer >= 0',
+      '`siblingGap` must be >= 0',
       '`zoom` must be true or false',
     ]);
   });

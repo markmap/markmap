@@ -68,7 +68,7 @@ export function drawExport(
 }
 
 /**
- * Export a map as a PNG, in the browser. Pass a finished result, such as `mm.state` or
+ * Export a map as a PNG, in the browser. Pass a finished result, such as `mm.result` or
  * what `renderTreeAsync` gives. Images load first; ones whose server does not allow
  * cross-origin use show their alt text, because they would make the canvas unreadable.
  */

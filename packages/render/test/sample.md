@@ -4,7 +4,7 @@
 
 - remark + **gfm**
 - frontmatter
-- _Attachments_ collected
+- _Notes_ collected
 
 ## Render
 
@@ -33,7 +33,7 @@
 - [x] Done task
 - [ ] Open task with **==bold highlight==**
 
-## Attachments
+## Notes
 
 - Notes under a node
 

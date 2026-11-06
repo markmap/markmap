@@ -1,4 +1,4 @@
-import { assignIds, type Attachment, type MarkmapNode, type MdastBlock } from '@markmap/core';
+import { assignIds, type Note, type MarkmapNode, type MdastBlock } from '@markmap/core';
 import type { List, ListItem, Node, PhrasingContent, Root, RootContent } from 'mdast';
 
 export interface ToTreeOptions {
@@ -10,7 +10,7 @@ export interface ToTreeOptions {
  * Convert an mdast tree into a Markmap tree.
  *
  * - Headings nest by depth; list items nest under the heading or item that contains them.
- * - Other blocks become attachments of the node that owns them. Blocks before the first
+ * - Other blocks become notes of the node that owns them. Blocks before the first
  *   heading attach to the root.
  * - A lone top-level H1 becomes the root, unless `title` is given.
  * - Raw HTML, frontmatter and link definitions are dropped. A `<!-- markmap: … -->`
@@ -39,7 +39,7 @@ export function toTree(mdast: Root, options: ToTreeOptions = {}): MarkmapNode {
 
 function createNode(type: string, label: PhrasingContent[], source?: Node): MarkmapNode {
   const { content, directives } = readLabel(label);
-  const node: MarkmapNode = { id: '', type, content, attachments: [], data: {}, children: [] };
+  const node: MarkmapNode = { id: '', type, content, notes: [], data: {}, children: [] };
   if (directives.has('fold')) node.data.fold = true;
   if (directives.has('foldAll')) node.data.foldAll = true;
   const start = source?.position?.start.offset;
@@ -78,15 +78,15 @@ function fromListItem(item: ListItem, list: List): MarkmapNode {
 }
 
 function attach(node: MarkmapNode, block: MdastBlock) {
-  const attachment: Attachment = { block: stripPositions(block), after: node.children.length };
-  node.attachments.push(attachment);
+  const note: Note = { block: stripPositions(block), after: node.children.length };
+  node.notes.push(note);
 }
 
 function promoteSingleH1(root: MarkmapNode): MarkmapNode {
   const [only] = root.children;
   if (root.children.length !== 1 || only.type !== 'heading' || only.data.depth !== 1) return root;
   // Blocks before the H1 come first in source order.
-  only.attachments = [...root.attachments.map((a) => ({ ...a, after: 0 })), ...only.attachments];
+  only.notes = [...root.notes.map((a) => ({ ...a, after: 0 })), ...only.notes];
   return only;
 }
 

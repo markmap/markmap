@@ -12,9 +12,9 @@ export interface Checkbox extends Node {
   checked: boolean;
 }
 
-/** Marks a node that has attachments, added after its label at render time. */
-export interface AttachmentMarker extends Node {
-  type: 'attachmentMarker';
+/** Marks a node that has notes, added after its label at render time. */
+export interface NoteMarker extends Node {
+  type: 'noteMarker';
   count: number;
 }
 
@@ -22,11 +22,11 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     mark: Mark;
     checkbox: Checkbox;
-    attachmentMarker: AttachmentMarker;
+    noteMarker: NoteMarker;
   }
   interface RootContentMap {
     mark: Mark;
     checkbox: Checkbox;
-    attachmentMarker: AttachmentMarker;
+    noteMarker: NoteMarker;
   }
 }

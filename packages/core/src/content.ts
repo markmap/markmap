@@ -35,7 +35,7 @@ export interface InlineContext {
   measurer: Measurer;
   node: MarkmapNode;
   /** Label wrap width in px; `0` or missing when labels do not wrap. */
-  maxWidth?: number;
+  wrapWidth?: number;
   /**
    * Report work that will change a measurement, such as an image loading to learn its
    * size. The caller renders again once it settles; plugins should cache the result so
@@ -71,7 +71,7 @@ export interface ContentPlugin {
   /** Draw inline nodes as boxes, keyed by inline type. */
   atoms?: { [K in Inline['type']]?: AtomRenderer<Extract<Inline, { type: K }>> };
   /**
-   * Change the HTML of an attachment popover, e.g. to draw math. Runs after the
+   * Change the HTML of a note popover, e.g. to draw math. Runs after the
    * Markdown's HTML has been sanitized, so markup added here is trusted as is,
    * including `raw` nodes. Never copy unescaped text from the tree into raw markup.
    */

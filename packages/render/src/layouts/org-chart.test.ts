@@ -20,7 +20,7 @@ describe('orgChartLayout', () => {
     const { layout } = render();
     for (const item of layout.nodes.slice(1)) {
       expect(item.direction).toBe('bottom');
-      // spacingHorizontal (80) is the gap between levels.
+      // levelGap (80) is the gap between levels.
       const parent = item.parent!.rect;
       expect(item.rect.y).toBeCloseTo(parent.y + parent.height + 80);
     }
@@ -33,7 +33,7 @@ describe('orgChartLayout', () => {
     const span = (middle(root.children[0].rect) + middle(root.children.at(-1)!.rect)) / 2;
     expect(Math.abs(middle(root.rect) - span)).toBeLessThan(1);
     const [a1, a2] = a.children;
-    // Siblings: spacingVertical (5) × 3.
+    // Siblings: siblingGap (5) × 3.
     expect(a2.rect.x - (a1.rect.x + a1.rect.width)).toBeCloseTo(15);
   });
 

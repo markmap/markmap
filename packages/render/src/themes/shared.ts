@@ -2,34 +2,34 @@ import type { Anchor, Point, Side, TextAlign, Theme } from '@markmap/core';
 
 /** Tokens for inline content, shared by the built-in themes. */
 export const CONTENT_TOKENS = {
-  'mm-link-color': '#0097e6',
+  'mm-link': '#0097e6',
   'mm-code-bg': '#f0f0f0',
-  'mm-code-color': '#555',
+  'mm-code-text': '#555',
   'mm-mark-bg': '#ffeaa7',
   'mm-checkbox': '#555',
-  'mm-attachment': '#999',
+  'mm-note-dot': '#999',
   // Code highlighting in popovers.
-  'mm-hl-keyword': '#cf222e',
-  'mm-hl-string': '#0a3069',
-  'mm-hl-comment': '#6e7781',
-  'mm-hl-number': '#0550ae',
-  'mm-hl-title': '#8250df',
-  'mm-hl-attr': '#116329',
+  'mm-syntax-keyword': '#cf222e',
+  'mm-syntax-string': '#0a3069',
+  'mm-syntax-comment': '#6e7781',
+  'mm-syntax-number': '#0550ae',
+  'mm-syntax-title': '#8250df',
+  'mm-syntax-attr': '#116329',
 };
 
 export const DARK_CONTENT_TOKENS = {
-  'mm-link-color': '#4fb3f6',
+  'mm-link': '#4fb3f6',
   'mm-code-bg': '#2f2f33',
-  'mm-code-color': '#d4d4d4',
+  'mm-code-text': '#d4d4d4',
   'mm-mark-bg': '#6b5a1e',
   'mm-checkbox': '#bbb',
-  'mm-attachment': '#888',
-  'mm-hl-keyword': '#ff7b72',
-  'mm-hl-string': '#a5d6ff',
-  'mm-hl-comment': '#8b949e',
-  'mm-hl-number': '#79c0ff',
-  'mm-hl-title': '#d2a8ff',
-  'mm-hl-attr': '#7ee787',
+  'mm-note-dot': '#888',
+  'mm-syntax-keyword': '#ff7b72',
+  'mm-syntax-string': '#a5d6ff',
+  'mm-syntax-comment': '#8b949e',
+  'mm-syntax-number': '#79c0ff',
+  'mm-syntax-title': '#d2a8ff',
+  'mm-syntax-attr': '#7ee787',
 };
 
 export const SYSTEM_FONT: Theme['font'] = {

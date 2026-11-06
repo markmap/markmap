@@ -23,8 +23,8 @@ const group = (key: string, x: number, label = key): Primitive => ({
   children: [{ kind: 'path', d: `M0,0H${label.length}`, stroke: 'red' }],
 });
 
-const visibleIds = (mm: Markmap) => mm.state!.layout.nodes.map((n) => n.node.id);
-const labels = (mm: Markmap) => mm.state!.layout.nodes.map((n) => toPlainText(n.node.content));
+const visibleIds = (mm: Markmap) => mm.result!.layout.nodes.map((n) => n.node.id);
+const labels = (mm: Markmap) => mm.result!.layout.nodes.map((n) => toPlainText(n.node.content));
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -95,7 +95,7 @@ describe('Markmap', () => {
 
   it('fits the drawing into the SVG', () => {
     const mm = create();
-    const { bounds } = mm.state!;
+    const { bounds } = mm.result!;
     const t = mm.transform;
     const [x0, y0] = t.apply([bounds.x, bounds.y]);
     const [x1, y1] = t.apply([bounds.x + bounds.width, bounds.y + bounds.height]);
@@ -109,12 +109,12 @@ describe('Markmap', () => {
 
   it('folds and unfolds, keeping the node in place', () => {
     const mm = create();
-    const a = mm.state!.layout.nodes[1];
+    const a = mm.result!.layout.nodes[1];
     const screenBefore = mm.transform.apply([a.rect.x, a.rect.y]);
     mm.toggle(a.node.id);
     expect(visibleIds(mm)).toHaveLength(4);
     expect(mm.foldedIds.has(a.node.id)).toBe(true);
-    const rect = mm.state!.layout.byId.get(a.node.id)!.rect;
+    const rect = mm.result!.layout.byId.get(a.node.id)!.rect;
     const screenAfter = mm.transform.apply([rect.x, rect.y]);
     expect(screenAfter[0]).toBeCloseTo(screenBefore[0]);
     expect(screenAfter[1]).toBeCloseTo(screenBefore[1]);
@@ -124,7 +124,7 @@ describe('Markmap', () => {
 
   it('hit-tests fold anchors', () => {
     const mm = create();
-    const a = mm.state!.layout.nodes[1];
+    const a = mm.result!.layout.nodes[1];
     const anchor = mm.theme.node.anchor(a.rect, 'right', {
       depth: a.depth,
       path: [],
@@ -132,17 +132,17 @@ describe('Markmap', () => {
       folded: false,
       direction: 'right',
     });
-    expect(mm.hitToggle(anchor.x + 3, anchor.y - 3)?.node.id).toBe(a.node.id);
-    expect(mm.hitToggle(a.rect.x, a.rect.y)).toBeUndefined();
+    expect(mm.hitAt(anchor.x + 3, anchor.y - 3)).toEqual({ kind: 'toggle', nodeId: a.node.id });
+    expect(mm.hitAt(a.rect.x, a.rect.y)).toBeUndefined();
   });
 
   it('applies the initial expand level to new nodes only', () => {
-    const mm = create({ initialExpandLevel: 1 });
+    const mm = create({ foldLevel: 1 });
     expect(visibleIds(mm)).toHaveLength(3);
-    const a = mm.state!.layout.nodes[1].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
     mm.setFolded(a, false);
     // Re-parsing keeps the user's choice for existing ids.
-    mm.setData(parse(`${md}\n- b2`).root);
+    mm.setTree(parse(`${md}\n- b2`).root);
     expect(mm.foldedIds.has(a)).toBe(false);
     // Root, A, a1, a2 (folded at depth 2), B (still folded, so b2 stays hidden).
     expect(visibleIds(mm)).toHaveLength(5);
@@ -150,9 +150,9 @@ describe('Markmap', () => {
 
   it('forgets fold state for removed nodes', () => {
     const mm = create();
-    const b = mm.state!.layout.nodes.find((n) => toPlainText(n.node.content) === 'B')!;
+    const b = mm.result!.layout.nodes.find((n) => toPlainText(n.node.content) === 'B')!;
     mm.toggle(b.node.id);
-    mm.setData(parse('# Root\n\n## A').root);
+    mm.setTree(parse('# Root\n\n## A').root);
     expect(mm.foldedIds.size).toBe(0);
   });
 
@@ -210,13 +210,13 @@ describe('Markmap options', () => {
   it('replaces options and redraws', () => {
     const mm = Markmap.create(createSvg(), parse(md).root, {
       measurer: approximateMeasurer,
-      maxWidth: 50,
+      wrapWidth: 50,
     });
     mm.setOptions(
       resolveViewOptions({ measurer: approximateMeasurer }, { color: ['#abcdef'], zoom: false })
         .options,
     );
-    expect(mm.options.maxWidth).toBeUndefined();
+    expect(mm.options.wrapWidth).toBeUndefined();
     expect(mm.options.zoom).toBe(false);
     expect(mm.options.pan).toBe(true);
     expect(mm.element.querySelector('style')?.textContent).toContain('--mm-branch-0:#abcdef;');
@@ -225,7 +225,7 @@ describe('Markmap options', () => {
 
   it('applies options passed with data', () => {
     const mm = new Markmap(createSvg(), { measurer: approximateMeasurer });
-    mm.setData(parse(md).root, { measurer: approximateMeasurer, initialExpandLevel: 1 });
+    mm.setTree(parse(md).root, { measurer: approximateMeasurer, foldLevel: 1 });
     expect(visibleIds(mm)).toHaveLength(3);
   });
 });
@@ -233,12 +233,12 @@ describe('Markmap options', () => {
 describe('resolveViewOptions', () => {
   it('applies view, render and theme options and reports the rest', () => {
     const { options, warnings } = resolveViewOptions(
-      { maxWidth: 100, zoom: true },
-      { zoom: false, initialExpandLevel: 2, maxWidth: 'x', colorFreezeLevel: 1, nope: true },
+      { wrapWidth: 100, zoom: true },
+      { zoom: false, foldLevel: 2, wrapWidth: 'x', colorDepth: 1, nope: true },
     );
-    expect(options).toMatchObject({ maxWidth: 100, zoom: false, initialExpandLevel: 2 });
+    expect(options).toMatchObject({ wrapWidth: 100, zoom: false, foldLevel: 2 });
     expect(options.theme?.name).toBe('classic');
-    expect(warnings).toEqual(['`maxWidth` must be a number', 'Unknown option `nope`']);
+    expect(warnings).toEqual(['`wrapWidth` must be a number', 'Unknown option `nope`']);
   });
 });
 
@@ -255,8 +255,8 @@ describe('animation', () => {
   it('animates folding while the toggled node stays still on screen', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
     const mm = create({ duration: 300 });
-    const a = mm.state!.layout.nodes[1].node.id;
-    const leaving = mm.state!.layout.nodes[3].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
+    const leaving = mm.result!.layout.nodes[3].node.id;
     const before = mm.screenRect(a)!;
     mm.toggle(a);
 
@@ -276,7 +276,7 @@ describe('animation', () => {
   it('can reverse a fold half way through', () => {
     vi.useFakeTimers({ toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'] });
     const mm = create({ duration: 300 });
-    const a = mm.state!.layout.nodes[1].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
     const before = mm.screenRect(a)!;
     mm.toggle(a);
     vi.advanceTimersByTime(100);
@@ -290,7 +290,7 @@ describe('animation', () => {
   it('draws at once when the user prefers reduced motion', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('reduce') }));
     const mm = create({ duration: 300 });
-    mm.toggle(mm.state!.layout.nodes[1].node.id);
+    mm.toggle(mm.result!.layout.nodes[1].node.id);
     expect(mm.element.querySelectorAll('[data-key^="node:"]')).toHaveLength(3);
   });
 
@@ -328,7 +328,7 @@ describe('view API', () => {
 
   it('folds and expands one subtree, one level at a time when reopened', () => {
     const mm = create();
-    const a = mm.state!.layout.nodes[1].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
     mm.foldAll(a);
     expect(labels(mm)).toEqual(['Root', 'A', 'B', 'b1']);
     mm.toggle(a);
@@ -341,7 +341,7 @@ describe('view API', () => {
 
   it('keeps the node it acts on still', () => {
     const mm = create();
-    const a = mm.state!.layout.nodes[1].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
     const before = mm.screenRect(a)!;
     mm.foldAll(a);
     expect(mm.screenRect(a)!.y).toBeCloseTo(before.y);
@@ -391,7 +391,7 @@ describe('events and color scheme', () => {
     );
     mm.on('fold', (folded) => seen.push(`fold:${folded.size}`));
     mm.on('zoom', (t) => seen.push(`zoom:${t.k.toFixed(2)}`));
-    const a = mm.state!.layout.nodes[1].node.id;
+    const a = mm.result!.layout.nodes[1].node.id;
     const k = mm.transform.k;
     mm.toggle(a);
     expect(seen).toEqual(['render:3', 'fold:1']);
@@ -512,7 +512,7 @@ describe('backends', () => {
       measurer: approximateMeasurer,
       duration: 0,
     });
-    const a = mm.state!.layout.nodes[1];
+    const a = mm.result!.layout.nodes[1];
     const anchor = mm.theme.node.anchor(a.rect, 'right', {
       depth: a.depth,
       path: [],
@@ -531,11 +531,11 @@ describe('backends', () => {
     const options = { measurer: approximateMeasurer, duration: 0 };
 
     const svg = Markmap.create(createSvg(), parse(linkMd).root, options);
-    click(svg, centerOf(svg.state!.primitives, 'link')!);
+    click(svg, centerOf(svg.result!.primitives, 'link')!);
     expect(open).not.toHaveBeenCalled();
 
     const mm = Markmap.create(fakeBackend().backend, parse(linkMd).root, options);
-    click(mm, centerOf(mm.state!.primitives, 'link')!);
+    click(mm, centerOf(mm.result!.primitives, 'link')!);
     expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
   });
 
@@ -546,7 +546,7 @@ describe('backends', () => {
       measurer: approximateMeasurer,
       duration: 400,
     });
-    const nodeB = mm.state!.layout.nodes.find((n) => toPlainText(n.node.content) === 'B')!;
+    const nodeB = mm.result!.layout.nodes.find((n) => toPlainText(n.node.content) === 'B')!;
     const anchorOf = (rect: { x: number; y: number; width: number; height: number }) =>
       mm.theme.node.anchor(rect, 'right', {
         depth: nodeB.depth,
@@ -555,17 +555,17 @@ describe('backends', () => {
         folded: false,
         direction: 'right',
       });
-    mm.toggle(mm.state!.layout.nodes[1].node.id);
+    mm.toggle(mm.result!.layout.nodes[1].node.id);
     vi.advanceTimersByTime(200);
     // Where B is drawn now, in layout coordinates.
     const screen = mm.screenRect(nodeB.node.id)!;
     const { k } = mm.transform;
     const [x, y] = mm.transform.invert([screen.x, screen.y]);
     const mid = anchorOf({ x, y, width: screen.width / k, height: screen.height / k });
-    const end = anchorOf(mm.state!.layout.byId.get(nodeB.node.id)!.rect);
+    const end = anchorOf(mm.result!.layout.byId.get(nodeB.node.id)!.rect);
     // Further than the toggle radius from where it ends up, so the final layout would miss it.
     expect(Math.hypot(mid.x - end.x, mid.y - end.y)).toBeGreaterThan(10);
-    expect(mm.hitToggle(mid.x, mid.y)?.node.id).toBe(nodeB.node.id);
+    expect(mm.hitAt(mid.x, mid.y)).toEqual({ kind: 'toggle', nodeId: nodeB.node.id });
   });
 });
 
@@ -575,7 +575,7 @@ const idOf = (mm: Markmap, label: string) => {
     if (toPlainText(node.content) === label) found = node.id;
     node.children.forEach(visit);
   };
-  visit(mm.state!.layout.nodes[0].node);
+  visit(mm.result!.layout.nodes[0].node);
   return found;
 };
 

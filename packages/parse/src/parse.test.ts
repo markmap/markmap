@@ -6,14 +6,14 @@ import { parse } from '.';
 
 const fixtures = join(import.meta.dirname, '../test/fixtures');
 
-/** A readable outline: one line per node, attachments listed with their position. */
+/** A readable outline: one line per node, notes listed with their position. */
 function outline(root: MarkmapNode): string {
   const lines: string[] = [];
   walkTree(root, (node, _parent, depth) => {
     const indent = '  '.repeat(depth);
     const data = Object.keys(node.data).length ? ` ${JSON.stringify(node.data)}` : '';
     lines.push(`${indent}- [${node.type}] ${toPlainText(node.content)}${data}`);
-    for (const { block, after } of node.attachments) {
+    for (const { block, after } of node.notes) {
       lines.push(`${indent}    @${after} ${block.type}`);
     }
   });
@@ -39,7 +39,7 @@ describe('parse', () => {
     const { root } = parse('Before.\n\n# Title\n\nAfter.\n\n## Child');
     expect(root.id).toBe('root');
     expect(toPlainText(root.content)).toBe('Title');
-    expect(root.attachments.map((a) => [toPlainText([a.block as never]), a.after])).toEqual([
+    expect(root.notes.map((a) => [toPlainText([a.block as never]), a.after])).toEqual([
       ['Before.', 0],
       ['After.', 0],
     ]);
@@ -95,7 +95,7 @@ describe('parse', () => {
   });
 
   it('serializes to JSON and back unchanged', () => {
-    const { root } = parse(readFileSync(join(fixtures, 'attachments.md'), 'utf8'));
+    const { root } = parse(readFileSync(join(fixtures, 'notes.md'), 'utf8'));
     expect(JSON.parse(JSON.stringify(root))).toEqual(root);
   });
 
@@ -107,14 +107,14 @@ describe('parse', () => {
         },
       ],
     });
-    expect(root.attachments[0].block.type).toBe('thematicBreak');
+    expect(root.notes[0].block.type).toBe('thematicBreak');
   });
 });
 
 describe('markmap options and directives', () => {
   it('leaves markmap options raw for the theme-aware resolver', () => {
-    const { frontmatter } = parse('---\nmarkmap:\n  maxWidth: 200\n  color: "#f00"\n---\n\n- a');
-    expect(frontmatter.markmap).toEqual({ maxWidth: 200, color: '#f00' });
+    const { frontmatter } = parse('---\nmarkmap:\n  wrapWidth: 200\n  color: "#f00"\n---\n\n- a');
+    expect(frontmatter.markmap).toEqual({ wrapWidth: 200, color: '#f00' });
   });
 
   it('applies fold directives from label comments', () => {

@@ -39,7 +39,7 @@ describe('branchIndex', () => {
 
 describe('classic theme options', () => {
   it('declares its options and configures a copy', () => {
-    expect(Object.keys(classicTheme.options ?? {})).toEqual(['color', 'colorFreezeLevel']);
+    expect(Object.keys(classicTheme.options ?? {})).toEqual(['color', 'colorDepth']);
     const theme = classicTheme.configure!({ color: ['red', 'blue'] });
     expect(theme).not.toBe(classicTheme);
     expect(tokensToCSS(theme)).toContain('--mm-branch-0:red;--mm-branch-1:blue;');
@@ -51,7 +51,7 @@ describe('classic theme options', () => {
     const { root } = parse(md);
     const render = (theme = classicTheme) =>
       renderTree(root, { measurer: approximateMeasurer, theme });
-    const frozen = render(createClassicTheme({ colorFreezeLevel: 2 }));
+    const frozen = render(createClassicTheme({ colorDepth: 2 }));
     const stroke = (id: string) =>
       JSON.stringify(
         frozen.primitives.find((p) => p.kind === 'group' && p.key === `edge:${id}`),
@@ -67,12 +67,12 @@ describe('configureTheme', () => {
   it('validates theme keys and returns the rest', () => {
     const { theme, rest, warnings } = configureTheme(classicTheme, {
       color: 'red',
-      colorFreezeLevel: -1,
+      colorDepth: -1,
       other: 1,
     });
     expect(tokensToCSS(theme)).toContain('--mm-branch-0:red;');
     expect(rest).toEqual({ other: 1 });
-    expect(warnings).toEqual(['`colorFreezeLevel` must be an integer >= 0']);
+    expect(warnings).toEqual(['`colorDepth` must be an integer >= 0']);
   });
 
   it('passes everything through for themes without options', () => {
@@ -88,17 +88,17 @@ describe('configureTheme', () => {
 describe('resolveRenderOptions', () => {
   it('applies shared and theme options, and reports the rest', () => {
     const { options, json, warnings } = resolveRenderOptions(
-      { maxWidth: 100, spacingVertical: 5 },
-      { maxWidth: 200, zoom: false, color: ['#f00'], bogus: 1 },
+      { wrapWidth: 100, siblingGap: 5 },
+      { wrapWidth: 200, zoom: false, color: ['#f00'], bogus: 1 },
     );
-    expect(options).toMatchObject({ maxWidth: 200, spacingVertical: 5 });
-    expect(json).toEqual({ maxWidth: 200, zoom: false });
+    expect(options).toMatchObject({ wrapWidth: 200, siblingGap: 5 });
+    expect(json).toEqual({ wrapWidth: 200, zoom: false });
     expect(tokensToCSS(options.theme!)).toContain('--mm-branch-0:#f00;');
     expect(warnings).toEqual(['Unknown option `bogus`']);
   });
 
   it('keeps the base theme when no theme option is set', () => {
-    const { options } = resolveRenderOptions({}, { maxWidth: 1 });
+    const { options } = resolveRenderOptions({}, { wrapWidth: 1 });
     expect(options.theme).toBeUndefined();
   });
 

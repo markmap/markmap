@@ -40,15 +40,15 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
   /** Space kept around the drawing by `fit()`, in px. */
   fitPadding?: number;
   /** Largest scale `fit()` zooms in to. */
-  maxFitScale?: number;
-  /** Fold nodes at this depth and deeper when first seen. `-1` expands everything. */
-  initialExpandLevel?: number;
+  fitMaxScale?: number;
+  /** Fold nodes at this depth and deeper when first seen. Leave out to expand everything. */
+  foldLevel?: number;
   /**
    * Length of fold, update and fit animations, in ms. `0` disables them, and so does
    * the user's `prefers-reduced-motion` setting.
    */
   duration?: number;
-  /** Color code blocks in attachment popovers. Defaults to `true`. */
+  /** Color code blocks in note popovers. Defaults to `true`. */
   highlight?: boolean;
   /** Which theme tokens to use; `auto` follows the reader's system setting. Defaults to `light`. */
   colorScheme?: ColorScheme;
@@ -68,8 +68,7 @@ const DEFAULTS: ViewOptions = {
   zoom: true,
   pan: true,
   fitPadding: 20,
-  maxFitScale: 2,
-  initialExpandLevel: -1,
+  fitMaxScale: 2,
   duration: 500,
 };
 
@@ -87,8 +86,8 @@ export function resolveViewOptions(
     'zoom',
     'pan',
     'fitPadding',
-    'maxFitScale',
-    'initialExpandLevel',
+    'fitMaxScale',
+    'foldLevel',
     'duration',
     'colorScheme',
   ] as const;
@@ -136,7 +135,7 @@ export class Markmap {
   private root?: MarkmapNode;
   private folded = new Set<string>();
   private known = new Set<string>();
-  private result?: RenderResult;
+  private current?: RenderResult;
   private pendingFit?: ResizeObserver;
   private popover?: { id: string; popover: Popover };
   /** Bumped on every open/close, so a slow lazy import cannot open a stale popover. */
@@ -223,7 +222,7 @@ export class Markmap {
   ): Markmap {
     const mm = new Markmap(target, options);
     if (root) {
-      mm.setData(root);
+      mm.setTree(root);
       mm.fit();
     }
     return mm;
@@ -238,26 +237,27 @@ export class Markmap {
     return this.folded;
   }
 
-  get state(): RenderResult | undefined {
-    return this.result;
+  /** The final (not mid-animation) result of the last render. */
+  get result(): RenderResult | undefined {
+    return this.current;
   }
 
   /**
    * Show a new tree, optionally replacing all options at the same time. Fold state is
    * kept for ids that still exist, so live editing does not reset what the user folded.
    * New nodes start folded if `data.fold` or an ancestor's `data.foldAll` is set, or
-   * they are below `initialExpandLevel`.
+   * they are below `foldLevel`.
    */
-  setData(root: MarkmapNode, options?: ViewOptions): void {
+  setTree(root: MarkmapNode, options?: ViewOptions): void {
     if (options) this.applyOptions(options);
     this.root = root;
     const ids = new Set<string>();
-    const level = this.options.initialExpandLevel ?? -1;
+    const level = this.options.foldLevel;
     const visit = (node: MarkmapNode, depth: number, foldAll: boolean) => {
       ids.add(node.id);
       const all = foldAll || !!node.data.foldAll;
       if (!this.known.has(node.id) && node.children.length) {
-        if (all || node.data.fold || (level >= 0 && depth >= level)) this.folded.add(node.id);
+        if (all || node.data.fold || (level != null && depth >= level)) this.folded.add(node.id);
       }
       for (const child of node.children) visit(child, depth + 1, all);
     };
@@ -272,12 +272,12 @@ export class Markmap {
   /** Re-measure, lay out and draw the current tree, animated unless `animate` is `false`. */
   render({ animate = true }: { animate?: boolean } = {}): RenderResult | undefined {
     if (!this.root) return undefined;
-    this.result = renderTree(this.root, {
+    this.current = renderTree(this.root, {
       ...this.viewOptions,
       measurer: this.measurer,
       folded: this.folded,
     });
-    const target = this.result.state;
+    const target = this.current.state;
     const from = this.frame;
     const duration = animate ? this.duration : 0;
     if (from && duration > 0) {
@@ -295,20 +295,20 @@ export class Markmap {
       this.pin = undefined;
     }
     if (this.popover) {
-      const item = this.result.layout.byId.get(this.popover.id);
-      if (item?.node.attachments.length) this.positionPopover();
-      else this.closeAttachments();
+      const item = this.current.layout.byId.get(this.popover.id);
+      if (item?.node.notes.length) this.positionPopover();
+      else this.closeNotes();
     }
-    this.emit('render', this.result);
-    const { pending } = this.result;
+    this.emit('render', this.current);
+    const { pending } = this.current;
     // Placeholder sizes (such as loading images): render again, animated, once they settle.
     if (pending) {
-      const result = this.result;
+      const result = this.current;
       void pending.then(() => {
-        if (this.result === result) this.render();
+        if (this.current === result) this.render();
       });
     }
-    return this.result;
+    return this.current;
   }
 
   private drawFrame(state: DrawState) {
@@ -382,7 +382,7 @@ export class Markmap {
       this.render({ animate });
       this.emit('fold', this.folded);
     }
-    const rect = this.result?.layout.byId.get(id)?.rect;
+    const rect = this.current?.layout.byId.get(id)?.rect;
     const { width, height } = this.element.getBoundingClientRect();
     if (rect && width && height) {
       const [min, max] = this.zoomBehavior.scaleExtent();
@@ -419,14 +419,14 @@ export class Markmap {
 
   /**
    * Show the tree down to `level`: nodes at that depth and deeper are folded, the rest
-   * unfolded. The root is depth 0, so `1` shows only the root's children. `-1` expands
-   * everything. Same meaning as the `initialExpandLevel` option.
+   * unfolded. The root is depth 0, so `1` shows only the root's children. Same meaning
+   * as the `foldLevel` option; `expandAll()` shows everything.
    */
   foldToLevel(level: number): void {
     if (!this.root) return;
     this.updateFolded(this.root.id, () => {
       walk(this.root!, (node, depth) => {
-        if (level >= 0 && depth >= level && node.children.length) this.folded.add(node.id);
+        if (depth >= level && node.children.length) this.folded.add(node.id);
         else this.folded.delete(node.id);
       });
     });
@@ -523,7 +523,7 @@ export class Markmap {
    * or not laid out), the fit happens as soon as it gets one.
    */
   fit(): void {
-    if (!this.result) return;
+    if (!this.current) return;
     const { width, height } = this.element.getBoundingClientRect();
     if (!width || !height) {
       this.fitWhenSized();
@@ -531,12 +531,12 @@ export class Markmap {
     }
     this.pendingFit?.disconnect();
     this.pendingFit = undefined;
-    const box: Rect = this.result.bounds;
+    const box: Rect = this.current.bounds;
     const padding = this.options.fitPadding ?? 0;
     const scale = Math.min(
       (width - padding * 2) / box.width,
       (height - padding * 2) / box.height,
-      this.options.maxFitScale ?? 2,
+      this.options.fitMaxScale ?? 2,
     );
     const transform = zoomIdentity
       .translate(width / 2, height / 2)
@@ -584,31 +584,25 @@ export class Markmap {
     return this.hits.index.hit(x, y);
   }
 
-  /** The node whose fold anchor is under a point in layout coordinates. */
-  hitToggle(x: number, y: number): DrawNode | undefined {
-    const target = this.hitAt(x, y);
-    return target?.kind === 'toggle' ? this.frameNode(target.nodeId) : undefined;
-  }
-
   /** Layout coordinates of a pointer event. */
   private layoutPoint(event: MouseEvent): [number, number] {
     const box = this.element.getBoundingClientRect();
     return this.transform.invert([event.clientX - box.x, event.clientY - box.y]);
   }
 
-  /** Id of the node whose attachments are open, if any. */
-  get openAttachmentsId(): string | undefined {
+  /** Id of the node whose notes are open, if any. */
+  get openNoteId(): string | undefined {
     return this.popover?.id;
   }
 
-  /** Show a node's attachments in a popover next to it. */
-  async openAttachments(id: string): Promise<void> {
-    const item = this.result?.layout.byId.get(id);
-    if (!item?.node.attachments.length) return;
-    this.closeAttachments();
+  /** Show a node's notes in a popover next to it. */
+  async openNotes(id: string): Promise<void> {
+    const item = this.current?.layout.byId.get(id);
+    if (!item?.node.notes.length) return;
+    this.closeNotes();
     const request = this.popoverRequest;
-    const { attachmentsToHtml } = await import('./attachments-html');
-    const html = await attachmentsToHtml(item.node.attachments, {
+    const { notesToHtml } = await import('./notes-html');
+    const html = await notesToHtml(item.node.notes, {
       plugins: this.options.plugins ?? defaultContentPlugins,
       highlight: this.options.highlight,
     });
@@ -626,7 +620,7 @@ export class Markmap {
     popover.el.focus({ preventScroll: true });
   }
 
-  closeAttachments(): void {
+  closeNotes(): void {
     this.popoverRequest += 1;
     if (!this.popover) return;
     this.popover.popover.destroy();
@@ -678,17 +672,17 @@ export class Markmap {
     // Clicking a dot is handled by the click handler.
     if (target && this.element.contains(target) && event instanceof MouseEvent) {
       const hit = this.hitAt(...this.layoutPoint(event));
-      if (hit?.kind === 'action' && hit.action === 'attachments') return;
+      if (hit?.kind === 'action' && hit.action === 'notes') return;
     }
-    this.closeAttachments();
+    this.closeNotes();
   };
 
   private handleKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') this.closeAttachments();
+    if (event.key === 'Escape') this.closeNotes();
   };
 
   private handleScroll = (event: Event) => {
-    if (!this.popover?.popover.contains(event.target as Node)) this.closeAttachments();
+    if (!this.popover?.popover.contains(event.target as Node)) this.closeNotes();
   };
 
   destroy(): void {
@@ -697,7 +691,7 @@ export class Markmap {
     this.listeners.clear();
     this.stateTween.stop();
     this.zoomTween.stop();
-    this.closeAttachments();
+    this.closeNotes();
     this.element.removeEventListener('click', this.handleClick);
     this.element.removeEventListener('pointermove', this.handleHover);
     this.setCursor('');
@@ -723,9 +717,9 @@ export class Markmap {
   private handleClick = (event: Event) => {
     if (event.defaultPrevented) return;
     const target = this.hitAt(...this.layoutPoint(event as MouseEvent));
-    if (target?.kind === 'action' && target.action === 'attachments') {
-      if (target.nodeId === this.popover?.id) this.closeAttachments();
-      else void this.openAttachments(target.nodeId);
+    if (target?.kind === 'action' && target.action === 'notes') {
+      if (target.nodeId === this.popover?.id) this.closeNotes();
+      else void this.openNotes(target.nodeId);
     } else if (target?.kind === 'link') {
       // SVG links follow themselves; other backends draw no link elements.
       if (!this.backend.nativeLinks) {

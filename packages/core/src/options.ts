@@ -3,16 +3,16 @@
  * apply to every theme. Themes add their own keys, see `Theme.options`.
  */
 export interface MarkmapJSONOptions {
-  /** Fold nodes at this depth and deeper when first shown. `-1` expands everything. */
-  initialExpandLevel?: number;
+  /** Fold nodes at this depth and deeper when first shown. Leave out to expand everything. */
+  foldLevel?: number;
   /** Wrap labels wider than this, in px. `0` disables wrapping. */
-  maxWidth?: number;
-  spacingHorizontal?: number;
-  spacingVertical?: number;
+  wrapWidth?: number;
+  levelGap?: number;
+  siblingGap?: number;
   zoom?: boolean;
   pan?: boolean;
   fitPadding?: number;
-  maxFitScale?: number;
+  fitMaxScale?: number;
   /** Length of fold, update and fit animations, in ms. `0` disables them. */
   duration?: number;
   /** Name of a registered layout, such as `two-sided` or `org-chart`. */
@@ -93,14 +93,14 @@ export const validators = {
 };
 
 const CORE_SCHEMA: OptionSchema = {
-  initialExpandLevel: validators.number(-1, true),
-  maxWidth: validators.number(0),
-  spacingHorizontal: validators.number(0),
-  spacingVertical: validators.number(0),
+  foldLevel: validators.number(0, true),
+  wrapWidth: validators.number(0),
+  levelGap: validators.number(0),
+  siblingGap: validators.number(0),
   zoom: validators.boolean(),
   pan: validators.boolean(),
   fitPadding: validators.number(0),
-  maxFitScale: validators.number(0.01),
+  fitMaxScale: validators.number(0.01),
   duration: validators.number(0),
   layout: validators.string(),
   theme: validators.string(),

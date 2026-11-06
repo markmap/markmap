@@ -156,7 +156,7 @@ describe('Markmap on canvas', () => {
     const open = vi.fn<(url: string, target: string, features: string) => void>();
     vi.stubGlobal('open', open);
     const { mm, canvas } = create();
-    const link = mm.state!.layout.nodes[1];
+    const link = mm.result!.layout.nodes[1];
     const [clientX, clientY] = mm.transform.apply([link.rect.x + 8, link.rect.y + 8]);
     const at = { bubbles: true, clientX, clientY };
     canvas.dispatchEvent(new MouseEvent('pointermove', at));

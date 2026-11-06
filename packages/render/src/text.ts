@@ -23,7 +23,7 @@ export interface TextLayout extends Size {
 export interface TextLayoutOptions {
   style: TextStyle;
   /** Wrap lines longer than this, in px. `0` or less disables wrapping. */
-  maxWidth?: number;
+  wrapWidth?: number;
   plugins: readonly ContentPlugin[];
   ctx: InlineContext;
   /** Alignment of lines within the widest one. Defaults to `start`. */
@@ -220,7 +220,7 @@ function splitUnit(unit: Unit, ctx: InlineContext): Unit[] {
   return result;
 }
 
-function breakLines(units: Unit[], maxWidth: number, ctx: InlineContext): Unit[][] {
+function breakLines(units: Unit[], wrapWidth: number, ctx: InlineContext): Unit[][] {
   const lines: Unit[][] = [[]];
   let lineWidth = 0;
   const push = (unit: Unit) => {
@@ -231,12 +231,12 @@ function breakLines(units: Unit[], maxWidth: number, ctx: InlineContext): Unit[]
       return;
     }
     if (unit.space && !line.length) return;
-    if (maxWidth > 0 && !unit.space && line.length && lineWidth + unit.width > maxWidth) {
+    if (wrapWidth > 0 && !unit.space && line.length && lineWidth + unit.width > wrapWidth) {
       while (line.at(-1)?.space) lineWidth -= line.pop()!.width;
       lines.push([]);
       lineWidth = 0;
-      if (unit.width > maxWidth) return void splitUnit(unit, ctx).forEach(push);
-    } else if (maxWidth > 0 && !line.length && unit.width > maxWidth) {
+      if (unit.width > wrapWidth) return void splitUnit(unit, ctx).forEach(push);
+    } else if (wrapWidth > 0 && !line.length && unit.width > wrapWidth) {
       const parts = splitUnit(unit, ctx);
       if (parts.length > 1) return void parts.forEach(push);
     }
@@ -253,13 +253,13 @@ interface Placed {
   x: number;
 }
 
-/** Lay out inline content into runs, decorations and atoms, wrapping at `maxWidth`. */
+/** Lay out inline content into runs, decorations and atoms, wrapping at `wrapWidth`. */
 export function layoutText(content: readonly Inline[], options: TextLayoutOptions): TextLayout {
   const { style, plugins, ctx } = options;
   const reg = registry(plugins);
   const lines = breakLines(
     toUnits(flatten(content, style, reg, ctx), ctx),
-    options.maxWidth ?? 0,
+    options.wrapWidth ?? 0,
     ctx,
   );
 

@@ -14,7 +14,7 @@ const CSS = `
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 6px;
   background: var(--mm-bg, #fff);
-  color: var(--mm-color, #333);
+  color: var(--mm-text, #333);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   font: 14px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -24,12 +24,12 @@ const CSS = `
 .markmap-popover > :last-child { margin-bottom: 0; }
 .markmap-popover p, .markmap-popover pre, .markmap-popover blockquote,
 .markmap-popover table, .markmap-popover ul, .markmap-popover ol { margin: 0.5em 0; }
-.markmap-popover a { color: var(--mm-link-color, #0097e6); }
+.markmap-popover a { color: var(--mm-link, #0097e6); }
 .markmap-popover code {
   padding: 0.1em 0.3em;
   border-radius: 3px;
   background: var(--mm-code-bg, #f0f0f0);
-  color: var(--mm-code-color, #555);
+  color: var(--mm-code-text, #555);
   font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .markmap-popover pre { padding: 8px; overflow: auto; border-radius: 4px; background: var(--mm-code-bg, #f0f0f0); }
@@ -40,15 +40,15 @@ const CSS = `
 .markmap-popover mark { background: var(--mm-mark-bg, #ffeaa7); color: inherit; }
 .markmap-popover img { max-width: 100%; }
 .markmap-popover .hljs-keyword, .markmap-popover .hljs-type, .markmap-popover .hljs-meta .hljs-keyword,
-.markmap-popover .hljs-selector-tag, .markmap-popover .hljs-doctag { color: var(--mm-hl-keyword, #cf222e); }
+.markmap-popover .hljs-selector-tag, .markmap-popover .hljs-doctag { color: var(--mm-syntax-keyword, #cf222e); }
 .markmap-popover .hljs-string, .markmap-popover .hljs-regexp, .markmap-popover .hljs-char,
-.markmap-popover .hljs-meta .hljs-string { color: var(--mm-hl-string, #0a3069); }
-.markmap-popover .hljs-comment, .markmap-popover .hljs-quote { color: var(--mm-hl-comment, #6e7781); font-style: italic; }
+.markmap-popover .hljs-meta .hljs-string { color: var(--mm-syntax-string, #0a3069); }
+.markmap-popover .hljs-comment, .markmap-popover .hljs-quote { color: var(--mm-syntax-comment, #6e7781); font-style: italic; }
 .markmap-popover .hljs-number, .markmap-popover .hljs-literal, .markmap-popover .hljs-symbol,
-.markmap-popover .hljs-variable.constant_, .markmap-popover .hljs-built_in { color: var(--mm-hl-number, #0550ae); }
-.markmap-popover .hljs-title, .markmap-popover .hljs-section { color: var(--mm-hl-title, #8250df); }
+.markmap-popover .hljs-variable.constant_, .markmap-popover .hljs-built_in { color: var(--mm-syntax-number, #0550ae); }
+.markmap-popover .hljs-title, .markmap-popover .hljs-section { color: var(--mm-syntax-title, #8250df); }
 .markmap-popover .hljs-attr, .markmap-popover .hljs-attribute, .markmap-popover .hljs-property,
-.markmap-popover .hljs-name, .markmap-popover .hljs-selector-class { color: var(--mm-hl-attr, #116329); }
+.markmap-popover .hljs-name, .markmap-popover .hljs-selector-class { color: var(--mm-syntax-attr, #116329); }
 `;
 
 function ensureStyle(doc: Document) {

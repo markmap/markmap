@@ -80,7 +80,7 @@ describe('text alignment', () => {
       measurer: approximateMeasurer,
       theme,
       layout: twoSidedLayout,
-      maxWidth: 120,
+      wrapWidth: 120,
     });
     const item = result.state.nodes.find((n) => n.text.lines > 1)!;
     return { item, xs: item.text.runs.map((r) => r.x) };

@@ -1,4 +1,4 @@
-import type { Attachment, ContentPlugin, Mark } from '@markmap/core';
+import type { Note, ContentPlugin, Mark } from '@markmap/core';
 import type { Element, Root as HastRoot } from 'hast';
 import { defaultSchema, sanitize, type Schema } from 'hast-util-sanitize';
 import { toHtml } from 'hast-util-to-html';
@@ -14,7 +14,7 @@ const schema: Schema = {
   clobberPrefix: 'mm-',
 };
 
-export interface AttachmentsHtmlOptions {
+export interface NotesHtmlOptions {
   /** Plugins whose `popover` hooks run on the sanitized tree, in order. */
   plugins?: readonly ContentPlugin[];
   /** Color code blocks that name a language. Defaults to `true`. */
@@ -22,18 +22,18 @@ export interface AttachmentsHtmlOptions {
 }
 
 /**
- * Render attachment blocks as HTML: Markdown to HTML, sanitized, then code highlighting
+ * Render note blocks as HTML: Markdown to HTML, sanitized, then code highlighting
  * and plugin hooks, which may add trusted markup. Loaded on demand by the view, and
  * the highlighter only when a code block names a language, so neither weighs on the
  * initial bundle.
  */
-export async function attachmentsToHtml(
-  attachments: readonly Attachment[],
-  options: AttachmentsHtmlOptions = {},
+export async function notesToHtml(
+  notes: readonly Note[],
+  options: NotesHtmlOptions = {},
 ): Promise<string> {
   const mdast: Root = {
     type: 'root',
-    children: attachments.map((a) => a.block) as Root['children'],
+    children: notes.map((a) => a.block) as Root['children'],
   };
   const hast = toHast(mdast, {
     handlers: {

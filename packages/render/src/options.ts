@@ -73,7 +73,7 @@ export function configureTheme(
 }
 
 /** Markdown option keys that map straight onto render options. */
-const RENDER_KEYS = ['maxWidth', 'spacingHorizontal', 'spacingVertical'] as const;
+const RENDER_KEYS = ['wrapWidth', 'levelGap', 'siblingGap'] as const;
 
 /**
  * Validate untrusted Markdown options (usually `frontmatter.markmap`) and apply them on

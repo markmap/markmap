@@ -21,7 +21,7 @@ export function visibleNodes(root: MarkmapNode, folded?: ReadonlySet<string>): M
 
 /** Tidy tree layout, root on the left, growing to the right. */
 export function layoutTree(root: MarkmapNode, options: LayoutOptions): LayoutResult {
-  const { sizes, folded, spacingHorizontal = 80, spacingVertical = 5 } = options;
+  const { sizes, folded, levelGap = 80, siblingGap = 5 } = options;
   const sizeOf = (node: MarkmapNode) => {
     const size = sizes.get(node.id);
     if (!size) throw new Error(`Missing size for node ${node.id}`);
@@ -33,9 +33,9 @@ export function layoutTree(root: MarkmapNode, options: LayoutOptions): LayoutRes
     // flextree grows downwards, so breadth and depth are swapped for a horizontal tree.
     nodeSize: (h) => {
       const { width, height } = sizeOf(h.data);
-      return [height, width + spacingHorizontal];
+      return [height, width + levelGap];
     },
-    spacing: (a, b) => (a.parent === b.parent ? spacingVertical : spacingVertical * 2),
+    spacing: (a, b) => (a.parent === b.parent ? siblingGap : siblingGap * 2),
   });
   const tree = layout.hierarchy(root);
   layout(tree);

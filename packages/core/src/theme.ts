@@ -43,7 +43,7 @@ export interface Theme {
   options?: OptionSchema;
   /** A copy of the theme with validated `options` applied. */
   configure?(options: Record<string, unknown>): Theme;
-  /** Emitted as CSS variables, e.g. `{ 'mm-color': '#333' }` → `--mm-color: #333`. */
+  /** Emitted as CSS variables, e.g. `{ 'mm-text': '#333' }` → `--mm-text: #333`. */
   tokens: Record<string, string>;
   /** Tokens that change in dark mode; the rest of `tokens` still applies. */
   darkTokens?: Record<string, string>;

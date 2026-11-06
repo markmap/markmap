@@ -31,9 +31,9 @@ export interface LayoutOptions {
   sizes: ReadonlyMap<string, Size>;
   folded?: ReadonlySet<string>;
   /** Gap between a node and its children. */
-  spacingHorizontal?: number;
+  levelGap?: number;
   /** Gap between siblings; doubled between cousins. */
-  spacingVertical?: number;
+  siblingGap?: number;
 }
 
 /** A node in one animation frame: where it is and how present it is. */

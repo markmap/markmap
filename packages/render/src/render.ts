@@ -36,9 +36,9 @@ export interface RenderOptions {
   /** Ids of collapsed nodes. */
   folded?: ReadonlySet<string>;
   /** Wrap labels wider than this, in px. `0` disables wrapping. */
-  maxWidth?: number;
-  spacingHorizontal?: number;
-  spacingVertical?: number;
+  wrapWidth?: number;
+  levelGap?: number;
+  siblingGap?: number;
   /** Inline content renderers. Defaults to {@link defaultContentPlugins}. */
   plugins?: readonly ContentPlugin[];
 }
@@ -91,12 +91,12 @@ function labelLayout(
     theme,
     measurer: options.measurer,
     node,
-    maxWidth: options.maxWidth,
+    wrapWidth: options.wrapWidth,
     defer,
   };
   return layoutText(transformContent(plugins, ctx), {
     style: { font: theme.font, fill: theme.textFill },
-    maxWidth: options.maxWidth,
+    wrapWidth: options.wrapWidth,
     plugins,
     ctx,
     align,
@@ -161,8 +161,8 @@ export function renderTree(root: MarkmapNode, options: RenderOptions): RenderRes
   const layout = (options.layout ?? treeLayout).layout(root, {
     sizes: new Map([...measured].map(([id, { box }]) => [id, box])),
     folded: options.folded,
-    spacingHorizontal: options.spacingHorizontal,
-    spacingVertical: options.spacingVertical,
+    levelGap: options.levelGap,
+    siblingGap: options.siblingGap,
   });
 
   const state: DrawState = {

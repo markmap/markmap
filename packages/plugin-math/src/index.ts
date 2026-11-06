@@ -30,7 +30,7 @@ export interface MathContentOptions {
 function sourceStyle(style: TextStyle, ctx: InlineContext): TextStyle {
   return {
     font: { ...style.font, family: ctx.theme.codeFontFamily, size: style.font.size * 0.875 },
-    fill: 'var(--mm-code-color)',
+    fill: 'var(--mm-code-text)',
   };
 }
 

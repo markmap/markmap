@@ -51,7 +51,7 @@ describe('math content', () => {
     expect(done.pending).toBeUndefined();
     const [svg] = customs(done.primitives);
     expect(svg).toMatch(/^<svg x="[\d.]+" y="[\d.]+" width="[\d.]+" height="[\d.]+" viewBox=/);
-    expect(svg).toContain('style="color:var(--mm-color);overflow:visible"');
+    expect(svg).toContain('style="color:var(--mm-text);overflow:visible"');
     expect(toSVGString(done)).toContain(svg);
   });
 
@@ -112,7 +112,7 @@ describe('math per backend', () => {
     ]);
     const svg = toSVGString(result);
     expect(svg).toContain('viewBox');
-    expect(JSON.stringify(variants[1])).toContain('var(--mm-color)');
+    expect(JSON.stringify(variants[1])).toContain('var(--mm-text)');
     expect(JSON.stringify(variants[1])).not.toContain('currentColor');
   });
 

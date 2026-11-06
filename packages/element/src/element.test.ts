@@ -20,7 +20,7 @@ const script = (text: string) => {
   return node;
 };
 
-const nodes = (el: MarkmapViewElement) => el.mm?.state?.layout.nodes.length ?? 0;
+const nodes = (el: MarkmapViewElement) => el.mm?.result?.layout.nodes.length ?? 0;
 const tick = () => new Promise((resolve) => setTimeout(resolve));
 const styles = (el: MarkmapViewElement) =>
   [...el.shadowRoot!.querySelectorAll('style')].map((style) => style.textContent).join('');
@@ -63,7 +63,7 @@ describe('<markmap-view>', () => {
 
   it('follows inline Markdown that arrives later or changes', async () => {
     const el = create();
-    expect(el.mm?.state).toBeUndefined();
+    expect(el.mm?.result).toBeUndefined();
     const source = script('# Root\n## A');
     el.append(source);
     await tick();
@@ -128,7 +128,7 @@ describe('<markmap-view>', () => {
       expect(errors).toHaveLength(1);
     });
     expect((errors[0] as Error).message).toMatch(/missing\.md: 404/);
-    expect(el.mm?.state).toBeUndefined();
+    expect(el.mm?.result).toBeUndefined();
   });
 
   it('puts theme tokens on the host, so the page can override them', () => {
@@ -141,16 +141,16 @@ describe('<markmap-view>', () => {
   });
 
   it('applies attributes live, over the frontmatter', () => {
-    const markdown = '---\nmarkmap:\n  theme: minimal\n  maxWidth: 120\n---\n# Root\n## A';
+    const markdown = '---\nmarkmap:\n  theme: minimal\n  wrapWidth: 120\n---\n# Root\n## A';
     const el = create((e) => {
       e.markdown = markdown;
     });
     expect(el.mm?.options.theme?.name).toBe('minimal');
-    expect(el.mm?.options.maxWidth).toBe(120);
+    expect(el.mm?.options.wrapWidth).toBe(120);
     const fit = vi.spyOn(el.mm!, 'fit');
     el.theme = 'cards';
     expect(el.mm?.options.theme?.name).toBe('cards');
-    expect(el.mm?.options.maxWidth).toBe(120);
+    expect(el.mm?.options.wrapWidth).toBe(120);
     expect(fit).toHaveBeenCalledOnce();
     el.colorScheme = 'dark';
     expect(el.mm?.options.colorScheme).toBe('dark');
@@ -171,7 +171,7 @@ describe('<markmap-view>', () => {
     const el = create((e) => {
       e.markdown = '# Root\n## A\n- a1\n## B';
     });
-    const [, a] = el.mm!.state!.layout.nodes;
+    const [, a] = el.mm!.result!.layout.nodes;
     el.mm!.setFolded(a.node.id, true);
     const before = el.mm;
     el.renderer = 'canvas';
@@ -193,7 +193,7 @@ describe('<markmap-view>', () => {
       e.markdown = '# Root\n## A\n- a1';
     });
     events.length = 0;
-    el.mm!.setFolded(el.mm!.state!.layout.nodes[1].node.id, true);
+    el.mm!.setFolded(el.mm!.result!.layout.nodes[1].node.id, true);
     expect(events).toEqual(['render', 'fold 1']);
   });
 

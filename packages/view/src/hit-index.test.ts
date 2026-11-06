@@ -19,7 +19,7 @@ describe('HitIndex', () => {
   it('places hit areas and links with their group transforms', () => {
     const index = new HitIndex([
       node('a', 100, 50, [
-        { kind: 'hit', action: 'attachments', rect },
+        { kind: 'hit', action: 'notes', rect },
         // Nested and scaled: covers 120..140 × 50..70.
         {
           kind: 'group',
@@ -28,7 +28,7 @@ describe('HitIndex', () => {
         },
       ]),
     ]);
-    expect(index.hit(105, 55)).toEqual({ kind: 'action', nodeId: 'a', action: 'attachments' });
+    expect(index.hit(105, 55)).toEqual({ kind: 'action', nodeId: 'a', action: 'notes' });
     expect(index.hit(139, 69)).toEqual({ kind: 'link', nodeId: 'a', href: 'https://example.com' });
     expect(index.hit(115, 55)).toBeUndefined();
     expect(index.hit(5, 5)).toBeUndefined();

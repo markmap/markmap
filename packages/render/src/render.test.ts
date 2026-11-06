@@ -14,7 +14,7 @@ import {
 
 const sample = readFileSync(join(import.meta.dirname, '../test/sample.md'), 'utf8');
 const render = (md: string, folded?: Set<string>) =>
-  renderTree(parse(md).root, { measurer: approximateMeasurer, folded, maxWidth: 240 });
+  renderTree(parse(md).root, { measurer: approximateMeasurer, folded, wrapWidth: 240 });
 
 const overlaps = (a: { y: number; height: number }, b: { y: number; height: number }) =>
   a.y < b.y + b.height && b.y < a.y + a.height;
@@ -66,7 +66,7 @@ describe('layoutTree', () => {
       id: 'root',
       type: 'root',
       content: [],
-      attachments: [],
+      notes: [],
       data: {},
       children: [],
     };

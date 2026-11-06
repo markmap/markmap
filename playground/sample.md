@@ -1,6 +1,6 @@
 ---
 markmap:
-  colorFreezeLevel: 2
+  colorDepth: 2
 ---
 
 # markmap next
@@ -9,7 +9,7 @@ markmap:
 
 - remark + **gfm**
 - frontmatter
-- _Attachments_ collected
+- _Notes_ collected
 
 ## Render
 
@@ -38,7 +38,7 @@ markmap:
 - [x] Done task
 - [ ] Open task with **==bold highlight==**
 
-## Attachments
+## Notes
 
 - Notes under a node
 

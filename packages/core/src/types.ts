@@ -6,7 +6,7 @@ export type Inline = PhrasingContent;
 /** A block that is not a heading or list item, attached to the node that owns it. */
 export type MdastBlock = BlockContent | DefinitionContent;
 
-export interface Attachment {
+export interface Note {
   block: MdastBlock;
   /** Number of children that precede this block in source order. */
   after: number;
@@ -17,7 +17,7 @@ export interface MarkmapNode {
   id: string;
   type: 'heading' | 'listItem' | (string & {});
   content: Inline[];
-  attachments: Attachment[];
+  notes: Note[];
   /** Plugin data such as fold, checked, color or icon. */
   data: Record<string, unknown>;
   /** Source offsets, for click-to-source and graph-to-Markdown editing. */

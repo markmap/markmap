@@ -4,7 +4,7 @@ import Flatbush from 'flatbush';
 /** What a point in the drawing can act on. */
 export type HitTarget =
   | { kind: 'toggle'; nodeId: string }
-  /** A `hit` primitive: a view action such as opening attachments. */
+  /** A `hit` primitive: a view action such as opening notes. */
   | { kind: 'action'; nodeId: string; action: string }
   | { kind: 'link'; nodeId?: string; href: string };
 

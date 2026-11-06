@@ -8,7 +8,7 @@ const node = (label: string, children: MarkmapNode[] = []): MarkmapNode => ({
   id: '',
   type: 'listItem',
   content: text(label),
-  attachments: [],
+  notes: [],
   data: {},
   children,
 });

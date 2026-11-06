@@ -96,7 +96,7 @@ export interface LinkPrimitive extends PrimitiveBase {
 
 /**
  * An interactive-only hit area that triggers a view action, such as opening a node's
- * attachments. Draws nothing and is never exported.
+ * notes. Draws nothing and is never exported.
  */
 export interface HitPrimitive extends PrimitiveBase {
   kind: 'hit';
