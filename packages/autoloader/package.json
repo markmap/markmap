@@ -1,0 +1,33 @@
+{
+  "name": "@markmap/autoloader",
+  "version": "0.0.0",
+  "description": "One script tag that turns .markmap blocks into maps",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "unpkg": "./dist/index.js",
+  "jsdelivr": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "devDependencies": {
+    "@markmap/element": "workspace:*",
+    "@markmap/plugin-math": "workspace:*",
+    "@markmap/render": "workspace:*",
+    "@markmap/view": "workspace:*",
+    "happy-dom": "^21.0.4"
+  }
+}

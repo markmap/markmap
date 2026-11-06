@@ -8,6 +8,7 @@
     { "path": "./packages/plugin-math" },
     { "path": "./packages/canvas" },
     { "path": "./packages/toolbar" },
-    { "path": "./packages/element" }
+    { "path": "./packages/element" },
+    { "path": "./packages/autoloader" }
   ]
 }

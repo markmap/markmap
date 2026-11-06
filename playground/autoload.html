@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>autoloader</title>
+    <style>
+      body {
+        margin: 24px;
+        font: 14px system-ui;
+      }
+      .markmap {
+        margin-bottom: 24px;
+        border: 1px solid #ddd;
+      }
+      .spacer {
+        height: 1500px;
+      }
+    </style>
+    <script type="module">
+      import { configure } from '@markmap/autoloader';
+      configure({ toolbar: true });
+    </script>
+  </head>
+  <body>
+    <h3>Script block</h3>
+    <div class="markmap" data-theme="cards">
+      <script type="text/markdown">
+        # Script block
+
+        ## Indented with the HTML
+
+        - One
+        - Two
+      </script>
+    </div>
+    <h3>Plain text, shorter by page CSS</h3>
+    <pre class="markmap" style="height: 200px">
+# Plain text
+## Written straight in the page
+## With no script tag
+</pre>
+    <div class="spacer"></div>
+    <h3>Math, only loaded when scrolled to</h3>
+    <div class="markmap" id="math" data-math data-color-scheme="dark">
+      <script type="text/markdown">
+        # Math
+
+        - $E = mc^2$
+        - $\sum_{i=1}^n i$
+      </script>
+    </div>
+  </body>
+</html>
