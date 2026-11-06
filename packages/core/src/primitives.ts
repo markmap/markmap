@@ -83,6 +83,8 @@ export interface ImagePrimitive extends PrimitiveBase {
   w: number;
   h: number;
   src: string;
+  /** Drawn instead when a backend finds the image cannot be loaded. */
+  fallback?: Primitive[];
 }
 
 /** A hit area that opens `href`. Draws nothing. */

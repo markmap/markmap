@@ -1,4 +1,4 @@
-import { CanvasBackend } from '@markmap/canvas';
+import { CanvasBackend, toPNG } from '@markmap/canvas';
 import { parse } from '@markmap/parse';
 import { mathContent, remarkMath } from '@markmap/plugin-math';
 import { builtinLayouts, builtinThemes, defaultContentPlugins, toSVGString } from '@markmap/render';
@@ -92,15 +92,26 @@ level.addEventListener('change', () => {
   level.value = '';
 });
 
+function download(blob: Blob, name: string) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 document.querySelector('#download')!.addEventListener('click', () => {
   if (!mm.state) return;
   const svgText = toSVGString(mm.state, { colorScheme: mm.options.colorScheme });
-  const blob = new Blob([svgText], { type: 'image/svg+xml' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'markmap.svg';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  download(new Blob([svgText], { type: 'image/svg+xml' }), 'markmap.svg');
+});
+
+document.querySelector('#download-png')!.addEventListener('click', async () => {
+  if (!mm.state) return;
+  const { colorScheme } = mm.options;
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const scheme = colorScheme === 'auto' ? (dark ? 'dark' : 'light') : colorScheme;
+  download(await toPNG(mm.state, { colorScheme: scheme }), 'markmap.png');
 });
 
 Object.assign(window, { mm });

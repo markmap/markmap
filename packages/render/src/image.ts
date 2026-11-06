@@ -4,6 +4,7 @@ import type {
   Inline,
   InlineContext,
   Primitive,
+  Rect,
   Size,
   TextStyle,
 } from '@markmap/core';
@@ -77,6 +78,18 @@ function altSize(alt: string, style: TextStyle, ctx: InlineContext): AtomSize {
   };
 }
 
+function altText(
+  alt: string | null | undefined,
+  box: Rect,
+  style: TextStyle,
+  ctx: InlineContext,
+): Primitive[] {
+  if (!alt) return [];
+  const { baseline } = altSize(alt, style, ctx);
+  const run = { text: alt, x: 0, y: baseline, font: style.font, fill: style.fill };
+  return [{ kind: 'text', x: box.x, y: box.y, runs: [run] }];
+}
+
 /**
  * Draws Markdown images and sized `<img>` tags inside labels. Sizes come from the tag,
  * from a cache of loaded sizes, or from a placeholder while the image loads; the view
@@ -134,11 +147,13 @@ export function createImageContent(options: ImageContentOptions = {}): ContentPl
         },
         render(inline, box, style, ctx): Primitive[] {
           const src = imageSize(inline, ctx) && sanitizeImageUrl(inline.url);
-          if (src) return [{ kind: 'image', x: box.x, y: box.y, w: box.width, h: box.height, src }];
-          if (!inline.alt) return [];
-          const { baseline } = altSize(inline.alt, style, ctx);
-          const run = { text: inline.alt, x: 0, y: baseline, font: style.font, fill: style.fill };
-          return [{ kind: 'text', x: box.x, y: box.y, runs: [run] }];
+          const alt = altText(inline.alt, box, style, ctx);
+          if (!src) return alt;
+          const { x, y, width: w, height: h } = box;
+          const image: Primitive = { kind: 'image', x, y, w, h, src };
+          // The text may be wider than an image sized for the layout.
+          if (alt.length) image.fallback = [{ kind: 'group', clip: box, children: alt }];
+          return [image];
         },
       },
     },

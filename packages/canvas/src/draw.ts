@@ -14,10 +14,11 @@ export interface DrawEnv {
   /** Values for the `var(--mm-…)` paints in primitives. */
   tokens: TokenLookup;
   /**
-   * Find an image by its source. Images that are not ready are left out, so the caller
-   * can draw again when they are. See {@link ImageCache}.
+   * Find an image by its source: `undefined` while it is not ready, which leaves it out
+   * so the caller can draw again, and `null` if it failed, which draws its fallback.
+   * See {@link ImageCache}.
    */
-  image?: (src: string) => LoadedImage | undefined;
+  image?: (src: string) => LoadedImage | null | undefined;
   /** Parse SVG path data. Defaults to the global `Path2D`; Node has none. */
   createPath?: (d: string) => Path2D;
   /** Report something that cannot be drawn. Defaults to warning once per message. */
@@ -209,6 +210,8 @@ export function drawPrimitives(
           if (image) {
             const { x, y, w, h } = fitImage(p, image);
             ctx.drawImage(image.source, x, y, w, h);
+          } else if (image === null && p.fallback) {
+            draw(p.fallback);
           }
           break;
         }

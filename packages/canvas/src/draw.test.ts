@@ -195,6 +195,13 @@ describe('drawPrimitives', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
+  it('draws the fallback of images that failed, not of ones still loading', () => {
+    const fallback: Primitive[] = [{ kind: 'rect', x: 0, y: 0, w: 1, h: 1, fill: 'red' }];
+    const box = { kind: 'image', x: 0, y: 0, w: 4, h: 4, src: 'a', fallback } as const;
+    expect(draw([box], { image: () => null })).toContainEqual(['fill', 'red']);
+    expect(draw([box], { image: () => undefined })).toEqual([]);
+  });
+
   it('fits images in their box like SVG, and skips ones that are not ready', () => {
     const image: LoadedImage = { source: 'img' as never, width: 100, height: 50 };
     const box = { kind: 'image', x: 10, y: 20, w: 40, h: 40 } as const;
@@ -278,8 +285,18 @@ describe('ImageCache', () => {
     cache.get('a');
     await Promise.resolve();
     await Promise.resolve();
-    expect(cache.get('a')).toBeUndefined();
+    expect(cache.get('a')).toBeNull();
     expect(load).toHaveBeenCalledOnce();
-    expect(onLoad).not.toHaveBeenCalled();
+    expect(onLoad).toHaveBeenCalledOnce();
+  });
+
+  it('preloads what is asked for, whether it loads or fails', async () => {
+    const load = (src: string) =>
+      src === 'bad' ? Promise.reject(new Error('nope')) : Promise.resolve(image);
+    const cache = new ImageCache({ load });
+    cache.get('good');
+    await cache.preload(['good', 'bad']);
+    expect(cache.get('good')).toBe(image);
+    expect(cache.get('bad')).toBeNull();
   });
 });
