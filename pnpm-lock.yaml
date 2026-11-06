@@ -230,6 +230,9 @@ importers:
       '@markmap/render':
         specifier: workspace:*
         version: link:../render
+      '@markmap/toolbar':
+        specifier: workspace:*
+        version: link:../toolbar
       '@markmap/view':
         specifier: workspace:*
         version: link:../view
@@ -306,6 +309,21 @@ importers:
       '@types/d3-flextree':
         specifier: ^2.1.4
         version: 2.1.4
+
+  packages/toolbar:
+    devDependencies:
+      '@markmap/parse':
+        specifier: workspace:*
+        version: link:../parse
+      '@markmap/render':
+        specifier: workspace:*
+        version: link:../render
+      '@markmap/view':
+        specifier: workspace:*
+        version: link:../view
+      happy-dom:
+        specifier: ^21.0.4
+        version: 21.0.4
 
   packages/view:
     dependencies:

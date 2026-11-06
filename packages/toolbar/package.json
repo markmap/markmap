@@ -1,0 +1,34 @@
+{
+  "name": "@markmap/toolbar",
+  "version": "0.0.0",
+  "description": "Zoom and fold controls for a Markmap view",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "devDependencies": {
+    "@markmap/parse": "workspace:*",
+    "@markmap/render": "workspace:*",
+    "@markmap/view": "workspace:*",
+    "happy-dom": "^21.0.4"
+  },
+  "peerDependencies": {
+    "@markmap/view": "workspace:*"
+  }
+}

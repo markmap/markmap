@@ -228,4 +228,30 @@ describe('<markmap-view>', () => {
     expect(nodes(late)).toBe(1);
     expect(late.markdown).toBe('# Late');
   });
+
+  it('adds and removes the toolbar live', () => {
+    const el = create((e) => {
+      e.markdown = '# Root\n## A';
+    });
+    const bar = () => el.shadowRoot!.querySelector('.markmap-toolbar');
+    expect(bar()).toBeNull();
+    el.toolbar = true;
+    expect(bar()?.querySelectorAll('button')).toHaveLength(4);
+    el.toolbarItems = ['fit'];
+    expect(bar()?.querySelectorAll('button')).toHaveLength(1);
+    el.toolbar = false;
+    expect(bar()).toBeNull();
+  });
+
+  it('moves the toolbar to the new map when the renderer changes', () => {
+    const el = create((e) => {
+      e.markdown = '# Root\n## A';
+      e.toolbar = true;
+    });
+    el.renderer = 'canvas';
+    expect(el.shadowRoot!.querySelectorAll('.markmap-toolbar')).toHaveLength(1);
+    const fit = vi.spyOn(el.mm!, 'fit');
+    el.shadowRoot!.querySelector<HTMLButtonElement>('[aria-label="Fit to view"]')!.click();
+    expect(fit).toHaveBeenCalledOnce();
+  });
 });

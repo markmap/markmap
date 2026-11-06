@@ -10,6 +10,7 @@
     { "path": "../canvas" },
     { "path": "../parse" },
     { "path": "../render" },
+    { "path": "../toolbar" },
     { "path": "../view" }
   ]
 }

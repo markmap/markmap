@@ -41,6 +41,10 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
   fitPadding?: number;
   /** Largest scale `fit()` zooms in to. */
   fitMaxScale?: number;
+  /** Smallest scale to zoom out to. `fit()` may go further to show everything. */
+  minScale?: number;
+  /** Largest scale to zoom in to. */
+  maxScale?: number;
   /** Fold nodes at this depth and deeper when first seen. Leave out to expand everything. */
   foldLevel?: number;
   /**
@@ -69,6 +73,8 @@ const DEFAULTS: ViewOptions = {
   pan: true,
   fitPadding: 20,
   fitMaxScale: 2,
+  minScale: 0.1,
+  maxScale: 8,
   duration: 500,
 };
 
@@ -87,6 +93,8 @@ export function resolveViewOptions(
     'pan',
     'fitPadding',
     'fitMaxScale',
+    'minScale',
+    'maxScale',
     'foldLevel',
     'duration',
     'colorScheme',
@@ -129,7 +137,7 @@ export class Markmap {
   readonly backend: ViewBackend;
   private scopeClass = uniqueClass();
   private viewOptions: ViewOptions = DEFAULTS;
-  private zoomBehavior: ZoomBehavior<Element, unknown>;
+  private zoomBehavior: ZoomBehavior<Element, unknown> = zoom<Element, unknown>();
   private selection: Selection<Element, unknown, null, undefined>;
   private measurer: Measurer;
   private root?: MarkmapNode;
@@ -150,6 +158,8 @@ export class Markmap {
   private zoomTween = new Tween();
   /** Whether the first fit has happened; it is never animated. */
   private placed = false;
+  /** Scale of the last fit. */
+  private fitScale?: number;
   /** Where the running zoom animation ends. */
   private zoomTarget?: ZoomTransform;
   /**
@@ -171,7 +181,7 @@ export class Markmap {
     this.applyOptions(options);
 
     this.selection = select(element);
-    this.zoomBehavior = zoom<Element, unknown>()
+    this.zoomBehavior
       .filter((event: Event) => {
         if (event.type === 'wheel') return !!this.options.zoom;
         if (event.type === 'dblclick') return false;
@@ -191,6 +201,32 @@ export class Markmap {
     this.selection.call(this.zoomBehavior);
     element.addEventListener('click', this.handleClick);
     element.addEventListener('pointermove', this.handleHover);
+  }
+
+  /** Keep the last fit within the limits, or zooming from it would jump. */
+  private updateScaleLimits() {
+    const { minScale = 0, maxScale = Infinity } = this.viewOptions;
+    const fit = this.fitScale ?? minScale;
+    this.zoomBehavior.scaleExtent([Math.min(minScale, fit), Math.max(maxScale, fit)]);
+  }
+
+  /** The smallest and largest scale the view can zoom to. */
+  get scaleLimits(): [number, number] {
+    const [min, max] = this.zoomBehavior.scaleExtent();
+    return [min, max];
+  }
+
+  /**
+   * Class that carries the map's theme tokens: add it to controls beside the map so they
+   * can use `--mm-*` too.
+   */
+  get themeClass(): string {
+    return this.scopeClass;
+  }
+
+  /** The tree on show, with folded nodes. */
+  get tree(): MarkmapNode | undefined {
+    return this.root;
   }
 
   /** The element the map is shown in. */
@@ -213,6 +249,7 @@ export class Markmap {
     if (options.measurer) this.measurer = options.measurer;
     const selector = this.backend.themeSelector ?? `.${this.scopeClass}`;
     this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme, selector));
+    this.updateScaleLimits();
   }
 
   static create(
@@ -538,6 +575,8 @@ export class Markmap {
       (height - padding * 2) / box.height,
       this.options.fitMaxScale ?? 2,
     );
+    this.fitScale = scale;
+    this.updateScaleLimits();
     const transform = zoomIdentity
       .translate(width / 2, height / 2)
       .scale(scale)

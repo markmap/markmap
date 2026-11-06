@@ -48,8 +48,14 @@
         outline: none;
       }
       #stage {
+        position: relative;
         min-width: 0;
         min-height: 0;
+      }
+      .markmap-toolbar {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
       }
       svg,
       canvas {
@@ -65,10 +71,6 @@
     <header>
       <h1>markmap next</h1>
       <span id="stats"></span>
-      <button id="zoom-in" title="Zoom in">+</button>
-      <button id="zoom-out" title="Zoom out">−</button>
-      <button id="fit">Fit</button>
-      <button id="expand-all">Expand all</button>
       <select id="renderer" title="Renderer">
         <option value="svg">SVG</option>
         <option value="canvas">Canvas</option>
@@ -88,15 +90,6 @@
         <option value="dark">Dark</option>
         <option value="auto">Auto</option>
       </select>
-      <label
-        >Level
-        <select id="level">
-          <option value="">–</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-        </select></label
-      >
       <button id="download">Download SVG</button>
       <button id="download-png">Download PNG</button>
     </header>

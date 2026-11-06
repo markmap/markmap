@@ -13,6 +13,10 @@ export interface MarkmapJSONOptions {
   pan?: boolean;
   fitPadding?: number;
   fitMaxScale?: number;
+  /** Smallest scale to zoom out to. `fit()` may go further to show everything. */
+  minScale?: number;
+  /** Largest scale to zoom in to. */
+  maxScale?: number;
   /** Length of fold, update and fit animations, in ms. `0` disables them. */
   duration?: number;
   /** Name of a registered layout, such as `two-sided` or `org-chart`. */
@@ -101,6 +105,8 @@ const CORE_SCHEMA: OptionSchema = {
   pan: validators.boolean(),
   fitPadding: validators.number(0),
   fitMaxScale: validators.number(0.01),
+  minScale: validators.number(0.001),
+  maxScale: validators.number(0.01),
   duration: validators.number(0),
   layout: validators.string(),
   theme: validators.string(),

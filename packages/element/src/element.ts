@@ -1,5 +1,6 @@
 import { CanvasBackend } from '@markmap/canvas';
 import { parse, type ParseOptions } from '@markmap/parse';
+import { createToolbar, type Toolbar, type ToolbarItem } from '@markmap/toolbar';
 import { Markmap, resolveViewOptions, SvgDomBackend, type ViewOptions } from '@markmap/view';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -8,9 +9,10 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const THEME_SELECTOR = ':host';
 
 const CSS = `
-:host { display: block; height: 400px; overflow: hidden; background: var(--mm-bg); }
+:host { display: block; position: relative; height: 400px; overflow: hidden; background: var(--mm-bg); }
 :host([hidden]) { display: none; }
-svg, canvas { display: block; width: 100%; height: 100%; }
+.markmap { display: block; width: 100%; height: 100%; }
+.markmap-toolbar { position: absolute; right: 8px; bottom: 8px; }
 `;
 
 /** Properties that may be set before this class is defined. */
@@ -23,6 +25,8 @@ const PROPERTIES = [
   'layout',
   'colorScheme',
   'renderer',
+  'toolbar',
+  'toolbarItems',
 ] as const;
 
 /** Importing this on a server must not fail, so the class needs a base class there too. */
@@ -51,16 +55,19 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
  * else the `src` attribute, else a `<script type="text/markdown">` child.
  *
  * The `theme`, `layout`, `color-scheme` and `renderer` attributes update the map live, and
- * win over the document's frontmatter. Set `--mm-*` properties on the element to override
+ * win over the document's frontmatter. `toolbar` adds controls, which `::part(toolbar)`
+ * can move. Set `--mm-*` properties on the element to override
  * theme tokens. `.mm` is the `Markmap` while the element is on the page.
  *
  * Fires `render` and `fold`, with the view event's value as `detail`, and `error` when
  * `src` cannot be loaded.
  */
 export class MarkmapViewElement extends Base {
-  static observedAttributes = ['src', 'theme', 'layout', 'color-scheme', 'renderer'];
+  static observedAttributes = ['src', 'theme', 'layout', 'color-scheme', 'renderer', 'toolbar'];
 
   private map?: Markmap;
+  private controls?: Toolbar;
+  private controlItems?: readonly ToolbarItem[];
   private sheet: HTMLStyleElement;
   private content: string | null = null;
   private viewOptions: ViewOptions = {};
@@ -165,6 +172,25 @@ export class MarkmapViewElement extends Base {
     this.reflect('renderer', value);
   }
 
+  /** Whether to show controls over the map. */
+  get toolbar(): boolean {
+    return this.hasAttribute('toolbar');
+  }
+
+  set toolbar(value: boolean) {
+    this.toggleAttribute('toolbar', value);
+  }
+
+  /** What the toolbar shows, if not the default items. */
+  get toolbarItems(): readonly ToolbarItem[] | undefined {
+    return this.controlItems;
+  }
+
+  set toolbarItems(value: readonly ToolbarItem[] | undefined) {
+    this.controlItems = value;
+    this.updateToolbar();
+  }
+
   private reflect(name: string, value: string | null) {
     if (value == null) this.removeAttribute(name);
     else this.setAttribute(name, value);
@@ -185,6 +211,8 @@ export class MarkmapViewElement extends Base {
       if (this.isConnected) return;
       this.observer.disconnect();
       this.request?.abort();
+      this.controls?.destroy();
+      this.controls = undefined;
       this.map?.destroy();
       this.map = undefined;
     });
@@ -192,7 +220,9 @@ export class MarkmapViewElement extends Base {
 
   attributeChangedCallback(name: string, before: string | null, value: string | null): void {
     if (before === value || !this.map) return;
-    if (name === 'renderer') {
+    if (name === 'toolbar') {
+      this.updateToolbar();
+    } else if (name === 'renderer') {
       const folded = [...this.map.foldedIds];
       this.createMap();
       this.update();
@@ -216,6 +246,15 @@ export class MarkmapViewElement extends Base {
     }
   }
 
+  /** Controls go with one map, so a new map or new items need new ones. */
+  private updateToolbar() {
+    this.controls?.destroy();
+    this.controls = undefined;
+    if (!this.map || !this.toolbar) return;
+    this.controls = createToolbar(this.map, { items: this.controlItems });
+    this.shadowRoot!.append(this.controls.element);
+  }
+
   private createMap() {
     this.map?.destroy();
     const doc = this.ownerDocument;
@@ -231,6 +270,7 @@ export class MarkmapViewElement extends Base {
     map.on('fold', (detail) => this.fire('fold', detail));
     this.map = map;
     this.needsFit = true;
+    this.updateToolbar();
   }
 
   private fire(type: string, detail: unknown) {

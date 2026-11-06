@@ -25,6 +25,7 @@
     "@markmap/canvas": "workspace:*",
     "@markmap/parse": "workspace:*",
     "@markmap/render": "workspace:*",
+    "@markmap/toolbar": "workspace:*",
     "@markmap/view": "workspace:*"
   },
   "devDependencies": {

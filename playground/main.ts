@@ -2,6 +2,7 @@ import { CanvasBackend, toPNG } from '@markmap/canvas';
 import { parse } from '@markmap/parse';
 import { mathContent, remarkMath } from '@markmap/plugin-math';
 import { builtinLayouts, builtinThemes, defaultContentPlugins, toSVGString } from '@markmap/render';
+import { createToolbar, type Toolbar } from '@markmap/toolbar';
 import { Markmap, resolveViewOptions, type ViewOptions } from '@markmap/view';
 import sample from './sample.md?raw';
 
@@ -35,6 +36,14 @@ function createMarkmap(): Markmap {
 }
 
 let mm = createMarkmap();
+let toolbar: Toolbar;
+
+function addToolbar() {
+  toolbar = createToolbar(mm);
+  stage.append(toolbar.element);
+}
+
+addToolbar();
 
 function update() {
   const start = performance.now();
@@ -69,8 +78,10 @@ editor.addEventListener('input', () => {
 });
 
 rendererSelect.addEventListener('change', () => {
+  toolbar.destroy();
   mm.destroy();
   mm = createMarkmap();
+  addToolbar();
   Object.assign(window, { mm });
   update();
   mm.fit();
@@ -82,15 +93,6 @@ for (const select of [layoutSelect, themeSelect, schemeSelect]) {
     mm.fit();
   });
 }
-document.querySelector('#fit')!.addEventListener('click', () => mm.fit());
-document.querySelector('#zoom-in')!.addEventListener('click', () => mm.zoomIn());
-document.querySelector('#zoom-out')!.addEventListener('click', () => mm.zoomOut());
-document.querySelector('#expand-all')!.addEventListener('click', () => mm.expandAll());
-const level = document.querySelector<HTMLSelectElement>('#level')!;
-level.addEventListener('change', () => {
-  if (level.value) mm.foldToLevel(Number(level.value));
-  level.value = '';
-});
 
 function download(blob: Blob, name: string) {
   const a = document.createElement('a');

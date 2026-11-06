@@ -667,3 +667,40 @@ describe('themes per map', () => {
     expect(a.element.classList).toHaveLength(0);
   });
 });
+
+const smallMap = (options = {}) =>
+  Markmap.create(createSvg(), parse('# Root\n\n## A\n\n## B').root, {
+    measurer: approximateMeasurer,
+    duration: 0,
+    ...options,
+  });
+
+describe('zoom limits', () => {
+  it('stops zooming at the limits', () => {
+    const mm = smallMap({ minScale: 0.5, maxScale: 3 });
+    expect(mm.scaleLimits).toEqual([0.5, 3]);
+    for (let i = 0; i < 20; i += 1) mm.zoomIn();
+    expect(mm.transform.k).toBe(3);
+    for (let i = 0; i < 20; i += 1) mm.zoomOut();
+    expect(mm.transform.k).toBe(0.5);
+  });
+
+  it('lets fit go past the limits without zooming jumping back', () => {
+    const mm = smallMap({ minScale: 2, maxScale: 3, fitMaxScale: 1 });
+    expect(mm.transform.k).toBe(1);
+    expect(mm.scaleLimits).toEqual([1, 3]);
+    mm.zoomOut();
+    expect(mm.transform.k).toBe(1);
+  });
+
+  it('reads limits from frontmatter options', () => {
+    const { options } = resolveViewOptions({}, { minScale: 0.2, maxScale: 4 });
+    expect(options).toMatchObject({ minScale: 0.2, maxScale: 4 });
+  });
+
+  it('offers the tree and its theme class', () => {
+    const mm = smallMap();
+    expect(mm.tree?.children).toHaveLength(2);
+    expect(mm.element.classList.contains(mm.themeClass)).toBe(true);
+  });
+});
