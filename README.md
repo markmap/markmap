@@ -106,6 +106,10 @@ This writes `notes.html`, one file that works offline, and opens it. Use `--svg`
 | `@markmap/page`        | One offline HTML file              |
 | `@markmap/cli`         | The `markmap` command              |
 
+## Documentation
+
+The [documentation](https://markmap.js.org/docs) is written in [`docs/`](docs), and pull requests are welcome.
+
 ## License
 
 MIT
