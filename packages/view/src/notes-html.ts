@@ -10,6 +10,8 @@ const schema: Schema = {
   ...defaultSchema,
   // GitHub's schema, plus <mark> for ==highlight==. Raw HTML never gets this far.
   tagNames: [...(defaultSchema.tagNames ?? []), 'mark'],
+  // `src` is only allowed on images, where `data:` cannot run anything.
+  protocols: { ...defaultSchema.protocols, src: [...(defaultSchema.protocols?.src ?? []), 'data'] },
   // Keep ids readable; the default prefix exists to avoid clobbering page globals.
   clobberPrefix: 'mm-',
 };

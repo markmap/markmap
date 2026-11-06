@@ -75,6 +75,14 @@ describe('drawPrimitives', () => {
     ]);
   });
 
+  it('treats none as no paint', () => {
+    const calls = draw([{ kind: 'rect', x: 0, y: 0, w: 1, h: 1, fill: 'none', stroke: 'red' }]);
+    expect(calls).toEqual([
+      ['rect', 0, 0, 1, 1],
+      ['stroke', 'red', 1],
+    ]);
+  });
+
   it('draws nothing for a paint it cannot resolve', () => {
     expect(draw([{ kind: 'path', d: 'M0,0', fill: 'var(--mm-x)' }])).toEqual([]);
   });

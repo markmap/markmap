@@ -1,0 +1,39 @@
+{
+  "name": "@markmap/cli",
+  "version": "0.0.0",
+  "description": "Turn Markdown into a map from the command line",
+  "license": "MIT",
+  "bin": {
+    "markmap": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build && vite build -c vite.client.config.ts && vite build -c vite.client.config.ts --mode math"
+  },
+  "dependencies": {
+    "@markmap/canvas": "workspace:*",
+    "@markmap/core": "workspace:*",
+    "@markmap/parse": "workspace:*",
+    "@markmap/plugin-math": "workspace:*",
+    "@markmap/render": "workspace:*"
+  },
+  "devDependencies": {
+    "@markmap/element": "workspace:*",
+    "@markmap/view": "workspace:*",
+    "@types/mdast": "^4.0.4"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

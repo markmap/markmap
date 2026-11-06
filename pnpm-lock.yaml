@@ -228,6 +228,38 @@ importers:
         specifier: ^21.0.4
         version: 21.0.4
 
+  packages/cli:
+    dependencies:
+      '@markmap/canvas':
+        specifier: workspace:*
+        version: link:../canvas
+      '@markmap/core':
+        specifier: workspace:*
+        version: link:../core
+      '@markmap/parse':
+        specifier: workspace:*
+        version: link:../parse
+      '@markmap/plugin-math':
+        specifier: workspace:*
+        version: link:../plugin-math
+      '@markmap/render':
+        specifier: workspace:*
+        version: link:../render
+    devDependencies:
+      '@markmap/element':
+        specifier: workspace:*
+        version: link:../element
+      '@markmap/view':
+        specifier: workspace:*
+        version: link:../view
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+    optionalDependencies:
+      '@napi-rs/canvas':
+        specifier: ^1.1.0
+        version: 1.1.0
+
   packages/core:
     dependencies:
       '@types/hast':

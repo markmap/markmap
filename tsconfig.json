@@ -9,6 +9,7 @@
     { "path": "./packages/canvas" },
     { "path": "./packages/toolbar" },
     { "path": "./packages/element" },
-    { "path": "./packages/autoloader" }
+    { "path": "./packages/autoloader" },
+    { "path": "./packages/cli" }
   ]
 }

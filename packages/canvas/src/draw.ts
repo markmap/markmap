@@ -90,7 +90,8 @@ export function drawPrimitives(
   let currentFont: string | undefined;
 
   const paint = (value: string | undefined) => {
-    if (value == null) return undefined;
+    // SVG's "no paint" is not a canvas color: setting it would keep the last one.
+    if (value == null || value === 'none') return undefined;
     if (!paints.has(value)) paints.set(value, resolvePaint(value, env.tokens));
     return paints.get(value);
   };

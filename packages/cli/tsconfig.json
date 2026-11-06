@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../canvas" },
+    { "path": "../core" },
+    { "path": "../element" },
+    { "path": "../parse" },
+    { "path": "../plugin-math" },
+    { "path": "../render" },
+    { "path": "../view" }
+  ]
+}
