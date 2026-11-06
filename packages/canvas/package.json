@@ -12,6 +12,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js"
     }
   },
   "publishConfig": {
@@ -28,10 +32,21 @@
   },
   "devDependencies": {
     "@markmap/parse": "workspace:*",
+    "@markmap/plugin-math": "workspace:*",
     "@markmap/view": "workspace:*",
+    "@napi-rs/canvas": "^1.1.0",
     "happy-dom": "^21.0.4"
   },
   "peerDependencies": {
-    "@markmap/view": "workspace:*"
+    "@markmap/view": "workspace:*",
+    "@napi-rs/canvas": "^1.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@markmap/view": {
+      "optional": true
+    },
+    "@napi-rs/canvas": {
+      "optional": true
+    }
   }
 }

@@ -90,6 +90,14 @@ describe('drawPrimitives', () => {
     ]);
   });
 
+  it('adds fallback families to every font', () => {
+    const run: TextRun = { text: 'a', x: 0, y: 0, font };
+    const calls = draw([{ kind: 'text', x: 0, y: 0, runs: [run] }], {
+      fontFallback: 'Noto, Emoji',
+    });
+    expect(calls[0][4]).toBe('normal 400 16px serif, Noto, Emoji');
+  });
+
   it('only sets the font when it changes', () => {
     const { ctx } = recorder();
     const set = vi.fn<(font: string) => void>();

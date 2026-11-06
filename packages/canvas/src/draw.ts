@@ -21,6 +21,11 @@ export interface DrawEnv {
   image?: (src: string) => LoadedImage | null | undefined;
   /** Parse SVG path data. Defaults to the global `Path2D`; Node has none. */
   createPath?: (d: string) => Path2D;
+  /**
+   * Families to add to every font, as CSS. Browsers find a font for any character by
+   * themselves, but Node's canvas only looks through the families it is told about.
+   */
+  fontFallback?: string;
   /** Report something that cannot be drawn. Defaults to warning once per message. */
   warn?: (message: string) => void;
   /**
@@ -143,7 +148,8 @@ export function drawPrimitives(
       return;
     }
     for (const run of p.runs) {
-      const font = fontToCss(run.font);
+      const css = fontToCss(run.font);
+      const font = env.fontFallback ? `${css}, ${env.fontFallback}` : css;
       if (font !== currentFont) {
         ctx.font = font;
         currentFont = font;
