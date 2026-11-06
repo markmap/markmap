@@ -1,0 +1,29 @@
+{
+  "name": "@markmap/canvas",
+  "version": "0.0.0",
+  "description": "Canvas backend for Markmap",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "dependencies": {
+    "@markmap/core": "workspace:*",
+    "@markmap/render": "workspace:*"
+  }
+}

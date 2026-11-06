@@ -5,6 +5,7 @@
     { "path": "./packages/parse" },
     { "path": "./packages/render" },
     { "path": "./packages/view" },
-    { "path": "./packages/plugin-math" }
+    { "path": "./packages/plugin-math" },
+    { "path": "./packages/canvas" }
   ]
 }

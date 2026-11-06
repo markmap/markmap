@@ -185,6 +185,15 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(happy-dom@21.0.4)(vite@8.3.5(@types/node@26.6.6)(yaml@2.9.1))
 
+  packages/canvas:
+    dependencies:
+      '@markmap/core':
+        specifier: workspace:*
+        version: link:../core
+      '@markmap/render':
+        specifier: workspace:*
+        version: link:../render
+
   packages/core:
     dependencies:
       '@types/hast':
