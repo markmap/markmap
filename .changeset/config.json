@@ -5,7 +5,7 @@
   "fixed": [["@markmap/*"]],
   "linked": [],
   "access": "public",
-  "baseBranch": "main",
+  "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": []
 }

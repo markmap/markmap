@@ -1,6 +1,6 @@
 {
   "name": "@markmap/core",
-  "version": "0.0.0",
+  "version": "1.0.0-next.0",
   "description": "Markmap types, tree utilities and plugin contracts",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",

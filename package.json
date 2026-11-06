@@ -1,5 +1,6 @@
 {
   "name": "markmap",
+  "version": "1.0.0-next.0",
   "private": true,
   "type": "module",
   "scripts": {
