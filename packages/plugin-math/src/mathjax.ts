@@ -1,10 +1,41 @@
-import type { LiteElement } from 'mathjax-full/js/adaptors/lite/Element.js';
-import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
-import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
-import { TeX } from 'mathjax-full/js/input/tex.js';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
-import { mathjax } from 'mathjax-full/js/mathjax.js';
-import { SVG } from 'mathjax-full/js/output/svg.js';
+// MathJax's TeX packages register themselves when imported.
+/* oxlint-disable import/no-unassigned-import */
+import '@mathjax/src/js/input/tex/base/BaseConfiguration.js';
+import '@mathjax/src/js/input/tex/action/ActionConfiguration.js';
+import '@mathjax/src/js/input/tex/ams/AmsConfiguration.js';
+import '@mathjax/src/js/input/tex/amscd/AmsCdConfiguration.js';
+import '@mathjax/src/js/input/tex/bbox/BboxConfiguration.js';
+import '@mathjax/src/js/input/tex/boldsymbol/BoldsymbolConfiguration.js';
+import '@mathjax/src/js/input/tex/braket/BraketConfiguration.js';
+import '@mathjax/src/js/input/tex/bussproofs/BussproofsConfiguration.js';
+import '@mathjax/src/js/input/tex/cancel/CancelConfiguration.js';
+import '@mathjax/src/js/input/tex/cases/CasesConfiguration.js';
+import '@mathjax/src/js/input/tex/centernot/CenternotConfiguration.js';
+import '@mathjax/src/js/input/tex/color/ColorConfiguration.js';
+import '@mathjax/src/js/input/tex/colortbl/ColortblConfiguration.js';
+import '@mathjax/src/js/input/tex/empheq/EmpheqConfiguration.js';
+import '@mathjax/src/js/input/tex/enclose/EncloseConfiguration.js';
+import '@mathjax/src/js/input/tex/extpfeil/ExtpfeilConfiguration.js';
+import '@mathjax/src/js/input/tex/gensymb/GensymbConfiguration.js';
+import '@mathjax/src/js/input/tex/mathtools/MathtoolsConfiguration.js';
+import '@mathjax/src/js/input/tex/mhchem/MhchemConfiguration.js';
+import '@mathjax/src/js/input/tex/newcommand/NewcommandConfiguration.js';
+import '@mathjax/src/js/input/tex/noerrors/NoErrorsConfiguration.js';
+import '@mathjax/src/js/input/tex/noundefined/NoUndefinedConfiguration.js';
+import '@mathjax/src/js/input/tex/physics/PhysicsConfiguration.js';
+import '@mathjax/src/js/input/tex/tagformat/TagFormatConfiguration.js';
+import '@mathjax/src/js/input/tex/textcomp/TextcompConfiguration.js';
+import '@mathjax/src/js/input/tex/textmacros/TextMacrosConfiguration.js';
+import '@mathjax/src/js/input/tex/unicode/UnicodeConfiguration.js';
+import '@mathjax/src/js/input/tex/upgreek/UpgreekConfiguration.js';
+import '@mathjax/src/js/input/tex/verb/VerbConfiguration.js';
+import { MathJaxTexFont } from '@mathjax/mathjax-tex-font/js/svg.js';
+import type { LiteElement } from '@mathjax/src/js/adaptors/lite/Element.js';
+import { liteAdaptor } from '@mathjax/src/js/adaptors/liteAdaptor.js';
+import { RegisterHTMLHandler } from '@mathjax/src/js/handlers/html.js';
+import { TeX } from '@mathjax/src/js/input/tex.js';
+import { mathjax } from '@mathjax/src/js/mathjax.js';
+import { SVG } from '@mathjax/src/js/output/svg.js';
 import type { Primitive } from '@markmap/core';
 import { type SvgNode, svgToPrimitives } from './shapes';
 
@@ -26,20 +57,54 @@ export interface MathSvg {
 }
 
 /**
- * TeX packages that only lay out math. `html` (links, classes, styles and ids),
- * `require`, `autoload`, `setoptions` and `configmacros` can reach outside the formula
- * or change the converter, so Markdown cannot use them.
+ * TeX packages that only lay out math. The rest, such as `html`, `texhtml`, `require`,
+ * `autoload`, `setoptions` and `configmacros`, can reach outside the formula or change
+ * the converter, so Markdown cannot use them.
  */
-const SAFE_PACKAGES = AllPackages.filter(
-  (name) => !['html', 'require', 'autoload', 'setoptions', 'configmacros'].includes(name),
-);
+const SAFE_PACKAGES = [
+  'base',
+  'action',
+  'ams',
+  'amscd',
+  'bbox',
+  'boldsymbol',
+  'braket',
+  'bussproofs',
+  'cancel',
+  'cases',
+  'centernot',
+  'color',
+  'colortbl',
+  'empheq',
+  'enclose',
+  'extpfeil',
+  'gensymb',
+  'mathtools',
+  'mhchem',
+  'newcommand',
+  'noerrors',
+  'noundefined',
+  'physics',
+  'tagformat',
+  'textcomp',
+  'textmacros',
+  'unicode',
+  'upgreek',
+  'verb',
+];
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
 const doc = mathjax.document('', {
   InputJax: new TeX({ packages: SAFE_PACKAGES }),
-  // Paths inline in every formula, so each one stands alone (and exports cleanly).
-  OutputJax: new SVG({ fontCache: 'none' }),
+  // The TeX font has no files to load on demand, so converting stays synchronous. Paths
+  // are inline in every formula, so each one stands alone and exports cleanly.
+  OutputJax: new SVG({
+    fontData: MathJaxTexFont,
+    fontCache: 'none',
+    // Otherwise a long inline formula is cut into one <svg> per line.
+    linebreaks: { inline: false },
+  }),
 });
 
 const ex = (value: string | null | undefined) => Number.parseFloat(value ?? '') || 0;
@@ -61,7 +126,8 @@ export function texToSvg(tex: string, display: boolean): MathSvg {
   const container = doc.convert(tex, { display });
   // The container wraps exactly one <svg>.
   const svg = adaptor.firstChild(container) as LiteElement;
-  const body = adaptor.innerHTML(svg);
+  // MathJax 4 repeats the TeX source on its elements, which nothing here needs.
+  const body = adaptor.innerHTML(svg).replace(/\sdata-latex(?:-item)?="[^"]*"/g, '');
   if (body.includes('data-mjx-error')) {
     const message = /data-mjx-error="([^"]*)"/.exec(body)?.[1] ?? 'TeX error';
     throw new Error(message);

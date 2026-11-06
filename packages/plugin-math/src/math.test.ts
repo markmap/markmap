@@ -32,6 +32,14 @@ describe('texToSvg', () => {
     expect(svg.verticalAlign).toBeLessThanOrEqual(0);
   });
 
+  it('keeps a whole formula in one image', () => {
+    const short = texToSvg('e', false);
+    const long = texToSvg('e^{i\\pi} + 1 = 0', false);
+    expect(long.width).toBeGreaterThan(short.width * 8);
+    expect(long.body).toContain('="0"');
+    expect(long.body.match(/<path/g)!.length).toBeGreaterThanOrEqual(6);
+  });
+
   it('rejects invalid TeX and cannot make links', () => {
     expect(() => texToSvg('\\frac{a', false)).toThrow(/close brace/);
     const svg = texToSvg('\\href{javascript:alert(1)}{x}', false);
