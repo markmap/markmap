@@ -5,8 +5,10 @@ import {
   type Layout,
   type LayoutNode,
   type LayoutResult,
+  expandRect,
   type Matrix,
   multiply,
+  type Point,
   oppositeSide,
   type PresenceStyle,
   type Measurer,
@@ -238,16 +240,19 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
   for (const target of state.nodes) {
     const source = target.parentId ? byId.get(target.parentId) : undefined;
     if (!source) continue;
+    const from = theme.node.anchor(source.rect, target.ctx.direction, source.ctx);
+    const to = theme.node.anchor(target.rect, oppositeSide(target.ctx.direction), target.ctx);
     edges.push({
       kind: 'group',
       key: `edge:${target.node.id}`,
       nodeId: target.node.id,
+      bounds: edgeBounds(from, to),
       ...opacityOf(lookOf(target)),
-      children: theme.edge.render(
-        theme.node.anchor(source.rect, target.ctx.direction, source.ctx),
-        theme.node.anchor(target.rect, oppositeSide(target.ctx.direction), target.ctx),
-        { source: source.node, target: target.node, node: target.ctx },
-      ),
+      children: theme.edge.render(from, to, {
+        source: source.node,
+        target: target.node,
+        node: target.ctx,
+      }),
     });
   }
 
@@ -256,6 +261,7 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
     kind: 'group',
     key: `node:${item.node.id}`,
     nodeId: item.node.id,
+    bounds: expandRect(item.rect, BOUNDS_MARGIN),
     transform: lookOf(item).transform
       ? multiply(translate(item.rect.x, item.rect.y), lookOf(item).transform!)
       : translate(item.rect.x, item.rect.y),
@@ -271,6 +277,20 @@ export function drawState(state: DrawState, theme: Theme): Primitive[] {
   }));
   return [...edges, ...nodes];
 }
+
+/** Room around a node or edge for what themes draw past it, such as fold circles. */
+const BOUNDS_MARGIN = 24;
+
+const edgeBounds = (a: Point, b: Point): Rect =>
+  expandRect(
+    {
+      x: Math.min(a.x, b.x),
+      y: Math.min(a.y, b.y),
+      width: Math.abs(a.x - b.x),
+      height: Math.abs(a.y - b.y),
+    },
+    BOUNDS_MARGIN,
+  );
 
 const opacityOf = ({ opacity }: PresenceStyle) =>
   opacity != null && opacity < 1 ? { opacity: Math.max(0, opacity) } : {};

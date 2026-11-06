@@ -78,7 +78,18 @@ export class CanvasBackend implements ViewBackend {
     ctx.clearRect(0, 0, element.width, element.height);
     const { k, x, y } = this.transform;
     ctx.setTransform(k * ratio, 0, 0, k * ratio, x * ratio, y * ratio);
-    drawPrimitives(ctx, this.primitives, this.env);
+    drawPrimitives(ctx, this.primitives, {
+      ...this.env,
+      view: {
+        rect: {
+          x: -x / k,
+          y: -y / k,
+          width: element.width / ratio / k,
+          height: element.height / ratio / k,
+        },
+        scale: k,
+      },
+    });
   }
 
   /**

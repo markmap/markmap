@@ -22,6 +22,8 @@ export interface TextRun {
   y: number;
   font: FontStyle;
   fill?: Paint;
+  /** Measured width, when known, so backends can skip measuring text they only sketch. */
+  width?: number;
 }
 
 interface PrimitiveBase {
@@ -38,6 +40,11 @@ export interface GroupPrimitive extends PrimitiveBase {
   opacity?: number;
   /** Hide what falls outside this rectangle, in the group's own coordinates. */
   clip?: Rect;
+  /**
+   * Where the group draws, in its parent's coordinates, if that is cheap to tell.
+   * Backends can skip top-level groups that are out of view.
+   */
+  bounds?: Rect;
   children: Primitive[];
 }
 

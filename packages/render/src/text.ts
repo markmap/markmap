@@ -304,10 +304,10 @@ export function layoutText(content: readonly Inline[], options: TextLayoutOption
           last.y === baseline &&
           last.font === item.style.font &&
           last.fill === item.style.fill &&
-          last.x + measured(last) === itemX
+          last.x + (last.width ?? 0) === itemX
         ) {
           last.text += item.text;
-          widths.set(last, measured(last) + item.width);
+          last.width = (last.width ?? 0) + item.width;
         } else {
           const run: TextRun = {
             text: item.text,
@@ -315,8 +315,8 @@ export function layoutText(content: readonly Inline[], options: TextLayoutOption
             y: baseline,
             font: item.style.font,
             fill: item.style.fill,
+            width: item.width,
           };
-          widths.set(run, item.width);
           runs.push(run);
         }
       } else if (item.kind === 'atom') {
@@ -381,6 +381,3 @@ export function layoutText(content: readonly Inline[], options: TextLayoutOption
   ];
   return { primitives, runs, width, height: top, lines: lines.length };
 }
-
-const widths = new WeakMap<TextRun, number>();
-const measured = (run: TextRun) => widths.get(run) ?? 0;

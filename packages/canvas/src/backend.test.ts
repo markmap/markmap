@@ -86,6 +86,21 @@ describe('CanvasBackend', () => {
     expect(canvas.style.height).toBe('150px');
   });
 
+  it('tells drawing what is on screen', () => {
+    const { canvas, calls } = createCanvas(400, 300);
+    const backend = new CanvasBackend(canvas);
+    const inView: Primitive = {
+      kind: 'group',
+      bounds: { x: 0, y: 0, width: 10, height: 10 },
+      children: [rect],
+    };
+    const outOfView = { ...inView, bounds: { x: 300, y: 0, width: 10, height: 10 } } as Primitive;
+    backend.draw([inView, outOfView]);
+    backend.setTransform({ k: 2, x: 0, y: 0 }); // Shows 0..200 × 0..150.
+    backend.paint();
+    expect(named(calls, 'fill')).toHaveLength(1);
+  });
+
   it('skips drawing while the element has no size', () => {
     const { canvas, calls } = createCanvas(0, 0);
     new CanvasBackend(canvas).paint();

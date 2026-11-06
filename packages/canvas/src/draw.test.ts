@@ -17,6 +17,7 @@ function recorder() {
     ...state,
     beginPath() {},
     rect: record('rect'),
+    fillRect: record('fillRect'),
     clip: record('clip'),
     roundRect: record('roundRect'),
     transform: record('transform'),
@@ -205,6 +206,54 @@ describe('drawPrimitives', () => {
       { image: (src) => (src === 'ready' ? image : undefined) },
     );
     expect(calls).toEqual([['drawImage', 'img', 10, 30, 40, 20]]);
+  });
+});
+
+const box = (x: number) => ({ x, y: 0, width: 10, height: 10 });
+const shape: Primitive = { kind: 'rect', x: 0, y: 0, w: 1, h: 1, fill: 'red' };
+const group = (x: number): Primitive => ({ kind: 'group', bounds: box(x), children: [shape] });
+
+const fills = (extra?: Partial<DrawEnv>) =>
+  draw([group(50), group(200), group(-50), group(95)], extra).filter(([n]) => n === 'fill');
+
+describe('with a view', () => {
+  const view = { rect: { x: 0, y: 0, width: 100, height: 100 }, scale: 1 };
+  const run: TextRun = { text: 'hello', x: 2, y: 10, font, fill: 'red', width: 40 };
+
+  it('skips top-level groups out of view', () => {
+    expect(fills({ view })).toHaveLength(2);
+    // Without a view everything is drawn, as for exports.
+    expect(fills()).toHaveLength(4);
+  });
+
+  it('always draws groups without bounds, and ignores bounds of nested groups', () => {
+    const nested: Primitive = { kind: 'group', bounds: box(500), children: [shape] };
+    const calls = draw([{ kind: 'group', children: [shape, nested] }], { view });
+    expect(calls.filter(([name]) => name === 'fill')).toHaveLength(2);
+  });
+
+  it('draws text as bars when it is too small to read', () => {
+    const text: Primitive = { kind: 'text', x: 100, y: 200, runs: [run] };
+    expect(draw([text], { view: { ...view, scale: 1 } })[0][0]).toBe('fillText');
+    const [bar, ...rest] = draw([text], { view: { ...view, scale: 0.1 } });
+    expect(rest).toEqual([]);
+    expect(bar).toEqual(['fillRect', 102, 210 - 16 * 0.7, 40, 16 * 0.8]);
+  });
+
+  it('draws small images as boxes without loading them', () => {
+    const image = vi.fn<(src: string) => LoadedImage | undefined>();
+    const primitive: Primitive = { kind: 'image', x: 1, y: 2, w: 20, h: 10, src: 'a' };
+    const calls = draw([primitive], { image, view: { ...view, scale: 0.1 } });
+    expect(calls).toEqual([['fillRect', 1, 2, 20, 10]]);
+    expect(image).not.toHaveBeenCalled();
+  });
+
+  it('parses each path primitive once', () => {
+    const createPath = vi.fn<(d: string) => Path2D>(() => 'path' as never);
+    const path: Primitive = { kind: 'path', d: 'M0,0', fill: 'red' };
+    draw([path], { createPath });
+    draw([path], { createPath });
+    expect(createPath).toHaveBeenCalledOnce();
   });
 });
 

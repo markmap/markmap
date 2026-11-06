@@ -1,4 +1,12 @@
-import type { Primitive, RectPrimitive, TextPrimitive } from '@markmap/core';
+import type {
+  ImagePrimitive,
+  PathPrimitive,
+  Primitive,
+  Rect,
+  RectPrimitive,
+  TextPrimitive,
+  TextRun,
+} from '@markmap/core';
 import { fontToCss, resolvePaint, type TokenLookup } from '@markmap/render';
 import type { LoadedImage } from './images';
 
@@ -14,6 +22,18 @@ export interface DrawEnv {
   createPath?: (d: string) => Path2D;
   /** Report something that cannot be drawn. Defaults to warning once per message. */
   warn?: (message: string) => void;
+  /**
+   * What is on screen. Top-level groups outside it are skipped, and what is too small to
+   * read is sketched. Leave it out to draw everything in full, as for exports.
+   */
+  view?: DrawView;
+}
+
+export interface DrawView {
+  /** The visible area, in the coordinates of the primitives. */
+  rect: Rect;
+  /** Screen pixels per unit of those coordinates. */
+  scale: number;
 }
 
 const warned = new Set<string>();
@@ -26,6 +46,22 @@ function warnOnce(message: string) {
 
 /** Text without a usable paint is black, as in SVG. */
 const DEFAULT_TEXT_FILL = '#000';
+/** Below this font size on screen, in px, text is drawn as bars. */
+const MIN_TEXT_SIZE = 3;
+/** Below this size on screen, in px, images are drawn as plain boxes. */
+const MIN_IMAGE_SIZE = 6;
+/** How strongly bars and boxes stand in for what they replace. */
+const SKETCH_ALPHA = 0.4;
+const SKETCH_IMAGE_FILL = '#888';
+
+/** Parsed paths, kept with their primitives: redrawing the same frame reuses them. */
+const parsedPaths = new WeakMap<PathPrimitive, Path2D>();
+
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+/** Width of a run, estimated if the layout did not record it. */
+const runWidth = (run: TextRun) => run.width ?? run.text.length * run.font.size * 0.5;
 
 /**
  * Draw primitives on a 2D context, in whatever coordinates the context is set to. Needs
@@ -39,6 +75,8 @@ export function drawPrimitives(
   primitives: readonly Primitive[],
   env: DrawEnv,
 ): void {
+  const { view } = env;
+  const scale = view?.scale;
   const warn = env.warn ?? warnOnce;
   const createPath = env.createPath ?? ((d: string) => new Path2D(d));
   const paints = new Map<string, string | undefined>();
@@ -69,7 +107,40 @@ export function drawPrimitives(
     }
   };
 
+  const pathOf = (p: PathPrimitive) => {
+    let path = parsedPaths.get(p);
+    if (!path) {
+      path = createPath(p.d);
+      parsedPaths.set(p, path);
+    }
+    return path;
+  };
+
+  /** Each run as a bar where its letters would be. */
+  const sketchText = (p: TextPrimitive) => {
+    const { globalAlpha } = ctx;
+    ctx.globalAlpha = globalAlpha * SKETCH_ALPHA;
+    for (const run of p.runs) {
+      const { size } = run.font;
+      ctx.fillStyle = paint(run.fill) ?? DEFAULT_TEXT_FILL;
+      ctx.fillRect(p.x + run.x, p.y + run.y - size * 0.7, runWidth(run), size * 0.8);
+    }
+    ctx.globalAlpha = globalAlpha;
+  };
+
+  const sketchImage = (p: ImagePrimitive) => {
+    const { globalAlpha } = ctx;
+    ctx.globalAlpha = globalAlpha * SKETCH_ALPHA;
+    ctx.fillStyle = SKETCH_IMAGE_FILL;
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+    ctx.globalAlpha = globalAlpha;
+  };
+
   const drawText = (p: TextPrimitive) => {
+    if (scale && p.runs.every((run) => run.font.size * scale < MIN_TEXT_SIZE)) {
+      sketchText(p);
+      return;
+    }
     for (const run of p.runs) {
       const font = fontToCss(run.font);
       if (font !== currentFont) {
@@ -81,12 +152,14 @@ export function drawPrimitives(
     }
   };
 
-  const draw = (list: readonly Primitive[]) => {
+  const draw = (list: readonly Primitive[], top = false) => {
     for (const p of list) {
       // Excluded on purpose, usually next to a variant for canvas.
       if (p.backends && !p.backends.includes('canvas')) continue;
       switch (p.kind) {
         case 'group': {
+          // Bounds are in the parent's coordinates, which are the view's only at the top.
+          if (top && p.bounds && view && !overlaps(p.bounds, view.rect)) break;
           const isolated = p.transform || p.opacity != null || p.clip;
           const outerFont = currentFont;
           if (isolated) ctx.save();
@@ -116,7 +189,7 @@ export function drawPrimitives(
           );
           break;
         case 'path': {
-          const path = createPath(p.d);
+          const path = pathOf(p);
           finish(
             p,
             () => ctx.fill(path),
@@ -128,6 +201,10 @@ export function drawPrimitives(
           drawText(p);
           break;
         case 'image': {
+          if (scale && Math.max(p.w, p.h) * scale < MIN_IMAGE_SIZE) {
+            sketchImage(p);
+            break;
+          }
           const image = env.image?.(p.src);
           if (image) {
             const { x, y, w, h } = fitImage(p, image);
@@ -158,7 +235,7 @@ export function drawPrimitives(
 
   ctx.textAlign = 'start';
   ctx.textBaseline = 'alphabetic';
-  draw(primitives);
+  draw(primitives, true);
 }
 
 type Box = Record<'x' | 'y' | 'w' | 'h', number>;
