@@ -177,6 +177,7 @@ export class Markmap {
       });
     this.selection.call(this.zoomBehavior);
     element.addEventListener('click', this.handleClick);
+    element.addEventListener('pointermove', this.handleHover);
   }
 
   /** The element the map is shown in. */
@@ -639,10 +640,24 @@ export class Markmap {
     this.zoomTween.stop();
     this.closeAttachments();
     this.element.removeEventListener('click', this.handleClick);
+    this.element.removeEventListener('pointermove', this.handleHover);
+    this.setCursor('');
     this.pendingFit?.disconnect();
     this.selection.on('.zoom', null);
     this.backend.destroy();
     this.element.classList.remove('markmap');
+  }
+
+  /** Show that a target is clickable, whatever the backend draws it with. */
+  private handleHover = (event: Event) => {
+    const pointer = event as PointerEvent;
+    // Dragging pans the view; leave its cursor alone.
+    if (pointer.buttons) return;
+    this.setCursor(this.hitAt(...this.layoutPoint(pointer)) ? 'pointer' : '');
+  };
+
+  private setCursor(cursor: string) {
+    (this.element as HTMLElement | SVGElement).style.cursor = cursor;
   }
 
   // Typed as a plain listener: `Element` has no `click` entry in its event map.

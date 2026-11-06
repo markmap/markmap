@@ -193,6 +193,16 @@ importers:
       '@markmap/render':
         specifier: workspace:*
         version: link:../render
+    devDependencies:
+      '@markmap/parse':
+        specifier: workspace:*
+        version: link:../parse
+      '@markmap/view':
+        specifier: workspace:*
+        version: link:../view
+      happy-dom:
+        specifier: ^21.0.4
+        version: 21.0.4
 
   packages/core:
     dependencies:

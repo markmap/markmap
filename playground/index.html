@@ -47,11 +47,16 @@
         resize: none;
         outline: none;
       }
-      svg {
+      #stage {
+        min-width: 0;
+        min-height: 0;
+      }
+      svg,
+      canvas {
         width: 100%;
         height: 100%;
         display: block;
-        /* Theme tokens live on the SVG, so its background follows theme and scheme. */
+        /* Theme tokens live on the element, so its background follows theme and scheme. */
         background: var(--mm-bg);
       }
     </style>
@@ -64,6 +69,10 @@
       <button id="zoom-out" title="Zoom out">−</button>
       <button id="fit">Fit</button>
       <button id="expand-all">Expand all</button>
+      <select id="renderer" title="Renderer">
+        <option value="svg">SVG</option>
+        <option value="canvas">Canvas</option>
+      </select>
       <select id="layout" title="Layout">
         <option value="tree">Tree</option>
         <option value="two-sided">Two-sided</option>
@@ -91,7 +100,7 @@
       <button id="download">Download SVG</button>
     </header>
     <textarea id="editor" spellcheck="false"></textarea>
-    <svg id="mindmap"></svg>
+    <div id="stage"></div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

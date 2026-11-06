@@ -1,3 +1,4 @@
+import { CanvasBackend } from '@markmap/canvas';
 import { parse } from '@markmap/parse';
 import { mathContent, remarkMath } from '@markmap/plugin-math';
 import { builtinLayouts, builtinThemes, defaultContentPlugins, toSVGString } from '@markmap/render';
@@ -7,7 +8,7 @@ import sample from './sample.md?raw';
 const STORAGE_KEY = 'markmap-next:playground';
 
 const editor = document.querySelector<HTMLTextAreaElement>('#editor')!;
-const svg = document.querySelector<SVGSVGElement>('#mindmap')!;
+const stage = document.querySelector<HTMLDivElement>('#stage')!;
 const stats = document.querySelector<HTMLSpanElement>('#stats')!;
 
 editor.value = localStorage.getItem(STORAGE_KEY) ?? sample;
@@ -19,7 +20,21 @@ const baseOptions: ViewOptions = {
   maxWidth: 300,
   plugins: [...defaultContentPlugins, mathContent],
 };
-const mm = new Markmap(svg, baseOptions);
+const rendererSelect = document.querySelector<HTMLSelectElement>('#renderer')!;
+
+/** A map in a new element, so switching renderers starts clean. */
+function createMarkmap(): Markmap {
+  if (rendererSelect.value === 'canvas') {
+    const canvas = document.createElement('canvas');
+    stage.replaceChildren(canvas);
+    return new Markmap(new CanvasBackend(canvas), baseOptions);
+  }
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  stage.replaceChildren(svg);
+  return new Markmap(svg, baseOptions);
+}
+
+let mm = createMarkmap();
 
 function update() {
   const start = performance.now();
@@ -51,6 +66,14 @@ editor.addEventListener('input', () => {
     localStorage.setItem(STORAGE_KEY, editor.value);
     update();
   }, 150);
+});
+
+rendererSelect.addEventListener('change', () => {
+  mm.destroy();
+  mm = createMarkmap();
+  Object.assign(window, { mm });
+  update();
+  mm.fit();
 });
 
 for (const select of [layoutSelect, themeSelect, schemeSelect]) {

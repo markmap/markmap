@@ -25,5 +25,13 @@
   "dependencies": {
     "@markmap/core": "workspace:*",
     "@markmap/render": "workspace:*"
+  },
+  "devDependencies": {
+    "@markmap/parse": "workspace:*",
+    "@markmap/view": "workspace:*",
+    "happy-dom": "^21.0.4"
+  },
+  "peerDependencies": {
+    "@markmap/view": "workspace:*"
   }
 }
