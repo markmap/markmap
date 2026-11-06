@@ -2,6 +2,7 @@
   "name": "@markmap/parse",
   "version": "0.0.0",
   "description": "Parse Markdown into a Markmap tree",
+  "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

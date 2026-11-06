@@ -2,6 +2,7 @@
   "name": "@markmap/canvas",
   "version": "0.0.0",
   "description": "Canvas backend for Markmap",
+  "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

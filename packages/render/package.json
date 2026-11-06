@@ -2,6 +2,7 @@
   "name": "@markmap/render",
   "version": "0.0.0",
   "description": "Measure, lay out and render Markmap trees to primitives and SVG",
+  "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

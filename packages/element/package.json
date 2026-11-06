@@ -2,6 +2,7 @@
   "name": "@markmap/element",
   "version": "0.0.0",
   "description": "The <markmap-view> web component",
+  "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

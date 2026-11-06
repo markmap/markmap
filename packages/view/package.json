@@ -2,6 +2,7 @@
   "name": "@markmap/view",
   "version": "0.0.0",
   "description": "Interactive Markmap view",
+  "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
   "repository": {
     "type": "git",

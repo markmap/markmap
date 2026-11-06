@@ -7,6 +7,7 @@
     "noEmit": true,
     "types": ["vite/client"],
     "paths": {
+      "@markmap/canvas/node": ["./packages/canvas/src/node.ts"],
       "@markmap/*": ["./packages/*/src/index.ts"]
     }
   },
