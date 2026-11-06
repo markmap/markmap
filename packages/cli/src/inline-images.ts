@@ -14,6 +14,16 @@ const IMAGE_TYPES: Readonly<Record<string, string>> = {
 /** Has a scheme, or is `//host/…`: not a file next to the Markdown. */
 const NOT_A_PATH = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
 
+/** The file a URL in the Markdown points at, if it can point at one. */
+export function localPath(url: string, baseDir: string): string | undefined {
+  if (!url || NOT_A_PATH.test(url)) return undefined;
+  try {
+    return resolve(baseDir, decodeURI(url));
+  } catch {
+    return undefined;
+  }
+}
+
 async function toDataUrl(url: string, baseDir: string): Promise<string> {
   const type = IMAGE_TYPES[extname(url).toLowerCase()];
   if (!type) throw new Error('not a supported image type');
@@ -38,7 +48,7 @@ export async function inlineImages(
   warn: (message: string) => void,
 ): Promise<Map<string, string>> {
   const images = new Map<string, string>();
-  const local = [...new Set(urls)].filter((url) => url && !NOT_A_PATH.test(url));
+  const local = [...new Set(urls)].filter((url) => localPath(url, baseDir));
   await Promise.all(
     local.map(async (url) => {
       try {

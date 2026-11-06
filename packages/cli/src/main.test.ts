@@ -181,6 +181,39 @@ markmap:
     expect(png.subarray(1, 4).toString()).toBe('PNG');
   });
 
+  it('refuses to overwrite an image the input uses', async () => {
+    await writeFile(inDir('a.png'), 'image');
+    await writeFile(inDir('a.md'), '# A\n\n- ![a](a.png)');
+    expect(await run([inDir('a.md'), '--png'])).toBe(1);
+    expect(err).toContain('it is an image the input uses');
+    expect(await readFile(inDir('a.png'), 'utf8')).toBe('image');
+    expect(await run([inDir('a.md'), '--png', '-o', inDir('map.png')])).toBe(0);
+  });
+
+  it('sees through links and encoded names', async () => {
+    await writeFile(inDir('my pic.png'), 'image');
+    await symlink(inDir('my pic.png'), inDir('link.png'));
+    await writeFile(inDir('a.md'), '# A\n\n- ![a](my%20pic.png)');
+    expect(await run([inDir('a.md'), '--svg', '-o', inDir('link.png')])).toBe(1);
+    expect(await readFile(inDir('my pic.png'), 'utf8')).toBe('image');
+  });
+
+  it('refuses to overwrite the input', async () => {
+    await writeFile(inDir('a.md'), '# A');
+    expect(await run([inDir('a.md'), '-o', inDir('a.md'), '--no-open'])).toBe(1);
+    expect(err).toContain('it is the input');
+    expect(await readFile(inDir('a.md'), 'utf8')).toBe('# A');
+  });
+
+  it('still replaces its own earlier output', async () => {
+    await writeFile(inDir('a.md'), '# A');
+    expect(await run([inDir('a.md'), '--no-open'])).toBe(0);
+    expect(await run([inDir('a.md'), '--no-open'])).toBe(0);
+    await writeFile(inDir('a.png'), 'unrelated');
+    expect(await run([inDir('a.md'), '--png'])).toBe(0);
+    expect((await readFile(inDir('a.png'))).subarray(1, 4).toString()).toBe('PNG');
+  });
+
   it('explains what is wrong', async () => {
     expect(await run([inDir('none.md')])).toBe(1);
     expect(err).toContain('No such file');

@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join, parse as parsePath, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -16,7 +16,7 @@ import {
   toSVGString,
 } from '@markmap/render';
 import type { Image, Nodes } from 'mdast';
-import { inlineImages } from './inline-images';
+import { inlineImages, localPath } from './inline-images';
 import { remarkReplaceImages, walk } from './mdast-images';
 import { createPage } from './page';
 
@@ -175,6 +175,22 @@ async function writePng({ markdown, file }: Source, io: Io) {
   });
 }
 
+/** A file's real path, so links and other spellings of a name count as the same file. */
+const real = (path: string) => realpath(path).catch(() => undefined);
+
+/** What `output` would destroy, if it is the input or an image the input uses. */
+async function conflict({ markdown, file }: Source, output: string) {
+  if (!file) return undefined;
+  const target = await real(output);
+  if (!target) return undefined;
+  if (target === (await real(file))) return 'the input';
+  const paths = inspect(markdown).urls.map((url) => localPath(url, dirname(file)));
+  for (const path of paths) {
+    if (path && target === (await real(path))) return 'an image the input uses';
+  }
+  return undefined;
+}
+
 async function version() {
   const pkg = JSON.parse(await readFile(distFile('../package.json'), 'utf8')) as {
     version: string;
@@ -228,6 +244,11 @@ export async function main(argv: readonly string[], overrides: Partial<Io> = {})
     const source: Source = stdin
       ? { markdown: await io.stdin() }
       : { markdown: await readFile(input, 'utf8'), file: resolve(input) };
+    const used = output === '-' ? undefined : await conflict(source, output);
+    if (used) {
+      io.stderr(`Not overwriting ${output}: it is ${used}. Choose another name with -o.\n`);
+      return 1;
+    }
     const data = values.svg
       ? await writeSvg(source, io)
       : values.png
