@@ -4,6 +4,11 @@ import type { ViewBackend, ViewTransform } from './backend';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+export interface SvgDomBackendOptions {
+  /** See `ViewBackend.themeSelector`. */
+  themeSelector?: string;
+}
+
 interface Item {
   el: SVGGElement;
   markup: string;
@@ -16,13 +21,15 @@ interface Item {
 export class SvgDomBackend implements ViewBackend {
   readonly element: SVGSVGElement;
   readonly nativeLinks = true;
+  readonly themeSelector?: string;
   /** Group that holds the drawing and carries the zoom transform. */
   readonly root: SVGGElement;
   private style: SVGStyleElement;
   private items = new Map<string, Item>();
 
-  constructor(svg: SVGSVGElement) {
+  constructor(svg: SVGSVGElement, { themeSelector }: SvgDomBackendOptions = {}) {
     this.element = svg;
+    this.themeSelector = themeSelector;
     const doc = svg.ownerDocument;
     this.style = doc.createElementNS(SVG_NS, 'style');
     this.root = doc.createElementNS(SVG_NS, 'g');

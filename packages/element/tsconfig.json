@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    { "path": "../canvas" },
+    { "path": "../parse" },
+    { "path": "../render" },
+    { "path": "../view" }
+  ]
+}

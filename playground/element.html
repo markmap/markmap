@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>markmap-view</title>
+    <script type="module">
+      import '@markmap/element';
+    </script>
+    <style>
+      body {
+        margin: 24px;
+        font: 14px system-ui;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      markmap-view {
+        border: 1px solid #ddd;
+      }
+      markmap-view:not(#plain) {
+        height: 280px;
+      }
+      #overridden {
+        --mm-bg: #fff8e1;
+        --mm-color: #5d4037;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid">
+      <div>
+        <h3>Inline, cards theme</h3>
+        <markmap-view id="inline" theme="cards">
+          <script type="text/markdown">
+            # Inline
+
+            ## Indented with the HTML
+
+            - One
+            - Two
+
+            ## With a note
+
+            Text below a heading goes in a popover.
+          </script>
+        </markmap-view>
+      </div>
+      <div>
+        <h3>From src, canvas, dark</h3>
+        <markmap-view
+          id="remote"
+          src="./sample.md"
+          renderer="canvas"
+          color-scheme="dark"
+        ></markmap-view>
+      </div>
+      <div>
+        <h3>Frontmatter, page CSS overrides tokens</h3>
+        <markmap-view id="overridden">
+          <script type="text/markdown">
+            ---
+            markmap:
+              layout: tree
+            ---
+            # Overridden
+            ## The page sets --mm-bg
+            ## And --mm-color
+          </script>
+        </markmap-view>
+      </div>
+      <div>
+        <h3>Default height</h3>
+        <markmap-view id="plain">
+          <script type="text/markdown">
+            # Plain
+
+            ## Classic
+
+            ## Light
+          </script>
+        </markmap-view>
+      </div>
+    </div>
+  </body>
+</html>

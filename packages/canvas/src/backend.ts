@@ -3,6 +3,11 @@ import type { ViewBackend, ViewTransform } from '@markmap/view';
 import { drawPrimitives, type DrawEnv } from './draw';
 import { ImageCache } from './images';
 
+export interface CanvasBackendOptions {
+  /** See `ViewBackend.themeSelector`. */
+  themeSelector?: string;
+}
+
 /**
  * Shows a map in a `<canvas>`, for much larger maps than SVG can animate smoothly. Pass
  * it to `Markmap`: `new Markmap(new CanvasBackend(canvas))`. Size the canvas with CSS.
@@ -11,6 +16,7 @@ import { ImageCache } from './images';
  */
 export class CanvasBackend implements ViewBackend {
   readonly element: HTMLCanvasElement;
+  readonly themeSelector?: string;
   private ctx: CanvasRenderingContext2D;
   private style: HTMLStyleElement;
   private primitives: Primitive[] = [];
@@ -21,14 +27,17 @@ export class CanvasBackend implements ViewBackend {
   private resizeObserver?: ResizeObserver;
   private darkQuery?: MediaQueryList;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, { themeSelector }: CanvasBackendOptions = {}) {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D is not available');
     this.element = canvas;
+    this.themeSelector = themeSelector;
     this.ctx = ctx;
     const doc = canvas.ownerDocument;
     this.style = doc.createElement('style');
-    doc.head.append(this.style);
+    // Styles in the document do not reach into a shadow root.
+    const root = canvas.getRootNode() as Partial<ShadowRoot> & Node;
+    (root.host ? (root as ShadowRoot) : doc.head).append(this.style);
     const computed = doc.defaultView?.getComputedStyle(canvas);
     this.env = {
       // Read live, so CSS overrides on the page apply as in SVG.

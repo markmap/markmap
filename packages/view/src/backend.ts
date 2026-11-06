@@ -22,6 +22,11 @@ export interface ViewBackend {
    * opens links on click.
    */
   readonly nativeLinks?: boolean;
+  /**
+   * Selector for theme CSS, for a backend that knows better than the default, a class of
+   * the map's own. In a shadow root, `:host` lets the page's CSS override tokens.
+   */
+  readonly themeSelector?: string;
   /** Draw primitives in layout coordinates. Called once per animation frame. */
   draw(primitives: Primitive[]): void;
   /** Move the drawing; called whenever the view zooms or pans. */

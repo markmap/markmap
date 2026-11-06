@@ -212,7 +212,8 @@ export class Markmap {
   private applyOptions(options: ViewOptions) {
     this.viewOptions = { ...DEFAULTS, ...options };
     if (options.measurer) this.measurer = options.measurer;
-    this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme, `.${this.scopeClass}`));
+    const selector = this.backend.themeSelector ?? `.${this.scopeClass}`;
+    this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme, selector));
   }
 
   static create(
@@ -671,7 +672,8 @@ export class Markmap {
   }
 
   private handleOutside = (event: Event) => {
-    const target = event.target as Node | null;
+    // Inside a shadow root, `event.target` is only the host at this level.
+    const target = event.composedPath()[0] as Node | null;
     if (this.popover?.popover.contains(target)) return;
     // Clicking a dot is handled by the click handler.
     if (target && this.element.contains(target) && event instanceof MouseEvent) {

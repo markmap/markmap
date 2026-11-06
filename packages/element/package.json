@@ -1,0 +1,33 @@
+{
+  "name": "@markmap/element",
+  "version": "0.0.0",
+  "description": "The <markmap-view> web component",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build:types": "tsc -b",
+    "build:js": "vite build"
+  },
+  "dependencies": {
+    "@markmap/canvas": "workspace:*",
+    "@markmap/parse": "workspace:*",
+    "@markmap/render": "workspace:*",
+    "@markmap/view": "workspace:*"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4"
+  }
+}
