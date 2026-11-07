@@ -133,6 +133,18 @@ describe('createToolbar', () => {
     expect(onClick).toHaveBeenCalledWith(mm);
   });
 
+  it('shows an image button instead of a line icon', () => {
+    const onClick = vi.fn<() => void>();
+    const bar = createToolbar(createMap(), {
+      items: [{ label: 'Home', image: '/logo.png', icon: 'M0 0', onClick }],
+    });
+    const home = button(bar, 'Home');
+    expect(home.querySelector('img')?.getAttribute('src')).toBe('/logo.png');
+    expect(home.querySelector('svg')).toBeNull();
+    home.click();
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
   it('stops following the map when destroyed', () => {
     const mm = createMap();
     const bar = createToolbar(mm);

@@ -8,6 +8,8 @@ export interface ToolbarButton {
   label: string;
   /** Path data of a line drawing in a 16 × 16 box. */
   icon?: string;
+  /** URL of a full-color image, such as a logo, shown at icon size. Wins over `icon`. */
+  image?: string;
   /** Checked whenever the map changes. */
   disabled?: (mm: Markmap) => boolean;
   onClick: (mm: Markmap) => void;
@@ -102,6 +104,7 @@ const CSS = `
 .markmap-toolbar button:disabled, .markmap-toolbar select:disabled { opacity: 0.35; cursor: default; }
 .markmap-toolbar :focus-visible { outline: 2px solid var(--mm-link, #0097e6); outline-offset: -2px; }
 .markmap-toolbar option { background: Canvas; color: CanvasText; }
+.markmap-toolbar img { display: block; margin: auto; width: 16px; height: 16px; }
 .markmap-toolbar svg { display: block; margin: auto; width: 16px; height: 16px; }
 .markmap-toolbar path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 `;
@@ -117,6 +120,13 @@ function createIcon(doc: Document, path: string) {
   shape.setAttribute('d', path);
   svg.append(shape);
   return svg;
+}
+
+function createImage(doc: Document, src: string) {
+  const img = doc.createElement('img');
+  img.src = src;
+  img.alt = '';
+  return img;
 }
 
 /** Depth of the deepest node with children: folding deeper than that does nothing. */
@@ -180,12 +190,13 @@ export function createToolbar(mm: Markmap, options: ToolbarOptions = {}): Toolba
       element.append(select);
       continue;
     }
-    const item = typeof entry === 'string' ? builtinButtons[entry] : entry;
+    const item: ToolbarButton = typeof entry === 'string' ? builtinButtons[entry] : entry;
     const el = doc.createElement('button');
     el.type = 'button';
     el.title = item.label;
     el.setAttribute('aria-label', item.label);
-    if (item.icon) el.append(createIcon(doc, item.icon));
+    if (item.image) el.append(createImage(doc, item.image));
+    else if (item.icon) el.append(createIcon(doc, item.icon));
     else el.textContent = item.label;
     el.addEventListener('click', () => {
       item.onClick(mm);
