@@ -1,6 +1,6 @@
 {
   "name": "@markmap/page",
-  "version": "1.0.0-next.0",
+  "version": "1.0.0",
   "description": "Write a map as one HTML file that works offline",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",

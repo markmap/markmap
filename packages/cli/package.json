@@ -1,6 +1,6 @@
 {
   "name": "@markmap/cli",
-  "version": "1.0.0-next.0",
+  "version": "1.0.0",
   "description": "Turn Markdown into a map from the command line",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",

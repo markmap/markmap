@@ -1,6 +1,6 @@
 {
   "name": "@markmap/plugin-math",
-  "version": "1.0.0-next.0",
+  "version": "1.0.0",
   "description": "TeX math in Markmap labels, rendered with MathJax",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",

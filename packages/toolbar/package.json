@@ -1,6 +1,6 @@
 {
   "name": "@markmap/toolbar",
-  "version": "1.0.0-next.0",
+  "version": "1.0.0",
   "description": "Zoom and fold controls for a Markmap view",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
