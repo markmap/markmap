@@ -317,7 +317,7 @@ export class MarkmapViewElement extends Base {
   private update() {
     const { map, text } = this;
     if (!map || text == null) return;
-    const { root, frontmatter } = parse(text, this.parserOptions);
+    const { root, frontmatter, gfm } = parse(text, this.parserOptions);
     const attributes = {
       ...(this.theme != null && { theme: this.theme }),
       ...(this.layout != null && { layout: this.layout }),
@@ -334,5 +334,6 @@ export class MarkmapViewElement extends Base {
       this.needsFit = false;
       map.fit();
     }
+    if (!gfm) this.fire('gfmfallback', undefined);
   }
 }

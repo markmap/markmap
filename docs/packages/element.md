@@ -66,7 +66,7 @@ These update the map live, and win over the document's frontmatter.
 
 ## Events
 
-`render` and `fold` carry the view event's value as `detail`. `error` fires when `src` cannot be loaded.
+`render` and `fold` carry the view event's value as `detail`. `error` fires when `src` cannot be loaded. `gfmfallback` fires after an update when the browser could not run GFM, so tables, task lists, strikethrough and bare links show as plain text.
 
 ```js
 view.addEventListener('fold', (event) => {

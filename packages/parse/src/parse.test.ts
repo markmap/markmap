@@ -111,6 +111,42 @@ describe('parse', () => {
   });
 });
 
+/** Throw `error` from the first parse only, which is the one with GFM. */
+function failOnce(error: Error) {
+  let failed = false;
+  return () => () => {
+    if (failed) return;
+    failed = true;
+    throw error;
+  };
+}
+
+const alwaysFail = () => () => {
+  throw new SyntaxError('always');
+};
+
+describe('when GFM is not supported', () => {
+  it('falls back to parsing without GFM on a SyntaxError', () => {
+    const plugin = failOnce(new SyntaxError('invalid group specifier name'));
+    const { root, gfm } = parse('# ~~a~~ **b**', { plugins: [plugin] });
+    expect(toPlainText(root.content)).toBe('~~a~~ b');
+    expect(gfm).toBe(false);
+  });
+
+  it('reports GFM as applied otherwise', () => {
+    expect(parse('# a').gfm).toBe(true);
+  });
+
+  it('rethrows other errors', () => {
+    const plugin = failOnce(new TypeError('a bug'));
+    expect(() => parse('# a', { plugins: [plugin] })).toThrow('a bug');
+  });
+
+  it('rethrows a SyntaxError that does not come from GFM', () => {
+    expect(() => parse('# a', { plugins: [alwaysFail] })).toThrow('always');
+  });
+});
+
 describe('markmap options and directives', () => {
   it('leaves markmap options raw for the theme-aware resolver', () => {
     const { frontmatter } = parse('---\nmarkmap:\n  wrapWidth: 200\n  color: "#f00"\n---\n\n- a');

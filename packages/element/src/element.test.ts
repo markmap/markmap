@@ -183,6 +183,31 @@ describe('<markmap-view>', () => {
     expect(document.head.querySelector('style')).toBeNull();
   });
 
+  it('fires gfmfallback when parsing skipped GFM', () => {
+    let failed = false;
+    const failOnce = () => () => {
+      if (failed) return;
+      failed = true;
+      throw new SyntaxError('invalid group specifier name');
+    };
+    const fired = vi.fn<() => void>();
+    create((e) => {
+      e.addEventListener('gfmfallback', fired);
+      e.parseOptions = { plugins: [failOnce] };
+      e.markdown = '# Root';
+    });
+    expect(fired).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not fire gfmfallback normally', () => {
+    const fired = vi.fn<() => void>();
+    create((e) => {
+      e.addEventListener('gfmfallback', fired);
+      e.markdown = '# Root';
+    });
+    expect(fired).not.toHaveBeenCalled();
+  });
+
   it('fires render and fold', () => {
     const events: string[] = [];
     const el = create((e) => {
