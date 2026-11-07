@@ -48,7 +48,7 @@ markmap:
 One script turns each `.markmap` block into a map as it scrolls into view:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@markmap/autoloader"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@markmap/autoloader@1/+esm"></script>
 
 <div class="markmap" data-theme="cards" data-toolbar>
   <script type="text/markdown">

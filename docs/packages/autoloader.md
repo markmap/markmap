@@ -7,7 +7,7 @@ One script that turns each `.markmap` block on a page into a map as it scrolls i
 ## Usage
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/@markmap/autoloader"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@markmap/autoloader@1/+esm"></script>
 
 <div class="markmap" data-theme="cards" data-toolbar>
   <script type="text/markdown">
@@ -40,7 +40,7 @@ Call `configure` right after importing:
 
 ```html
 <script type="module">
-  import { configure } from 'https://cdn.jsdelivr.net/npm/@markmap/autoloader';
+  import { configure } from 'https://cdn.jsdelivr.net/npm/@markmap/autoloader@1/+esm';
 
   configure({ theme: 'cards', toolbar: true, math: true });
 </script>
@@ -53,7 +53,7 @@ It takes `theme`, `layout`, `colorScheme`, `renderer`, `toolbar` and `math`, and
 `renderAll` shows every block now, including ones added since the page loaded:
 
 ```js
-import { renderAll } from 'https://cdn.jsdelivr.net/npm/@markmap/autoloader';
+import { renderAll } from 'https://cdn.jsdelivr.net/npm/@markmap/autoloader@1/+esm';
 
 await renderAll();
 ```
