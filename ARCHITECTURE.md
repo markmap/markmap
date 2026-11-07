@@ -47,4 +47,4 @@ The view owns the clock, including duration, easing, reduced motion and cancelin
 
 ## Releases
 
-Changesets handles versions and changelogs. All packages share one version, because the autoloader and `@markmap/page` bundle other packages through `devDependencies`, which do not trigger a bump.
+Changesets handles versions. Each release gets one `vX.Y.Z` tag and a GitHub release for its notes. All packages share one version, because the autoloader and `@markmap/page` bundle other packages through `devDependencies`, which do not trigger a bump.
