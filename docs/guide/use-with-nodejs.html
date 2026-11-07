@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.BHFo03K7.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/VN1BGqJD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/JfdUuHwt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BWfwRt8T.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/cOk9MO-6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CCuOHFPH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.BzmOgJ1u.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B-_3LM_z.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CcQkqR-D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DfoX0S7l.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/lwbzpwU1.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/4.BFh_hdqX.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DbxXIcY3.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<!--1h26ev8--><meta name="Description" content="The documentation of markmap packages."/><!----><title>Use with Node.js - markmap docs</title>
+		<link href="/_app/immutable/assets/0.BS6xvrr5.css" rel="stylesheet">
+	</head>
+	<body>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[0--><button class="icon-btn sidebar-toggle" popovertarget="docs-sidebar" aria-label="Docs navigation" title="Docs navigation"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a aria-current="page" href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="docs"><aside id="docs-sidebar" popover=""><ul class="toc"><!--[--><!--[-1--><li class="toc-item"><a href="/docs/introduction">Introduction</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/faq">FAQ</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/related-projects">Related projects</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/migration">Migrating from 0.18</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Guide</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/writing">Writing maps</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/themes-and-layouts">Themes and layouts</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/options">Options</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/magic-comments">Magic comments</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/use-with-nodejs" class="active">Use with Node.js</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Packages</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/autoloader">@markmap/autoloader</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/element">@markmap/element</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/view">@markmap/view</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/cli">@markmap/cli</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/coc-markmap">coc-markmap</a></li> <!--[-1--><!--]--><!--]--><!--]--></ul></aside> <div class="markdown"><h1>Use with Node.js</h1> <!----><p>Everything but the interactive view runs without a browser.</p>
+<h2 id="render-a-png">Render a PNG</h2>
+<p><code>renderPNG</code> needs <a href="https://github.com/Brooooooklyn/canvas"><code>@napi-rs/canvas</code></a>:</p>
+<pre><code class="hljs language-sh">npm install @markmap/parse @markmap/canvas @markmap/render @napi-rs/canvas</code></pre><pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { renderPNG } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/canvas/node&#x27;</span>;
+<span class="hljs-keyword">import</span> { parse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/parse&#x27;</span>;
+<span class="hljs-keyword">import</span> { resolveRenderOptions } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/render&#x27;</span>;
+<span class="hljs-keyword">import</span> { readFile, writeFile } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>;
+
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">renderMarkmap</span>(<span class="hljs-params"><span class="hljs-attr">file</span>: <span class="hljs-built_in">string</span>, <span class="hljs-attr">outFile</span>: <span class="hljs-built_in">string</span></span>) {
+  <span class="hljs-keyword">const</span> { root, frontmatter } = <span class="hljs-title function_">parse</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">readFile</span>(file, <span class="hljs-string">&#x27;utf8&#x27;</span>));
+  <span class="hljs-keyword">const</span> { options } = <span class="hljs-title function_">resolveRenderOptions</span>({}, frontmatter.<span class="hljs-property">markmap</span>);
+  <span class="hljs-keyword">const</span> png = <span class="hljs-keyword">await</span> <span class="hljs-title function_">renderPNG</span>(root, { ...options, <span class="hljs-attr">baseDir</span>: <span class="hljs-string">&#x27;.&#x27;</span> });
+  <span class="hljs-keyword">await</span> <span class="hljs-title function_">writeFile</span>(outFile, png);
+}
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">renderMarkmap</span>(<span class="hljs-string">&#x27;notes.md&#x27;</span>, <span class="hljs-string">&#x27;notes.png&#x27;</span>);</code></pre><p>Local images are read only from <code>baseDir</code>, and remote ones are fetched only if <code>allow</code> returns <code>true</code>, so Markdown from someone else cannot read this machine or reach the network unless you say so.</p>
+<h2 id="render-an-svg">Render an SVG</h2>
+<pre><code class="hljs language-sh">npm install @markmap/parse @markmap/render</code></pre><pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { parse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/parse&#x27;</span>;
+<span class="hljs-keyword">import</span> { approximateMeasurer, renderTreeAsync, toSVGString } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/render&#x27;</span>;
+
+<span class="hljs-keyword">const</span> { root } = <span class="hljs-title function_">parse</span>(markdown);
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">renderTreeAsync</span>(root, { <span class="hljs-attr">measurer</span>: approximateMeasurer });
+<span class="hljs-keyword">const</span> svg = <span class="hljs-title function_">toSVGString</span>(result);</code></pre><h2 id="from-a-script">From a script</h2>
+<p>The <a href="../packages/cli">CLI</a> does all of this in one line, including math and local images:</p>
+<pre><code class="hljs language-sh">markmap notes.md --png --no-open</code></pre><!----> <footer>Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer><!----></div></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_ufdvrm = {
+						base: "",
+						version: "1794061386006"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.BHFo03K7.js").then(async (kit) => {
+						kit.init(__sveltekit_ufdvrm);
+						const app = await import("/_app/immutable/entry/app.CCuOHFPH.js");
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

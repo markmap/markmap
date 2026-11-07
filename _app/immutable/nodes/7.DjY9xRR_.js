@@ -1,0 +1,1 @@
+import{ct as e,o as t,st as n,w as r}from"../chunks/BWfwRt8T.js";import"../chunks/lwbzpwU1.js";import{t as i}from"../chunks/JfdUuHwt.js";function a(a,o){e(o,!1),r(()=>{i(`/docs`)}),t(),n()}export{a as component};

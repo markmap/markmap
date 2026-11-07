@@ -1,0 +1,1 @@
+import{A as e,M as t}from"./BWfwRt8T.js";import"./lwbzpwU1.js";var n=t(`<footer>Designed with &hearts; by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer>`);function r(t){var r=n();e(t,r)}export{r as t};

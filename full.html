@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.BHFo03K7.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/VN1BGqJD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/JfdUuHwt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BWfwRt8T.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/cOk9MO-6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CCuOHFPH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.BzmOgJ1u.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B-_3LM_z.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CcQkqR-D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DfoX0S7l.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/lwbzpwU1.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/6.wUMlk-Yu.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/D-AwdvjI.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DpqOcUqs.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/2QYap7_o.js" rel="modulepreload">
+		<!--1355dui--><meta name="Description" content="Show a markmap in full page view."/> <meta name="color-scheme" content="light"/><!----><title>markmap in full page view</title>
+		<link href="/_app/immutable/assets/0.BS6xvrr5.css" rel="stylesheet">
+	</head>
+	<body>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[-1--><!--]--> <!--[--><!--[-1--><!--[--><main class="full"><markmap-view aria-label="Mind map" role="group" toolbar="true"></markmap-view><!----> <!--[-1--><!--]--></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_ufdvrm = {
+						base: "",
+						version: "1794061386006"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.BHFo03K7.js").then(async (kit) => {
+						kit.init(__sveltekit_ufdvrm);
+						const app = await import("/_app/immutable/entry/app.CCuOHFPH.js");
+						kit.start(app, element, {
+							node_ids: [0, 6],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

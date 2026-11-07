@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.BHFo03K7.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/VN1BGqJD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/JfdUuHwt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BWfwRt8T.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/cOk9MO-6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CCuOHFPH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.BzmOgJ1u.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B-_3LM_z.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CcQkqR-D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DfoX0S7l.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/lwbzpwU1.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/4.BFh_hdqX.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DbxXIcY3.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<!--1h26ev8--><meta name="Description" content="The documentation of markmap packages."/><!----><title>markmap - markmap docs</title>
+		<link href="/_app/immutable/assets/0.BS6xvrr5.css" rel="stylesheet">
+	</head>
+	<body>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[0--><button class="icon-btn sidebar-toggle" popovertarget="docs-sidebar" aria-label="Docs navigation" title="Docs navigation"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a aria-current="page" href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="docs"><aside id="docs-sidebar" popover=""><ul class="toc"><!--[--><!--[-1--><li class="toc-item"><a href="/docs/introduction" class="active">Introduction</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/faq">FAQ</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/related-projects">Related projects</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/migration">Migrating from 0.18</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Guide</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/writing">Writing maps</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/themes-and-layouts">Themes and layouts</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/options">Options</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/magic-comments">Magic comments</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/use-with-nodejs">Use with Node.js</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Packages</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/autoloader">@markmap/autoloader</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/element">@markmap/element</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/view">@markmap/view</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/cli">@markmap/cli</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/coc-markmap">coc-markmap</a></li> <!--[-1--><!--]--><!--]--><!--]--></ul></aside> <div class="markdown"><h1>markmap</h1> <!----><h2 id="what-is-markmap">What is markmap?</h2>
+<p>Markmap turns Markdown into an interactive mind map. Headings and list items become branches you can fold, zoom and pan. Other text, such as paragraphs and code, stays with its branch as a note.</p>
+<figure class="demo">
+<pre><code class="hljs language-markdown"><span class="hljs-section"># Trip</span>
+
+<span class="hljs-section">## Before</span>
+
+<span class="hljs-bullet">-</span> Book flights
+<span class="hljs-bullet">-</span> Pack
+
+<span class="hljs-section">## During</span>
+
+<span class="hljs-bullet">-</span> See the sights</code></pre>
+<markmap-view ><script type="text/markdown"># Trip
+
+## Before
+
+- Book flights
+- Pack
+
+## During
+
+- See the sights</script></markmap-view>
+</figure><p>The easiest way to try it is the 👉 <a href="/editor">editor</a>. You can also use it in:</p>
+<ul>
+<li><a href="https://marketplace.visualstudio.com/items?itemName=gera2ld.markmap-vscode">VS Code</a> 🚀</li>
+<li>the command line, with <a href="packages/cli">@markmap/cli</a></li>
+<li>Vim / Neovim, with <a href="packages/coc-markmap">coc-markmap</a></li>
+<li><a href="related-projects">many other tools</a></li>
+</ul>
+<h2 id="learn-the-basics">Learn the basics</h2>
+<ul>
+<li><a href="guide/writing">Writing maps</a>: what becomes a branch, a note, or part of a label</li>
+<li><a href="guide/themes-and-layouts">Themes and layouts</a>: the looks and shapes a map can take</li>
+<li><a href="guide/options">Options</a>: settings you can keep in the document itself</li>
+<li><a href="guide/magic-comments">Magic comments</a>: fold chosen branches</li>
+</ul>
+<h2 id="add-maps-to-your-own-pages">Add maps to your own pages</h2>
+<table>
+<thead>
+<tr>
+<th>You want to</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Show maps on a page with a script</td>
+<td><a href="packages/autoloader">@markmap/autoloader</a></td>
+</tr>
+<tr>
+<td>Add a map to an app</td>
+<td><a href="packages/element">@markmap/element</a></td>
+</tr>
+<tr>
+<td>Control everything from code</td>
+<td><a href="packages/view">@markmap/view</a></td>
+</tr>
+<tr>
+<td>Render without a browser</td>
+<td><a href="guide/use-with-nodejs">Use with Node.js</a></td>
+</tr>
+</tbody></table>
+<p>Coming from <code>markmap-lib</code> and <code>markmap-view</code>? See <a href="migration">Migrating from 0.18</a>.</p>
+<h2 id="support">Support</h2>
+<p>See the <a href="faq">FAQ</a> for common questions. If you still need help, feel free to ask in <a href="https://github.com/markmap/markmap/discussions">GitHub Discussions</a>.</p>
+<h2 id="credits">Credits</h2>
+<p>Originally inspired by <a href="https://github.com/dundalek/markmap">dundalek&#39;s markmap</a>.</p>
+<!----> <footer>Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer><!----></div></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_ufdvrm = {
+						base: "",
+						version: "1794061386006"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.BHFo03K7.js").then(async (kit) => {
+						kit.init(__sveltekit_ufdvrm);
+						const app = await import("/_app/immutable/entry/app.CCuOHFPH.js");
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

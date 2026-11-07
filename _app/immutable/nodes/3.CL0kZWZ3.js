@@ -1,0 +1,1 @@
+import{A as e,M as t,ct as n,o as r,st as i,w as a}from"../chunks/BWfwRt8T.js";import"../chunks/lwbzpwU1.js";import{t as o}from"../chunks/JfdUuHwt.js";var s=t(`<div hidden="">Redirecting to the <a href="/docs/introduction">documentation</a>.</div>`);function c(t,c){n(c,!1),a(()=>{o(`/docs/introduction`)}),r();var l=s();e(t,l),i()}export{c as component};

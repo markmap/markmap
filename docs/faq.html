@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.BHFo03K7.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/VN1BGqJD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/JfdUuHwt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BWfwRt8T.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/cOk9MO-6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CCuOHFPH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.BzmOgJ1u.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B-_3LM_z.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CcQkqR-D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DfoX0S7l.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/lwbzpwU1.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/4.BFh_hdqX.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DbxXIcY3.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<!--1h26ev8--><meta name="Description" content="The documentation of markmap packages."/><!----><title>FAQ - markmap docs</title>
+		<link href="/_app/immutable/assets/0.BS6xvrr5.css" rel="stylesheet">
+	</head>
+	<body>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[0--><button class="icon-btn sidebar-toggle" popovertarget="docs-sidebar" aria-label="Docs navigation" title="Docs navigation"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a aria-current="page" href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="docs"><aside id="docs-sidebar" popover=""><ul class="toc"><!--[--><!--[-1--><li class="toc-item"><a href="/docs/introduction">Introduction</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/faq" class="active">FAQ</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/related-projects">Related projects</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/migration">Migrating from 0.18</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Guide</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/writing">Writing maps</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/themes-and-layouts">Themes and layouts</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/options">Options</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/magic-comments">Magic comments</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/use-with-nodejs">Use with Node.js</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Packages</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/autoloader">@markmap/autoloader</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/element">@markmap/element</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/view">@markmap/view</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/cli">@markmap/cli</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/coc-markmap">coc-markmap</a></li> <!--[-1--><!--]--><!--]--><!--]--></ul></aside> <div class="markdown"><h1>FAQ</h1> <!----><h2 id="why-cant-i-have-more-than-6-levels-of-">Why can&#39;t I have more than 6 levels of <code>#</code>?</h2>
+<p>Because this is how Markdown works. If you are new to Markdown, I suggest you go through the <a href="https://www.markdownguide.org/">Markdown Guide</a>.</p>
+<p><code>#</code> is used to create headings in Markdown. Either in Markdown or HTML we can have at most 6 levels of headings, aka. <code>&lt;h1&gt;</code> - <code>&lt;h6&gt;</code> in HTML.</p>
+<p>In markmap, the concept of headings is weakened, but it is still subject to Markdown syntax. However you can use nested lists to create branches more than 6 levels deep.</p>
+<h2 id="why-is-my-paragraph-not-on-the-map">Why is my paragraph not on the map?</h2>
+<p>Only headings and list items become nodes. A paragraph becomes a <a href="guide/writing#notes">note</a>: click the dot beside its branch to read it.</p>
+<h2 id="why-was-my-html-dropped">Why was my HTML dropped?</h2>
+<p>Labels and notes are structured data, not HTML, which is what makes clean SVG and PNG exports possible, and keeps Markdown from strangers safe to show. The exceptions are <a href="guide/magic-comments">magic comments</a> and a single <a href="guide/writing#images"><code>&lt;img&gt;</code> tag</a>.</p>
+<h2 id="which-renderer-should-i-use">Which renderer should I use?</h2>
+<p>SVG, unless your map is very large. Its text can be selected and read by screen readers, and it exports as vectors. Canvas stays smooth with thousands of nodes, but has no accessibility tree yet, so it is never picked for you. In the <a href="/editor">editor</a> it is under <strong>Options</strong>.</p>
+<h2 id="do-share-links-upload-my-document">Do share links upload my document?</h2>
+<p>No. The document is compressed into the part of the URL after <code>#</code>, which browsers never send to a server. It also means a long document makes a long link.</p>
+<!----> <footer>Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer><!----></div></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_ufdvrm = {
+						base: "",
+						version: "1794061386006"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.BHFo03K7.js").then(async (kit) => {
+						kit.init(__sveltekit_ufdvrm);
+						const app = await import("/_app/immutable/entry/app.CCuOHFPH.js");
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

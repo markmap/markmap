@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.BHFo03K7.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/VN1BGqJD.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/JfdUuHwt.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BWfwRt8T.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/cOk9MO-6.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.CCuOHFPH.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.BzmOgJ1u.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/B-_3LM_z.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CcQkqR-D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DfoX0S7l.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/lwbzpwU1.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/4.BFh_hdqX.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DbxXIcY3.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<!--1h26ev8--><meta name="Description" content="The documentation of markmap packages."/><!----><title>Migrating from 0.18 - markmap docs</title>
+		<link href="/_app/immutable/assets/0.BS6xvrr5.css" rel="stylesheet">
+	</head>
+	<body>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[0--><button class="icon-btn sidebar-toggle" popovertarget="docs-sidebar" aria-label="Docs navigation" title="Docs navigation"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a aria-current="page" href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="docs"><aside id="docs-sidebar" popover=""><ul class="toc"><!--[--><!--[-1--><li class="toc-item"><a href="/docs/introduction">Introduction</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/faq">FAQ</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/related-projects">Related projects</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/migration" class="active">Migrating from 0.18</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Guide</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/writing">Writing maps</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/themes-and-layouts">Themes and layouts</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/options">Options</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/magic-comments">Magic comments</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/use-with-nodejs">Use with Node.js</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Packages</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/autoloader">@markmap/autoloader</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/element">@markmap/element</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/view">@markmap/view</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/cli">@markmap/cli</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/coc-markmap">coc-markmap</a></li> <!--[-1--><!--]--><!--]--><!--]--></ul></aside> <div class="markdown"><h1>Migrating from 0.18</h1> <!----><p>Markmap was rebuilt so that a node holds structured content instead of an HTML string. That is what makes clean exports, canvas, and rendering without a browser possible. It is a clean break: the <code>markmap-*</code> packages are replaced by <code>@markmap/*</code>, with new APIs.</p>
+<h2 id="packages">Packages</h2>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>Now</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>markmap-lib</code></td>
+<td><code>@markmap/parse</code></td>
+</tr>
+<tr>
+<td><code>markmap-view</code></td>
+<td><a href="packages/view">@markmap/view</a></td>
+</tr>
+<tr>
+<td><code>markmap-render</code></td>
+<td><code>@markmap/render</code> for layout and SVG, <code>@markmap/page</code> for HTML</td>
+</tr>
+<tr>
+<td><code>markmap-toolbar</code></td>
+<td><code>@markmap/toolbar</code></td>
+</tr>
+<tr>
+<td><code>markmap-autoloader</code></td>
+<td><a href="packages/autoloader">@markmap/autoloader</a></td>
+</tr>
+<tr>
+<td><code>markmap-cli</code></td>
+<td><a href="packages/cli">@markmap/cli</a></td>
+</tr>
+</tbody></table>
+<h2 id="code">Code</h2>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Before</span>
+<span class="hljs-keyword">const</span> transformer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Transformer</span>();
+<span class="hljs-keyword">const</span> { root } = transformer.<span class="hljs-title function_">transform</span>(markdown);
+<span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(svg, <span class="hljs-literal">undefined</span>, root);
+
+<span class="hljs-comment">// Now</span>
+<span class="hljs-keyword">const</span> { root } = <span class="hljs-title function_">parse</span>(markdown);
+<span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(svg, root);</code></pre><p>There are no assets to load from a CDN any more: everything comes with the packages. Other changes:</p>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>Now</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>mm.setData(root, options)</code></td>
+<td><code>mm.setTree(root, options)</code></td>
+</tr>
+<tr>
+<td><code>deriveOptions(json)</code></td>
+<td><code>resolveViewOptions(options, json)</code></td>
+</tr>
+<tr>
+<td><code>mm.rescale(k)</code></td>
+<td><code>mm.zoomBy(k)</code>, <code>mm.zoomIn()</code>, <code>mm.zoomOut()</code></td>
+</tr>
+<tr>
+<td><code>mm.toggleNode(node)</code></td>
+<td><code>mm.toggle(id)</code>, <code>mm.setFolded(id, folded)</code></td>
+</tr>
+<tr>
+<td><code>mm.ensureVisible(node)</code></td>
+<td><code>mm.focusNode(id)</code></td>
+</tr>
+<tr>
+<td><code>fillTemplate(root, assets)</code></td>
+<td><a href="packages/cli"><code>markmap file.md</code></a> for one HTML file, or <code>&lt;markmap-view&gt;</code></td>
+</tr>
+</tbody></table>
+<h2 id="options">Options</h2>
+<table>
+<thead>
+<tr>
+<th>Before</th>
+<th>Now</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>initialExpandLevel</code></td>
+<td><code>foldLevel</code>, where the root is depth 0, and no <code>-1</code></td>
+</tr>
+<tr>
+<td><code>maxWidth</code></td>
+<td><code>wrapWidth</code></td>
+</tr>
+<tr>
+<td><code>spacingHorizontal</code></td>
+<td><code>levelGap</code></td>
+</tr>
+<tr>
+<td><code>spacingVertical</code></td>
+<td><code>siblingGap</code></td>
+</tr>
+<tr>
+<td><code>colorFreezeLevel</code></td>
+<td><code>colorDepth</code></td>
+</tr>
+<tr>
+<td><code>paddingX</code></td>
+<td>Set by the theme</td>
+</tr>
+<tr>
+<td><code>lineWidth</code></td>
+<td>Set by the theme</td>
+</tr>
+<tr>
+<td><code>extraJs</code>, <code>extraCss</code></td>
+<td>Removed. Use plugins in code</td>
+</tr>
+<tr>
+<td><code>embedAssets</code></td>
+<td>Removed. Exported HTML always works offline</td>
+</tr>
+<tr>
+<td><code>htmlParser</code></td>
+<td>Removed. Only headings and list items become nodes</td>
+</tr>
+<tr>
+<td><code>activeNode</code></td>
+<td>Removed</td>
+</tr>
+</tbody></table>
+<h2 id="markdown">Markdown</h2>
+<ul>
+<li>Raw HTML is dropped, except <a href="guide/magic-comments">magic comments</a> and a single <a href="guide/writing#images"><code>&lt;img&gt;</code> tag</a>.</li>
+<li>Paragraphs, code blocks and tables are now <a href="guide/writing#notes">notes</a>, not nodes.</li>
+<li>Math uses MathJax instead of KaTeX, and still needs no setup on this site.</li>
+<li>Autoloader blocks use <code>&lt;script type=&quot;text/markdown&quot;&gt;</code> instead of <code>text/template</code>, and there is no <code>window.markmap.autoLoader</code>.</li>
+</ul>
+<!----> <footer>Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer><!----></div></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_ufdvrm = {
+						base: "",
+						version: "1794061386006"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.BHFo03K7.js").then(async (kit) => {
+						kit.init(__sveltekit_ufdvrm);
+						const app = await import("/_app/immutable/entry/app.CCuOHFPH.js");
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
