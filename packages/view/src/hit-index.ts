@@ -6,13 +6,17 @@ export type HitTarget =
   | { kind: 'toggle'; nodeId: string }
   /** A `hit` primitive: a view action such as opening notes. */
   | { kind: 'action'; nodeId: string; action: string }
-  | { kind: 'link'; nodeId?: string; href: string };
+  | { kind: 'link'; nodeId?: string; href: string }
+  /** A node's box, where nothing more specific was hit. */
+  | { kind: 'node'; nodeId: string };
 
 export interface HitIndexOptions {
   /** Fold anchors, in layout coordinates. */
   toggles?: readonly (Point & { nodeId: string })[];
   /** How close to a fold anchor a point must be to hit it. */
   toggleRadius?: number;
+  /** Node boxes, in layout coordinates and drawing order. */
+  nodes?: readonly { nodeId: string; rect: Rect }[];
   /** Leave out targets of nodes this returns `false` for, such as nodes on their way out. */
   include?: (nodeId: string) => boolean;
 }
@@ -66,6 +70,9 @@ export class HitIndex {
         { x, y },
       );
     }
+    for (const { nodeId, rect } of options.nodes ?? []) {
+      if (include(nodeId)) add({ kind: 'node', nodeId }, rect);
+    }
     if (!boxes.length) return;
     this.index = new Flatbush(boxes.length);
     for (const box of boxes) this.index.add(box.x, box.y, box.x + box.width, box.y + box.height);
@@ -75,13 +82,19 @@ export class HitIndex {
   /**
    * The target at a point in layout coordinates. Actions and links win over fold
    * toggles, and the one drawn last (on top) wins among them; among toggles, the nearest.
+   * A node's box only counts if none of those is there.
    */
   hit(x: number, y: number): HitTarget | undefined {
     if (!this.index) return undefined;
     let top = -1;
+    let node = -1;
     let toggle: { index: number; distance: number } | undefined;
     for (const i of this.index.search(x, y, x, y)) {
-      const { center } = this.entries[i];
+      const { center, target } = this.entries[i];
+      if (target.kind === 'node') {
+        node = Math.max(node, i);
+        continue;
+      }
       if (!center) {
         top = Math.max(top, i);
         continue;
@@ -91,8 +104,8 @@ export class HitIndex {
         toggle = { index: i, distance };
       }
     }
-    const found = top >= 0 ? top : toggle?.index;
-    return found == null ? undefined : this.entries[found].target;
+    const found = top >= 0 ? top : (toggle?.index ?? node);
+    return found < 0 ? undefined : this.entries[found].target;
   }
 }
 

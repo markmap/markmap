@@ -25,6 +25,7 @@ import {
 import { select, type Selection } from 'd3-selection';
 import { zoom, type ZoomBehavior, zoomIdentity, type ZoomTransform, zoomTransform } from 'd3-zoom';
 import type { ViewBackend } from './backend';
+import { defaultGestures, type Gestures } from './gestures';
 import { HitIndex, type HitTarget } from './hit-index';
 import { Popover } from './popover';
 import { SvgDomBackend } from './svg-backend';
@@ -56,6 +57,8 @@ export interface ViewOptions extends Omit<RenderOptions, 'measurer' | 'folded'> 
   highlight?: boolean;
   /** Which theme tokens to use; `auto` follows the reader's system setting. Defaults to `light`. */
   colorScheme?: ColorScheme;
+  /** How user input drives the map. Defaults to `defaultGestures`; `false` connects none. */
+  gestures?: Gestures | false;
 }
 
 /** What each event passes to its listeners. */
@@ -137,7 +140,9 @@ export class Markmap {
   readonly backend: ViewBackend;
   private scopeClass = uniqueClass();
   private viewOptions: ViewOptions = DEFAULTS;
-  private zoomBehavior: ZoomBehavior<Element, unknown> = zoom<Element, unknown>();
+  /** The d3 zoom behavior, for gestures to connect to the element. */
+  readonly zoomBehavior: ZoomBehavior<Element, unknown> = zoom<Element, unknown>();
+  private gestures?: { use: Gestures | false; stop?: () => void };
   private selection: Selection<Element, unknown, null, undefined>;
   private measurer: Measurer;
   private root?: MarkmapNode;
@@ -181,26 +186,25 @@ export class Markmap {
     this.applyOptions(options);
 
     this.selection = select(element);
-    this.zoomBehavior
-      .filter((event: Event) => {
-        if (event.type === 'wheel') return !!this.options.zoom;
-        if (event.type === 'dblclick') return false;
-        const { button = 0, ctrlKey = false } = event as MouseEvent;
-        return !!this.options.pan && !ctrlKey && !button;
-      })
-      .on('zoom', (event: { transform: ZoomTransform; sourceEvent: unknown }) => {
-        // The user took over: stop moving the view under them.
-        if (event.sourceEvent) {
-          this.zoomTween.stop();
-          this.pin = undefined;
-        }
-        this.backend.setTransform(event.transform);
-        this.positionPopover();
-        this.emit('zoom', event.transform);
-      });
-    this.selection.call(this.zoomBehavior);
-    element.addEventListener('click', this.handleClick);
-    element.addEventListener('pointermove', this.handleHover);
+    this.zoomBehavior.on('zoom', (event: { transform: ZoomTransform; sourceEvent: unknown }) => {
+      // The user took over: stop moving the view under them.
+      if (event.sourceEvent) {
+        this.zoomTween.stop();
+        this.pin = undefined;
+      }
+      this.backend.setTransform(event.transform);
+      this.positionPopover();
+      this.emit('zoom', event.transform);
+    });
+    this.applyGestures();
+  }
+
+  /** Connect the `gestures` option, replacing the previous ones if it changed. */
+  private applyGestures() {
+    const use = this.options.gestures ?? defaultGestures;
+    if (this.gestures?.use === use) return;
+    this.gestures?.stop?.();
+    this.gestures = { use, stop: use ? use(this) : undefined };
   }
 
   /** Keep the last fit within the limits, or zooming from it would jump. */
@@ -250,6 +254,8 @@ export class Markmap {
     const selector = this.backend.themeSelector ?? `.${this.scopeClass}`;
     this.backend.setCSS(themeCSS(this.theme, this.viewOptions.colorScheme, selector));
     this.updateScaleLimits();
+    // Not during construction: gestures get a finished map.
+    if (this.gestures) this.applyGestures();
   }
 
   static create(
@@ -616,6 +622,7 @@ export class Markmap {
       const index = new HitIndex(this.primitives, {
         toggles,
         toggleRadius: TOGGLE_RADIUS,
+        nodes: frame.nodes.map((item) => ({ nodeId: item.node.id, rect: item.rect })),
         include: (id) => result.layout.byId.has(id),
       });
       this.hits = { frame, index };
@@ -623,10 +630,10 @@ export class Markmap {
     return this.hits.index.hit(x, y);
   }
 
-  /** Layout coordinates of a pointer event. */
-  private layoutPoint(event: MouseEvent): [number, number] {
+  /** Layout coordinates of a point in the viewport, such as a pointer's position. */
+  layoutPoint(clientX: number, clientY: number): [number, number] {
     const box = this.element.getBoundingClientRect();
-    return this.transform.invert([event.clientX - box.x, event.clientY - box.y]);
+    return this.transform.invert([clientX - box.x, clientY - box.y]);
   }
 
   /** Id of the node whose notes are open, if any. */
@@ -708,9 +715,9 @@ export class Markmap {
     // Inside a shadow root, `event.target` is only the host at this level.
     const target = event.composedPath()[0] as Node | null;
     if (this.popover?.popover.contains(target)) return;
-    // Clicking a dot is handled by the click handler.
+    // Clicking a dot is left to the gestures, which may close or reopen the notes.
     if (target && this.element.contains(target) && event instanceof MouseEvent) {
-      const hit = this.hitAt(...this.layoutPoint(event));
+      const hit = this.hitAt(...this.layoutPoint(event.clientX, event.clientY));
       if (hit?.kind === 'action' && hit.action === 'notes') return;
     }
     this.closeNotes();
@@ -731,43 +738,12 @@ export class Markmap {
     this.stateTween.stop();
     this.zoomTween.stop();
     this.closeNotes();
-    this.element.removeEventListener('click', this.handleClick);
-    this.element.removeEventListener('pointermove', this.handleHover);
-    this.setCursor('');
+    this.gestures?.stop?.();
+    this.gestures = undefined;
     this.pendingFit?.disconnect();
-    this.selection.on('.zoom', null);
     this.backend.destroy();
     this.element.classList.remove('markmap', this.scopeClass);
   }
-
-  /** Show that a target is clickable, whatever the backend draws it with. */
-  private handleHover = (event: Event) => {
-    const pointer = event as PointerEvent;
-    // Dragging pans the view; leave its cursor alone.
-    if (pointer.buttons) return;
-    this.setCursor(this.hitAt(...this.layoutPoint(pointer)) ? 'pointer' : '');
-  };
-
-  private setCursor(cursor: string) {
-    (this.element as HTMLElement | SVGElement).style.cursor = cursor;
-  }
-
-  // Typed as a plain listener: `Element` has no `click` entry in its event map.
-  private handleClick = (event: Event) => {
-    if (event.defaultPrevented) return;
-    const target = this.hitAt(...this.layoutPoint(event as MouseEvent));
-    if (target?.kind === 'action' && target.action === 'notes') {
-      if (target.nodeId === this.popover?.id) this.closeNotes();
-      else void this.openNotes(target.nodeId);
-    } else if (target?.kind === 'link') {
-      // SVG links follow themselves; other backends draw no link elements.
-      if (!this.backend.nativeLinks) {
-        this.element.ownerDocument.defaultView?.open(target.href, '_blank', 'noopener,noreferrer');
-      }
-    } else if (target?.kind === 'toggle') {
-      this.toggle(target.nodeId);
-    }
-  };
 }
 
 /**

@@ -3,7 +3,14 @@ import { type MarkmapNode, type Primitive, toPlainText } from '@markmap/core';
 import { parse } from '@markmap/parse';
 import { approximateMeasurer, createImageContent } from '@markmap/render';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { interpolateZoom, Markmap, resolveViewOptions, SvgDomBackend, type ViewBackend } from '.';
+import {
+  type Gestures,
+  interpolateZoom,
+  Markmap,
+  resolveViewOptions,
+  SvgDomBackend,
+  type ViewBackend,
+} from '.';
 import { zoomIdentity } from 'd3-zoom';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -133,7 +140,8 @@ describe('Markmap', () => {
       direction: 'right',
     });
     expect(mm.hitAt(anchor.x + 3, anchor.y - 3)).toEqual({ kind: 'toggle', nodeId: a.node.id });
-    expect(mm.hitAt(a.rect.x, a.rect.y)).toBeUndefined();
+    expect(mm.hitAt(a.rect.x, a.rect.y)).toEqual({ kind: 'node', nodeId: a.node.id });
+    expect(mm.hitAt(a.rect.x - 1000, a.rect.y)).toBeUndefined();
   });
 
   it('applies the initial expand level to new nodes only', () => {
@@ -458,10 +466,37 @@ function centerOf(
   return undefined;
 }
 
-function click(mm: Markmap, [x, y]: [number, number]) {
+function click(mm: Markmap, [x, y]: [number, number], init: MouseEventInit = {}) {
   const [clientX, clientY] = mm.transform.apply([x, y]);
-  mm.element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX, clientY }));
+  mm.element.dispatchEvent(new MouseEvent('click', { ...init, bubbles: true, clientX, clientY }));
 }
+
+function clickFirstBranch(mm: Markmap) {
+  const { rect } = mm.result!.layout.nodes[1];
+  click(mm, [rect.x + rect.width / 2, rect.y + rect.height / 2]);
+}
+
+function firstBranchAnchor(mm: Markmap): [number, number] {
+  const { rect, depth } = mm.result!.layout.nodes[1];
+  const { x, y } = mm.theme.node.anchor(rect, 'right', {
+    depth,
+    path: [],
+    hasChildren: true,
+    folded: false,
+    direction: 'right',
+  });
+  return [x, y];
+}
+
+const textToggles: Gestures = (mm) => {
+  const onClick = (event: Event) => {
+    const { clientX, clientY } = event as MouseEvent;
+    const hit = mm.hitAt(...mm.layoutPoint(clientX, clientY));
+    if (hit?.kind === 'node') mm.toggle(hit.nodeId);
+  };
+  mm.element.addEventListener('click', onClick);
+  return () => mm.element.removeEventListener('click', onClick);
+};
 
 /** A backend that only records what the view asks of it. */
 function fakeBackend() {
@@ -522,6 +557,91 @@ describe('backends', () => {
     });
     click(mm, [anchor.x, anchor.y]);
     expect(mm.foldedIds.has(a.node.id)).toBe(true);
+  });
+
+  it.each([
+    ['ctrl', { ctrlKey: true }],
+    ['cmd', { metaKey: true }],
+  ])('toggles a whole branch on %s+click', (_, modifier) => {
+    const { backend } = fakeBackend();
+    const mm = Markmap.create(backend, parse(md).root, {
+      measurer: approximateMeasurer,
+      duration: 0,
+    });
+    const { node } = mm.result!.layout.nodes[1];
+    const nested = node.children.find((child) => child.children.length)!;
+    const clickNode = (init?: MouseEventInit) => {
+      const { rect, depth } = mm.result!.layout.nodes.find((n) => n.node.id === node.id)!;
+      const anchor = mm.theme.node.anchor(rect, 'right', {
+        depth,
+        path: [],
+        hasChildren: true,
+        folded: mm.foldedIds.has(node.id),
+        direction: 'right',
+      });
+      click(mm, [anchor.x, anchor.y], init);
+    };
+
+    clickNode(modifier);
+    expect(new Set(mm.foldedIds)).toEqual(new Set([node.id, nested.id]));
+
+    clickNode(modifier);
+    expect(mm.foldedIds.size).toBe(0);
+
+    clickNode(modifier);
+    clickNode();
+    expect([...mm.foldedIds]).toEqual([nested.id]);
+  });
+
+  describe('gestures', () => {
+    const options = { measurer: approximateMeasurer, duration: 0 };
+
+    it('binds no input with gestures off, and still takes actions', () => {
+      const { backend } = fakeBackend();
+      const add = vi.spyOn(backend.element, 'addEventListener');
+      const mm = Markmap.create(backend, parse(md).root, { ...options, gestures: false });
+      expect(add).not.toHaveBeenCalled();
+      click(mm, firstBranchAnchor(mm));
+      expect(mm.foldedIds.size).toBe(0);
+      mm.foldAll();
+      expect(mm.foldedIds.size).toBeGreaterThan(0);
+    });
+
+    it('lets custom gestures toggle from a node body', () => {
+      const mm = Markmap.create(fakeBackend().backend, parse(md).root, {
+        ...options,
+        gestures: textToggles,
+      });
+      const { id } = mm.result!.layout.nodes[1].node;
+      clickFirstBranch(mm);
+      expect(mm.foldedIds.has(id)).toBe(true);
+    });
+
+    it('swaps gestures when the option changes and stops them on destroy', () => {
+      const stopA = vi.fn<() => void>();
+      const stopB = vi.fn<() => void>();
+      const a = vi.fn<Gestures>(() => stopA);
+      const b = vi.fn<Gestures>(() => stopB);
+      const mm = Markmap.create(fakeBackend().backend, parse(md).root, { ...options, gestures: a });
+      mm.setOptions({ ...options, gestures: a });
+      expect(a).toHaveBeenCalledTimes(1);
+      expect(stopA).not.toHaveBeenCalled();
+
+      mm.setOptions({ ...options, gestures: b });
+      expect(stopA).toHaveBeenCalledTimes(1);
+      expect(b).toHaveBeenCalledWith(mm);
+
+      mm.destroy();
+      expect(stopB).toHaveBeenCalledTimes(1);
+    });
+
+    it('moves the view from code without any gestures', () => {
+      const { backend, calls } = fakeBackend();
+      const mm = Markmap.create(backend, parse(md).root, { ...options, gestures: false });
+      const { k } = mm.transform;
+      expect(calls.transform).toBe(`${mm.transform.x},${mm.transform.y},${k}`);
+      expect(k).not.toBe(1);
+    });
   });
 
   it('opens links itself only when the backend has no link elements', () => {

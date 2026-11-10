@@ -35,6 +35,7 @@ Pass `ViewOptions` as the third argument of `Markmap.create`, or with `setTree` 
 | `plugins`   | `ContentPlugin[]` | Inline content renderers. Defaults to `defaultContentPlugins` |
 | `highlight` | `boolean`         | Color code in notes. Defaults to `true`                       |
 | `measurer`  | `Measurer`        | How text is measured. Defaults to a canvas measurer           |
+| `gestures`  | `Gestures, false` | How input drives the map. See [Gestures](#gestures)           |
 
 To apply options from a document, including names and theme options:
 
@@ -63,6 +64,31 @@ const mm = Markmap.create(svg, root, options);
 | `openNotes(id)`, `closeNotes()`       | Show or hide a node's notes                                           |
 | `on(type, listener)`                  | Listen to `render`, `zoom` or `fold`; returns an unsubscribe function |
 | `destroy()`                           | Remove the map                                                        |
+
+## Gestures
+
+The map only offers actions, such as `toggle` and `expandAll`. The `gestures` option decides which input triggers them. By default, `defaultGestures` pans and zooms, toggles a branch when you click its circle, and toggles everything below it on Ctrl or Cmd + click.
+
+A set of gestures is a function that connects input to the map and returns a function that disconnects it. `mm.layoutPoint(clientX, clientY)` and `mm.hitAt(x, y)` tell you what the pointer is on, which can be a `toggle`, `action`, `link` or `node`. To make a click on a node's text fold it, and keep panning and zooming:
+
+```js
+import { combineGestures, Markmap, panZoomGestures } from '@markmap/view';
+
+const clickText = (mm) => {
+  const onClick = ({ clientX, clientY }) => {
+    const hit = mm.hitAt(...mm.layoutPoint(clientX, clientY));
+    if (hit?.kind === 'node') mm.toggle(hit.nodeId);
+  };
+  mm.element.addEventListener('click', onClick);
+  return () => mm.element.removeEventListener('click', onClick);
+};
+
+Markmap.create(svg, root, { gestures: combineGestures(panZoomGestures, clickText) });
+```
+
+`pointerGestures` is the click and hover half of the default. Pass `gestures: false` to connect no input at all.
+
+## Render result
 
 `mm.result` is the latest render, which you can pass to `toSVGString` or `toPNG`. `mm.foldedIds` and the node ids make links to a particular view easy to build.
 
