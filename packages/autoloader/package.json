@@ -1,6 +1,6 @@
 {
   "name": "@markmap/autoloader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "One script tag that turns .markmap blocks into maps",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",

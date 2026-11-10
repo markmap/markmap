@@ -1,6 +1,6 @@
 {
   "name": "@markmap/element",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The <markmap-view> web component",
   "homepage": "https://github.com/markmap/markmap#readme",
   "license": "MIT",
