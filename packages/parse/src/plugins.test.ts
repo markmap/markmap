@@ -40,6 +40,34 @@ describe('remarkMark', () => {
   it('leaves code alone', () => {
     expect(label('`==a==`')).toEqual([{ type: 'inlineCode', value: '==a==' }]);
   });
+
+  it('does not use escaped or encoded `=` as a delimiter', () => {
+    expect(label('\\=\\=a\\=\\=')).toEqual([{ type: 'text', value: '==a==' }]);
+    expect(label('a\\==b==')).toEqual([{ type: 'text', value: 'a==b==' }]);
+    expect(label('==a=\\=')).toEqual([{ type: 'text', value: '==a==' }]);
+    expect(label('&#61;&#61;a&equals;&#x3D;')).toEqual([{ type: 'text', value: '==a==' }]);
+  });
+
+  it('still uses unescaped delimiters next to escapes', () => {
+    expect(label('\\===a==')).toEqual([
+      { type: 'text', value: '=' },
+      { type: 'mark', children: [{ type: 'text', value: 'a' }] },
+    ]);
+    expect(label('\\\\==a==')).toEqual([
+      { type: 'text', value: '\\' },
+      { type: 'mark', children: [{ type: 'text', value: 'a' }] },
+    ]);
+    expect(label('&amp; ==a==')).toEqual([
+      { type: 'text', value: '& ' },
+      { type: 'mark', children: [{ type: 'text', value: 'a' }] },
+    ]);
+  });
+
+  it('handles escapes in multi-line text', () => {
+    expect(label('==a\n  b\\=\\= c==')).toEqual([
+      { type: 'mark', children: [{ type: 'text', value: 'a\nb== c' }] },
+    ]);
+  });
 });
 
 describe('remarkResolveReferences', () => {

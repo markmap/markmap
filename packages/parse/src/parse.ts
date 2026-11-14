@@ -47,7 +47,7 @@ function parseMdast(
     .use(remarkResolveReferences)
     .use(plugins);
   try {
-    return { mdast: processor.runSync(processor.parse(markdown)) as Root, gfm };
+    return { mdast: processor.runSync(processor.parse(markdown), markdown) as Root, gfm };
   } catch (error) {
     if (!gfm || !(error instanceof SyntaxError)) throw error;
     return parseMdast(markdown, plugins, false);

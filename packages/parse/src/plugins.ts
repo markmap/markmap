@@ -13,29 +13,76 @@ function visitParents(node: Nodes, fn: (parent: Parent) => void) {
  * inline nodes (`==a **b**==`) but not cross block boundaries.
  */
 export function remarkMark() {
-  return (tree: Root) =>
+  return (tree: Root, file: { value: unknown }) => {
+    const source = typeof file.value === 'string' ? file.value : '';
     visitParents(tree, (parent) => {
       if (parent.children.some((child) => child.type === 'text' && child.value.includes('=='))) {
-        parent.children = markChildren(parent.children as PhrasingContent[]) as Parent['children'];
+        parent.children = markChildren(
+          parent.children as PhrasingContent[],
+          source,
+        ) as Parent['children'];
       }
     });
+  };
+}
+
+// A backslash escape, a character reference, or a plain `=`.
+const SOURCE_EQUALS =
+  /\\[!-/:-@[-`{-~]|&(?:#\d{1,7}|#[xX][\da-fA-F]{1,6}|[A-Za-z][A-Za-z\d]{0,31});|=/g;
+
+function isEncodedEquals(reference: string) {
+  const name = reference.slice(1, -1);
+  if (name === 'equals') return true;
+  if (name[0] !== '#') return false;
+  const hex = name[1] === 'x' || name[1] === 'X';
+  return Number.parseInt(name.slice(hex ? 2 : 1), hex ? 16 : 10) === 0x3d;
+}
+
+/**
+ * Indexes of the `=` in a text node that were written as `\=` or `&#61;` and so must stay
+ * literal. remark has already decoded them, so they are found in the source. If the source
+ * does not line up with the text, nothing is reported and every `=` can be a delimiter.
+ */
+function escapedEquals(node: Text, source: string): Set<number> {
+  const escaped = new Set<number>();
+  const start = node.position?.start.offset;
+  const end = node.position?.end.offset;
+  if (start == null || end == null) return escaped;
+  const literal: boolean[] = [];
+  for (const [match] of source.slice(start, end).matchAll(SOURCE_EQUALS)) {
+    if (match === '=') literal.push(false);
+    else if (match === '\\=' || (match[0] === '&' && isEncodedEquals(match))) literal.push(true);
+  }
+  const indexes: number[] = [];
+  for (let i = node.value.indexOf('='); i >= 0; i = node.value.indexOf('=', i + 1)) indexes.push(i);
+  if (indexes.length !== literal.length) return escaped;
+  indexes.forEach((index, i) => literal[i] && escaped.add(index));
+  return escaped;
 }
 
 type Token =
   | { delim: true; canOpen: boolean; canClose: boolean }
   | { delim: false; node: PhrasingContent };
 
-function markChildren(children: PhrasingContent[]): PhrasingContent[] {
+function markChildren(children: PhrasingContent[], source: string): PhrasingContent[] {
   const tokens: Token[] = [];
   for (const child of children) {
     if (child.type !== 'text') {
       tokens.push({ delim: false, node: child });
       continue;
     }
-    child.value.split(/(==)/).forEach((part) => {
-      if (part === '==') tokens.push({ delim: true, canOpen: false, canClose: false });
-      else if (part) tokens.push({ delim: false, node: { type: 'text', value: part } });
-    });
+    const { value } = child;
+    const escaped = escapedEquals(child, source);
+    let text = '';
+    for (let i = 0; i < value.length; i += 1) {
+      if (value.startsWith('==', i) && !escaped.has(i) && !escaped.has(i + 1)) {
+        if (text) tokens.push({ delim: false, node: { type: 'text', value: text } });
+        tokens.push({ delim: true, canOpen: false, canClose: false });
+        text = '';
+        i += 1;
+      } else text += value[i];
+    }
+    if (text) tokens.push({ delim: false, node: { type: 'text', value: text } });
   }
 
   const edgeChar = (token: Token | undefined, end: boolean) => {
