@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -203,6 +203,24 @@ markmap:
     expect(await run([inDir('a.md'), '-o', inDir('a.md'), '--no-open'])).toBe(1);
     expect(err).toContain('it is the input');
     expect(await readFile(inDir('a.md'), 'utf8')).toBe('# A');
+  });
+
+  it('refuses to overwrite the input through a hard link', async () => {
+    await writeFile(inDir('a.md'), '# A');
+    await link(inDir('a.md'), inDir('a.html'));
+    expect(await run([inDir('a.md'), '--no-open'])).toBe(1);
+    expect(err).toContain('it is the input');
+    expect(await readFile(inDir('a.md'), 'utf8')).toBe('# A');
+  });
+
+  it('refuses to overwrite a referenced image through a hard link', async () => {
+    const image = Buffer.from(PIXEL, 'base64');
+    await writeFile(inDir('a.png'), image);
+    await writeFile(inDir('a.md'), '# A\n\n- ![a](a.png)');
+    await link(inDir('a.png'), inDir('a.html'));
+    expect(await run([inDir('a.md'), '--no-open'])).toBe(1);
+    expect(err).toContain('it is an image the input uses');
+    expect(await readFile(inDir('a.png'))).toEqual(image);
   });
 
   it('still replaces its own earlier output', async () => {

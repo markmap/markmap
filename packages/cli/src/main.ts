@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename, dirname, extname, join, parse as parsePath, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -175,18 +175,23 @@ async function writePng({ markdown, file }: Source, io: Io) {
   });
 }
 
-/** A file's real path, so links and other spellings of a name count as the same file. */
-const real = (path: string) => realpath(path).catch(() => undefined);
+function fileIdentity(path: string) {
+  return stat(path, { bigint: true }).catch(() => undefined);
+}
 
 /** What `output` would destroy, if it is the input or an image the input uses. */
 async function conflict({ markdown, file }: Source, output: string) {
   if (!file) return undefined;
-  const target = await real(output);
+  const target = await fileIdentity(output);
   if (!target) return undefined;
-  if (target === (await real(file))) return 'the input';
+  const sameFile = async (path: string) => {
+    const source = await fileIdentity(path);
+    return source?.dev === target.dev && source.ino === target.ino;
+  };
+  if (await sameFile(file)) return 'the input';
   const paths = inspect(markdown).urls.map((url) => localPath(url, dirname(file)));
   for (const path of paths) {
-    if (path && target === (await real(path))) return 'an image the input uses';
+    if (path && (await sameFile(path))) return 'an image the input uses';
   }
   return undefined;
 }
