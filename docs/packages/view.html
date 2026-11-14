@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.CNcv_ldZ.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BUPPL-JB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BP51v7HM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CiPllD0G.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BilBOyUG.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.yu8jSH2x.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.meLFPWvN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CGeMwRJM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/ePLls4BW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DxQFveJC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CrNrtm7G.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/4.B9SABQn9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Py-SyYMi.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<!--1h26ev8--><meta name="Description" content="The documentation of markmap packages."/><!----><title>@markmap/view - markmap docs</title>
+		<link href="/_app/immutable/assets/0.FqBt9OXJ.css" rel="stylesheet">
+	</head>
+	<body>
+		<script>
+			// Browsers without Array.prototype.at (before Safari 15.4 / Chrome 92) are too old for the app,
+			// which would crash and leave a blank page. Say so instead. Keep in sync with polyfills.ts.
+			if (![].at) {
+				document.write(
+					'<p style="margin:0;padding:16px;font:16px/1.5 system-ui,sans-serif">' +
+						'Your browser is out of date and cannot run Markmap. ' +
+						'Please update it, or open this page in another browser.</p>',
+				);
+			}
+		</script>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[0--><button class="icon-btn sidebar-toggle" popovertarget="docs-sidebar" aria-label="Docs navigation" title="Docs navigation"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a aria-current="page" href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="docs"><aside id="docs-sidebar" popover=""><ul class="toc"><!--[--><!--[-1--><li class="toc-item"><a href="/docs/introduction">Introduction</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/faq">FAQ</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/related-projects">Related projects</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/migration">Migrating from 0.18</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Guide</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/writing">Writing maps</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/themes-and-layouts">Themes and layouts</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/options">Options</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/magic-comments">Magic comments</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/guide/use-with-nodejs">Use with Node.js</a></li> <!--[-1--><!--]--><!--]--><!--[0--><li class="toc-sep">Packages</li><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/autoloader">@markmap/autoloader</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/element">@markmap/element</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/view" class="active">@markmap/view</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/cli">@markmap/cli</a></li> <!--[-1--><!--]--><!--]--><!--[-1--><li class="toc-item"><a href="/docs/packages/coc-markmap">coc-markmap</a></li> <!--[-1--><!--]--><!--]--><!--]--></ul></aside> <div class="markdown"><h1>@markmap/view</h1> <!----><p>The interactive map: zoom, pan, fold, animation and note popovers. For most apps, <a href="element">@markmap/element</a> is simpler and uses this underneath.</p>
+<h2 id="installation">Installation</h2>
+<pre><code class="hljs language-sh">npm install @markmap/parse @markmap/view</code></pre><h2 id="usage">Usage</h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">svg</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;map&quot;</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;width: 800px; height: 600px&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">svg</span>&gt;</span></code></pre><pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { parse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/parse&#x27;</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Markmap</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/view&#x27;</span>;
+
+<span class="hljs-keyword">const</span> { root } = <span class="hljs-title function_">parse</span>(markdown);
+<span class="hljs-keyword">const</span> mm = <span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;#map&#x27;</span>), root);</code></pre><p>To update the map, call <code>mm.setTree(root)</code>. Folded branches stay folded, so this suits live editing.</p>
+<h2 id="options">Options</h2>
+<p>Pass <code>ViewOptions</code> as the third argument of <code>Markmap.create</code>, or with <code>setTree</code> and <code>setOptions</code>. They include everything in <a href="../guide/options">Options</a>, where <code>theme</code> and <code>layout</code> are objects instead of names, plus:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>plugins</code></td>
+<td><code>ContentPlugin[]</code></td>
+<td>Inline content renderers. Defaults to <code>defaultContentPlugins</code></td>
+</tr>
+<tr>
+<td><code>highlight</code></td>
+<td><code>boolean</code></td>
+<td>Color code in notes. Defaults to <code>true</code></td>
+</tr>
+<tr>
+<td><code>measurer</code></td>
+<td><code>Measurer</code></td>
+<td>How text is measured. Defaults to a canvas measurer</td>
+</tr>
+<tr>
+<td><code>gestures</code></td>
+<td><code>Gestures, false</code></td>
+<td>How input drives the map. See <a href="#gestures">Gestures</a></td>
+</tr>
+</tbody></table>
+<p>To apply options from a document, including names and theme options:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { parse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/parse&#x27;</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Markmap</span>, resolveViewOptions } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/view&#x27;</span>;
+
+<span class="hljs-keyword">const</span> { root, frontmatter } = <span class="hljs-title function_">parse</span>(markdown);
+<span class="hljs-keyword">const</span> { options, warnings } = <span class="hljs-title function_">resolveViewOptions</span>({}, frontmatter.<span class="hljs-property">markmap</span>);
+<span class="hljs-keyword">const</span> mm = <span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(svg, root, options);</code></pre><h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>setTree(root, options?)</code></td>
+<td>Show a new tree, keeping folds for ids that still exist</td>
+</tr>
+<tr>
+<td><code>setOptions(options)</code></td>
+<td>Replace all options and redraw</td>
+</tr>
+<tr>
+<td><code>fit()</code></td>
+<td>Scale and center the drawing to fill the element</td>
+</tr>
+<tr>
+<td><code>zoomIn()</code>, <code>zoomOut()</code>, <code>zoomBy(k)</code></td>
+<td>Zoom around the center</td>
+</tr>
+<tr>
+<td><code>toggle(id)</code>, <code>setFolded(id, folded)</code></td>
+<td>Fold or unfold a node</td>
+</tr>
+<tr>
+<td><code>expandAll(id?)</code>, <code>foldAll(id?)</code></td>
+<td>Fold or unfold a subtree, the whole tree by default</td>
+</tr>
+<tr>
+<td><code>foldToLevel(level)</code></td>
+<td>Show the tree down to a level</td>
+</tr>
+<tr>
+<td><code>setFoldedIds(ids, { animate })</code></td>
+<td>Restore a saved fold state</td>
+</tr>
+<tr>
+<td><code>focusNode(id, { scale, animate })</code></td>
+<td>Unfold a node&#39;s ancestors and center on it</td>
+</tr>
+<tr>
+<td><code>openNotes(id)</code>, <code>closeNotes()</code></td>
+<td>Show or hide a node&#39;s notes</td>
+</tr>
+<tr>
+<td><code>on(type, listener)</code></td>
+<td>Listen to <code>render</code>, <code>zoom</code> or <code>fold</code>; returns an unsubscribe function</td>
+</tr>
+<tr>
+<td><code>destroy()</code></td>
+<td>Remove the map</td>
+</tr>
+</tbody></table>
+<h2 id="gestures">Gestures</h2>
+<p>The map only offers actions, such as <code>toggle</code> and <code>expandAll</code>. The <code>gestures</code> option decides which input triggers them. By default, <code>defaultGestures</code> pans and zooms, toggles a branch when you click its circle, and toggles everything below it on Ctrl or Cmd + click.</p>
+<p>A set of gestures is a function that connects input to the map and returns a function that disconnects it. <code>mm.layoutPoint(clientX, clientY)</code> and <code>mm.hitAt(x, y)</code> tell you what the pointer is on, which can be a <code>toggle</code>, <code>action</code>, <code>link</code> or <code>node</code>. To make a click on a node&#39;s text fold it, and keep panning and zooming:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { combineGestures, <span class="hljs-title class_">Markmap</span>, panZoomGestures } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/view&#x27;</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">clickText</span> = (<span class="hljs-params">mm</span>) =&gt; {
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">onClick</span> = (<span class="hljs-params">{ clientX, clientY }</span>) =&gt; {
+    <span class="hljs-keyword">const</span> hit = mm.<span class="hljs-title function_">hitAt</span>(...mm.<span class="hljs-title function_">layoutPoint</span>(clientX, clientY));
+    <span class="hljs-keyword">if</span> (hit?.<span class="hljs-property">kind</span> === <span class="hljs-string">&#x27;node&#x27;</span>) mm.<span class="hljs-title function_">toggle</span>(hit.<span class="hljs-property">nodeId</span>);
+  };
+  mm.<span class="hljs-property">element</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, onClick);
+  <span class="hljs-keyword">return</span> <span class="hljs-function">() =&gt;</span> mm.<span class="hljs-property">element</span>.<span class="hljs-title function_">removeEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, onClick);
+};
+
+<span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(svg, root, { <span class="hljs-attr">gestures</span>: <span class="hljs-title function_">combineGestures</span>(panZoomGestures, clickText) });</code></pre><p><code>pointerGestures</code> is the click and hover half of the default. Pass <code>gestures: false</code> to connect no input at all.</p>
+<h2 id="render-result">Render result</h2>
+<p><code>mm.result</code> is the latest render, which you can pass to <code>toSVGString</code> or <code>toPNG</code>. <code>mm.foldedIds</code> and the node ids make links to a particular view easy to build.</p>
+<h2 id="export">Export</h2>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { toPNG } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/canvas&#x27;</span>;
+<span class="hljs-keyword">import</span> { toSVGString } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/render&#x27;</span>;
+
+<span class="hljs-keyword">const</span> svg = <span class="hljs-title function_">toSVGString</span>(mm.<span class="hljs-property">result</span>);
+<span class="hljs-keyword">const</span> png = <span class="hljs-keyword">await</span> <span class="hljs-title function_">toPNG</span>(mm.<span class="hljs-property">result</span>, { <span class="hljs-attr">colorScheme</span>: <span class="hljs-string">&#x27;dark&#x27;</span> });</code></pre><p>An image whose server does not allow cross-origin use shows its alt text in a PNG. To export without a browser, see <a href="../guide/use-with-nodejs">Use with Node.js</a>.</p>
+<h2 id="math">Math</h2>
+<p><code>remarkMath</code> parses <code>$…$</code>, and <code>mathContent</code> draws it. MathJax is loaded the first time a formula is drawn, so maps without math do not pay for it.</p>
+<pre><code class="hljs language-sh">npm install @markmap/plugin-math</code></pre><pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { parse } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/parse&#x27;</span>;
+<span class="hljs-keyword">import</span> { mathContent, remarkMath } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/plugin-math&#x27;</span>;
+<span class="hljs-keyword">import</span> { defaultContentPlugins } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/render&#x27;</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Markmap</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/view&#x27;</span>;
+
+<span class="hljs-keyword">const</span> { root } = <span class="hljs-title function_">parse</span>(markdown, { <span class="hljs-attr">plugins</span>: [remarkMath] });
+<span class="hljs-title class_">Markmap</span>.<span class="hljs-title function_">create</span>(svg, root, { <span class="hljs-attr">plugins</span>: [...defaultContentPlugins, mathContent] });</code></pre><p>With <code>&lt;markmap-view&gt;</code>:</p>
+<pre><code class="hljs language-js">view.<span class="hljs-property">parseOptions</span> = { <span class="hljs-attr">plugins</span>: [remarkMath] };
+view.<span class="hljs-property">options</span> = { <span class="hljs-attr">plugins</span>: [...defaultContentPlugins, mathContent] };</code></pre><h2 id="toolbar">Toolbar</h2>
+<p>With <code>&lt;markmap-view&gt;</code>, add the <code>toolbar</code> attribute. Otherwise:</p>
+<pre><code class="hljs language-sh">npm install @markmap/toolbar</code></pre><pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { createToolbar } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/toolbar&#x27;</span>;
+
+<span class="hljs-keyword">const</span> toolbar = <span class="hljs-title function_">createToolbar</span>(mm);
+<span class="hljs-variable language_">document</span>.<span class="hljs-property">body</span>.<span class="hljs-title function_">append</span>(toolbar.<span class="hljs-property">element</span>);</code></pre><p>The element is not positioned, so style <code>.markmap-toolbar</code> to place it. <code>items</code> takes <code>zoom-in</code>, <code>zoom-out</code>, <code>fit</code>, <code>expand-all</code> and <code>fold-level</code>, in the order you want them, and buttons of your own:</p>
+<pre><code class="hljs language-js"><span class="hljs-title function_">createToolbar</span>(mm, {
+  <span class="hljs-attr">items</span>: [<span class="hljs-string">&#x27;zoom-in&#x27;</span>, <span class="hljs-string">&#x27;zoom-out&#x27;</span>, { <span class="hljs-attr">label</span>: <span class="hljs-string">&#x27;Save&#x27;</span>, <span class="hljs-attr">onClick</span>: <span class="hljs-function">(<span class="hljs-params">mm</span>) =&gt;</span> <span class="hljs-title function_">save</span>(mm.<span class="hljs-property">foldedIds</span>) }],
+});</code></pre><h2 id="canvas">Canvas</h2>
+<p>For very large maps, pass a canvas backend instead of an element. With <code>&lt;markmap-view&gt;</code>, set <code>renderer=&quot;canvas&quot;</code>.</p>
+<pre><code class="hljs language-sh">npm install @markmap/canvas</code></pre><pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">CanvasBackend</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/canvas&#x27;</span>;
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">Markmap</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@markmap/view&#x27;</span>;
+
+<span class="hljs-keyword">const</span> mm = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Markmap</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CanvasBackend</span>(canvas), options);</code></pre><p>Canvas skips what is out of view and draws small text as bars, so it stays smooth with thousands of nodes. It has no accessibility tree yet, so use SVG unless your map needs this.</p>
+<!----> <footer>Designed with ♥ by <a href="https://github.com/gera2ld" target="_blank" rel="noreferrer noopener">gera2ld</a></footer><!----></div></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_zug3v4 = {
+						base: "",
+						version: "1794660698238"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.CNcv_ldZ.js").then(async (kit) => {
+						kit.init(__sveltekit_zug3v4);
+						const app = await import("/_app/immutable/entry/app.yu8jSH2x.js");
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="noindex" />
+		<title>Markmap</title>
+		<link rel="icon" href="/favicon.png" />
+		<!--
+			GitHub Pages serves this file for every path that does not exist, e.g. old links.
+			It is standalone on purpose, so that the app's own routing is left alone.
+		-->
+		<noscript><meta http-equiv="refresh" content="2; url=/" /></noscript>
+		<script>
+			// Once the animation has played, go to the homepage. The old REPL now lives at /editor.
+			var isRepl = /^\/repl\/?$/.test(location.pathname);
+			var target = isRepl ? '/editor' + location.search + location.hash : '/';
+			setTimeout(function () {
+				location.replace(target);
+			}, 2300);
+			document.addEventListener('DOMContentLoaded', function () {
+				document.getElementById('skip').href = target;
+			});
+		</script>
+		<style>
+			:root {
+				--bg: #fff;
+				--fg: #333;
+				--muted: #777;
+				--link: #2a7ae2;
+				color-scheme: light dark;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--bg: #1b1b1f;
+					--fg: #eee;
+					--muted: #999;
+					--link: #6ab0ff;
+				}
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 12px;
+				padding: 16px;
+				text-align: center;
+				background: var(--bg);
+				color: var(--fg);
+				font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+			}
+			svg {
+				width: min(320px, 80vw);
+				height: auto;
+				overflow: visible;
+			}
+			.branch {
+				fill: none;
+				stroke-width: 3;
+				stroke-linecap: round;
+				stroke-dasharray: 1;
+				stroke-dashoffset: 1;
+				animation: draw 0.7s ease-out forwards;
+				animation-delay: var(--d);
+			}
+			.node {
+				opacity: 0;
+				transform-box: fill-box;
+				transform-origin: center;
+				animation: pop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) forwards;
+				animation-delay: var(--d);
+			}
+			.root {
+				fill: var(--fg);
+				--d: 0s;
+			}
+			.root-text {
+				fill: var(--bg);
+				font-size: 15px;
+				font-weight: 600;
+				text-anchor: middle;
+				dominant-baseline: central;
+			}
+			@keyframes draw {
+				to {
+					stroke-dashoffset: 0;
+				}
+			}
+			@keyframes pop {
+				from {
+					opacity: 0;
+					transform: scale(0.2);
+				}
+				to {
+					opacity: 1;
+					transform: scale(1);
+				}
+			}
+			h1 {
+				margin: 0;
+				font-size: 1.5rem;
+			}
+			p {
+				margin: 0;
+				color: var(--muted);
+			}
+			a {
+				color: var(--link);
+			}
+			.bar {
+				width: 160px;
+				height: 3px;
+				margin-top: 8px;
+				border-radius: 2px;
+				background: var(--muted);
+				opacity: 0.3;
+				overflow: hidden;
+			}
+			.bar::after {
+				content: '';
+				display: block;
+				height: 100%;
+				background: var(--link);
+				transform: translateX(-100%);
+				animation: fill 2.2s linear forwards;
+			}
+			@keyframes fill {
+				to {
+					transform: none;
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				.branch,
+				.node,
+				.bar::after {
+					animation-duration: 0.01s;
+					animation-delay: 0s;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<svg viewBox="0 0 320 200" aria-hidden="true">
+			<g id="tree"></g>
+			<ellipse class="node root" cx="160" cy="100" rx="44" ry="20" />
+			<text class="root-text" x="160" y="100">Markmap</text>
+		</svg>
+		<h1>This page has moved</h1>
+		<p>Taking you back to Markmap&hellip;</p>
+		<div class="bar" aria-hidden="true"></div>
+		<p><a id="skip" href="/">Go now</a></p>
+
+		<script>
+			// Grow a small mind map around the root, one branch after another.
+			(function () {
+				var ns = 'http://www.w3.org/2000/svg';
+				var colors = ['#e8590c', '#2f9e44', '#1c7ed6', '#ae3ec9', '#f08c00', '#0c8599'];
+				var leaves = [
+					{ x: 40, y: 30, side: -1 },
+					{ x: 30, y: 100, side: -1 },
+					{ x: 40, y: 170, side: -1 },
+					{ x: 280, y: 30, side: 1 },
+					{ x: 290, y: 100, side: 1 },
+					{ x: 280, y: 170, side: 1 },
+				];
+				var tree = document.getElementById('tree');
+				leaves.forEach(function (leaf, i) {
+					var delay = 0.3 + i * 0.18 + 's';
+					var sx = 160 + leaf.side * 44;
+					var path = document.createElementNS(ns, 'path');
+					path.setAttribute('class', 'branch');
+					path.setAttribute('pathLength', '1');
+					path.setAttribute(
+						'd',
+						'M' + sx + ' 100 C ' + (sx + leaf.side * 40) + ' 100 ' + (leaf.x - leaf.side * 40) + ' ' + leaf.y + ' ' + leaf.x + ' ' + leaf.y,
+					);
+					path.style.stroke = colors[i];
+					path.style.setProperty('--d', delay);
+					var dot = document.createElementNS(ns, 'circle');
+					dot.setAttribute('class', 'node');
+					dot.setAttribute('cx', leaf.x);
+					dot.setAttribute('cy', leaf.y);
+					dot.setAttribute('r', 7);
+					dot.style.fill = colors[i];
+					dot.style.setProperty('--d', 0.3 + i * 0.18 + 0.5 + 's');
+					tree.appendChild(path);
+					tree.appendChild(dot);
+				});
+			})();
+		</script>
+	</body>
+</html>

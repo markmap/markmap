@@ -1,0 +1,1 @@
+import{C as e,a as t,ot as n,st as r}from"../chunks/CiPllD0G.js";import"../chunks/CrNrtm7G.js";import{t as i}from"../chunks/BP51v7HM.js";function a(a,o){r(o,!1),e(()=>{i(`/docs`)}),t(),n()}export{a as component};

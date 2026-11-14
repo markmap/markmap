@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.CNcv_ldZ.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BUPPL-JB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BP51v7HM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CiPllD0G.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BilBOyUG.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.yu8jSH2x.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.meLFPWvN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CGeMwRJM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/ePLls4BW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DxQFveJC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CrNrtm7G.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/7.DLA1HfUe.js" rel="modulepreload">
+		<!--1tbaw0g--><meta name="description" content="How the Markmap app for Confluence handles your content and personal data."/><!----><title>Privacy policy for Markmap for Confluence</title>
+		<link href="/_app/immutable/assets/0.FqBt9OXJ.css" rel="stylesheet">
+	</head>
+	<body>
+		<script>
+			// Browsers without Array.prototype.at (before Safari 15.4 / Chrome 92) are too old for the app,
+			// which would crash and leave a blank page. Say so instead. Keep in sync with polyfills.ts.
+			if (![].at) {
+				document.write(
+					'<p style="margin:0;padding:16px;font:16px/1.5 system-ui,sans-serif">' +
+						'Your browser is out of date and cannot run Markmap. ' +
+						'Please update it, or open this page in another browser.</p>',
+				);
+			}
+		</script>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[0--><nav class="site-nav"><!--[-1--><!--]--> <a class="brand" href="/" aria-label="markmap"><img src="/favicon.png" width="20" height="20" alt=""/> <span class="brand-name">markmap</span></a> <!--[--><a href="/editor">Editor</a><a href="/docs">Docs</a><!--]--> <span class="spacer"></span> <span class="star"></span> <a href="https://github.com/markmap/markmap" target="_blank" rel="noreferrer noopener">GitHub</a> <button class="icon-btn" aria-label="Use dark mode" title="Use dark mode"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><!--[-1--><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path><!--]--></svg></button></nav><!--]--> <!--[--><!--[-1--><!--[--><main class="markdown mx-auto"><h1>Privacy policy for Markmap for Confluence</h1> <p>Last updated November 12, 2026.</p> <p>Markmap for Confluence (the app) is a Confluence macro that shows content as an interactive mind
+		map. It is run by Markmap, an independent project. This policy covers the app only. The
+		markmap.js.org website is separate, and it uses Google Analytics and Sentry.</p> <h2>The short version</h2> <p>The app has no server of its own. Your content stays in Confluence and in the browser of the
+		person viewing it, and it is never sent to us.</p> <h2>What the app handles</h2> <ul><li><strong>Map content and settings.</strong> Markdown you write in the macro, and settings such as
+			layout and theme, are saved by Confluence as part of the macro on your page.</li> <li><strong>Page content.</strong> When a macro is set to use page headings, the app reads the page's
+			title and body from Confluence with the access of the person viewing it. This happens in that person's
+			browser, only to draw the map, and the app does not keep a copy.</li> <li><strong>Exports.</strong> Exported images and files are created in the browser and saved directly
+			to the device of the person exporting them.</li> <li><strong>License status.</strong> Confluence tells the app whether your site has an active subscription,
+			so that the app can work or show a notice.</li></ul> <h2>What we do not do</h2> <ul><li>The app does not send your content or usage data to us or to any third party.</li> <li>The app does not use analytics, advertising, or tracking, and it does not set cookies.</li> <li>We do not sell personal data.</li></ul> <h2>Information we may receive</h2> <ul><li><strong>Subscription records.</strong> If your organization subscribes through the Atlassian Marketplace,
+			Atlassian handles the purchase and gives us records of it, which may include your organization's
+			name and its billing and technical contacts. We use these only to manage the subscription and provide
+			support.</li> <li><strong>Support requests.</strong> If you contact us, we use what you send only to respond to you.</li></ul> <h2>Atlassian</h2> <p>The app runs on Atlassian's Forge platform, and Atlassian stores your Confluence content.
+		Atlassian's handling of data, including any platform logs, is covered by the <a href="https://www.atlassian.com/legal/privacy-policy" rel="noreferrer">Atlassian Privacy Policy</a>.</p> <h2>Keeping and deleting data</h2> <p>Because the app does not keep a copy of your content, you manage it in Confluence. Editing or
+		removing a macro changes what Confluence stores, subject to your page history. We keep
+		subscription records and support messages for as long as we need them to provide support and
+		meet legal or accounting obligations.</p> <h2>Changes</h2> <p>If this policy changes, we will update this page and the date at the top.</p> <h2>Contact</h2> <p>For questions about this policy or the app, email <a href="mailto:support@markmap.dev">support@markmap.dev</a>.</p></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_zug3v4 = {
+						base: "",
+						version: "1794660698238"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.CNcv_ldZ.js").then(async (kit) => {
+						kit.init(__sveltekit_zug3v4);
+						const app = await import("/_app/immutable/entry/app.yu8jSH2x.js");
+						kit.start(app, element, {
+							node_ids: [0, 7],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>

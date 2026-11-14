@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<style>
+			/* The editor has no prerendered styles. Keep in sync with --bg in style.css. */
+			html {
+				background: #faf9f6;
+			}
+			html.dark {
+				background: #141416;
+				color-scheme: dark;
+			}
+		</style>
+		<script>
+			// Before the first paint, so that dark mode does not flash light. Keep in sync with common.ts.
+			(() => {
+				let dark = null;
+				try {
+					dark = JSON.parse(localStorage.getItem('theme.dark'));
+				} catch {
+					// Storage can be blocked.
+				}
+				dark ??= matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.classList.toggle('dark', dark);
+			})();
+		</script>
+		<link href="/_app/immutable/entry/start.CNcv_ldZ.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DclECHGd.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BUPPL-JB.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BP51v7HM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CiPllD0G.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/BilBOyUG.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CbADPH2h.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CvlLlHQ2.js" rel="modulepreload">
+		<link href="/_app/immutable/entry/app.yu8jSH2x.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/0.meLFPWvN.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/XKyaHtl9.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CGeMwRJM.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/ePLls4BW.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DxQFveJC.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/CrNrtm7G.js" rel="modulepreload">
+		<link href="/_app/immutable/nodes/6.D-g8rd8D.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DAlusaL4.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/DYeB3B_K.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Bez0EshH.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/8rZRmjGg.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/Dh_Ox3IQ.js" rel="modulepreload">
+		<link href="/_app/immutable/chunks/2QYap7_o.js" rel="modulepreload">
+		<!--1355dui--><meta name="Description" content="Show a markmap in full page view."/> <meta name="color-scheme" content="light"/><!----><title>markmap in full page view</title>
+		<link href="/_app/immutable/assets/0.FqBt9OXJ.css" rel="stylesheet">
+	</head>
+	<body>
+		<script>
+			// Browsers without Array.prototype.at (before Safari 15.4 / Chrome 92) are too old for the app,
+			// which would crash and leave a blank page. Say so instead. Keep in sync with polyfills.ts.
+			if (![].at) {
+				document.write(
+					'<p style="margin:0;padding:16px;font:16px/1.5 system-ui,sans-serif">' +
+						'Your browser is out of date and cannot run Markmap. ' +
+						'Please update it, or open this page in another browser.</p>',
+				);
+			}
+		</script>
+		<div><!--[--><!--[--><!--[0--><!--[--><!--[-1--><!--]--> <!--[--><!--[-1--><!--[--><main class="full"><markmap-view aria-label="Mind map" role="group" toolbar="true"></markmap-view><!----> <!--[-1--><!--]--></main><!--]--><!--]--><!--]--><!----> <div class="toast-wrapper"><!--[--><!--]--></div><!----> <!--[0--><!--]--><!--]--><!--]--><!--]--><!----> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_zug3v4 = {
+						base: "",
+						version: "1794660698238"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/_app/immutable/entry/start.CNcv_ldZ.js").then(async (kit) => {
+						kit.init(__sveltekit_zug3v4);
+						const app = await import("/_app/immutable/entry/app.yu8jSH2x.js");
+						kit.start(app, element, {
+							node_ids: [0, 6],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = '/service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised, { type: 'module' });
+						});
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
