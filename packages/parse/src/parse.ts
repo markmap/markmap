@@ -6,7 +6,8 @@ import remarkParse from 'remark-parse';
 import { type PluggableList, unified } from 'unified';
 import { parse as parseYaml } from 'yaml';
 import { remarkHtmlImages } from './html-image';
-import { remarkMark, remarkResolveReferences } from './plugins';
+import { remarkMark } from './mark';
+import { remarkResolveReferences } from './plugins';
 import { toTree } from './to-tree';
 
 export interface ParseOptions {

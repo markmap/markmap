@@ -30,6 +30,9 @@
   },
   "dependencies": {
     "@markmap/core": "workspace:*",
+    "micromark-util-chunked": "^2.0.1",
+    "micromark-util-classify-character": "^2.0.1",
+    "micromark-util-resolve-all": "^2.0.1",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
@@ -37,6 +40,8 @@
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/mdast": "^4.0.4"
+    "@types/mdast": "^4.0.4",
+    "mdast-util-from-markdown": "^2.1.0",
+    "micromark-util-types": "^2.0.3"
   }
 }
