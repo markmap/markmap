@@ -1,6 +1,7 @@
 import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from './main';
 import type { PageData } from '@markmap/page';
@@ -131,6 +132,24 @@ describe('markmap', () => {
     expect(err).toContain('notes.txt not included: not a supported image type');
     expect(err).toContain('missing.png not included: ENOENT');
     expect(err).not.toContain('example.com');
+  });
+
+  it('keeps characters split between stdin chunks', async () => {
+    const markdown = '# 中文😀';
+    const bytes = Buffer.from(markdown);
+    const { stdin: _, ...rest } = io();
+    const spy = vi.spyOn(process, 'stdin', 'get');
+    try {
+      for (let cut = 1; cut < bytes.length; cut++) {
+        const chunks = [bytes.subarray(0, cut), bytes.subarray(cut)];
+        spy.mockReturnValue(Readable.from(chunks) as typeof process.stdin);
+        out = '';
+        expect(await main(['-', '-o', '-'], rest)).toBe(0);
+        expect(pageData(out).markdown).toBe(markdown);
+      }
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('reads no local images from stdin', async () => {
