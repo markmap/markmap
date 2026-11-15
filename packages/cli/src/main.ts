@@ -62,9 +62,10 @@ function openFile(file: string) {
 
 const defaultIo: Io = {
   async stdin() {
-    let text = '';
-    for await (const chunk of process.stdin) text += String(chunk);
-    return text;
+    // Decode once at the end: a character can be split between chunks.
+    const chunks: Buffer[] = [];
+    for await (const chunk of process.stdin) chunks.push(chunk);
+    return Buffer.concat(chunks).toString('utf8');
   },
   stdout: (data) => void process.stdout.write(data),
   stderr: (text) => void process.stderr.write(text),
