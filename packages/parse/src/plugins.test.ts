@@ -18,4 +18,18 @@ describe('remarkResolveReferences', () => {
     const { root } = parse('[r]: https://x.y\n\n# A\n\n- [a][r]');
     expect(root.children[0].content[0]).toMatchObject({ type: 'link', url: 'https://x.y' });
   });
+
+  it('uses the first definition in document order for links and images', () => {
+    const first = '[ref]: /first "First"';
+    const second = '[REF]: /second "Second"';
+    for (const definitions of [
+      `${first}\n${second}`,
+      `> ${first}\n\n${second}`,
+      `${first}\n\n> ${second}`,
+    ]) {
+      const [link, , image] = label(`[guide][ref] ![cover][ref]\n\n${definitions}`);
+      expect(link).toMatchObject({ type: 'link', url: '/first', title: 'First' });
+      expect(image).toMatchObject({ type: 'image', url: '/first', title: 'First' });
+    }
+  });
 });
