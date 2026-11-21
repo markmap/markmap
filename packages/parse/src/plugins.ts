@@ -1,8 +1,9 @@
 import type { Definition, Nodes, Parent, Root } from 'mdast';
 
-function visitParents(node: Nodes, fn: (parent: Parent) => void) {
-  if (!('children' in node)) return;
-  for (const child of node.children) visitParents(child, fn);
+function visit(node: Nodes, fn: (node: Nodes) => void) {
+  if ('children' in node) {
+    for (const child of node.children) visit(child, fn);
+  }
   fn(node);
 }
 
@@ -10,12 +11,13 @@ function visitParents(node: Nodes, fn: (parent: Parent) => void) {
 export function remarkResolveReferences() {
   return (tree: Root) => {
     const definitions = new Map<string, Definition>();
-    visitParents(tree, (parent) => {
-      for (const child of parent.children) {
-        if (child.type === 'definition') definitions.set(child.identifier, child);
+    visit(tree, (node) => {
+      if (node.type === 'definition' && !definitions.has(node.identifier)) {
+        definitions.set(node.identifier, node);
       }
     });
-    visitParents(tree, (parent) => {
+    visit(tree, (parent) => {
+      if (!('children' in parent)) return;
       parent.children = parent.children.flatMap((child): Nodes[] => {
         if (child.type === 'linkReference') {
           const def = definitions.get(child.identifier);
