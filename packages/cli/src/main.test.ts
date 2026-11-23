@@ -1,8 +1,9 @@
 import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { localPath } from './inline-images';
 import { main } from './main';
 import type { PageData } from '@markmap/page';
 
@@ -132,6 +133,19 @@ describe('markmap', () => {
     expect(err).toContain('notes.txt not included: not a supported image type');
     expect(err).toContain('missing.png not included: ENOENT');
     expect(err).not.toContain('example.com');
+  });
+
+  it('does not treat network paths as local files', () => {
+    const urls = ['//example.invalid/a.png'];
+    if (sep === '\\') {
+      urls.push(
+        String.raw`\\example.invalid\share\a.png`,
+        String.raw`/\example.invalid/a.png`,
+        '%5C%5Cexample.invalid/a.png',
+      );
+    }
+    for (const url of urls) expect(localPath(url, dir)).toBeUndefined();
+    expect(localPath('img/a%20b.png', dir)).toBe(join(dir, 'img', 'a b.png'));
   });
 
   it('keeps characters split between stdin chunks', async () => {
