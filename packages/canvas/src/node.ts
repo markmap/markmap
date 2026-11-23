@@ -81,12 +81,17 @@ export function fontFallback(
 
 const DATA_URL = /^data:[^,]*;base64,/i;
 const REMOTE_URL = /^https?:/i;
+/** `//host/…`, or `\\host\…` on Windows: a network share, not a file next to the Markdown. */
+const NETWORK_PATH = sep === '\\' ? /^[\\/]{2}/ : /^\/\//;
 
 async function readLocal(src: string, baseDir: string | undefined): Promise<Buffer> {
   if (baseDir == null) throw new Error(`Not reading ${src}: no baseDir`);
+  const decoded = decodeURI(src);
+  // Before `realpath`, which would already contact the host.
+  if (NETWORK_PATH.test(decoded)) throw new Error(`Not reading ${src}: not a local path`);
   const base = await realpath(baseDir);
   // After `realpath`, so links cannot point out of the folder either.
-  const file = await realpath(resolve(base, decodeURI(src)));
+  const file = await realpath(resolve(base, decoded));
   const path = relative(base, file);
   if (path === '..' || path.startsWith(`..${sep}`) || isAbsolute(path)) {
     throw new Error(`Not reading ${src}: outside baseDir`);

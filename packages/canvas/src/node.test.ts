@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { parse } from '@markmap/parse';
 import { createMathContent, remarkMath } from '@markmap/plugin-math';
 import { cardsTheme, defaultContentPlugins, renderTreeAsync } from '@markmap/render';
@@ -145,6 +145,20 @@ describe('local images', () => {
   ])('refuses %s', async (_, src, message) => {
     const path = typeof src === 'function' ? src() : src;
     await expect(loadNodeImage(path, { baseDir: base })).rejects.toThrow(message);
+  });
+
+  it('refuses network paths without contacting the host', async () => {
+    const urls = ['//example.invalid/a.png'];
+    if (sep === '\\') {
+      urls.push(
+        String.raw`\\example.invalid\share\a.png`,
+        String.raw`/\example.invalid/a.png`,
+        '%5C%5Cexample.invalid/a.png',
+      );
+    }
+    for (const url of urls) {
+      await expect(loadNodeImage(url, { baseDir: base })).rejects.toThrow(/not a local path/);
+    }
   });
 
   it('reads nothing without baseDir', async () => {

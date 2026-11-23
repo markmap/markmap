@@ -13,12 +13,15 @@ const IMAGE_TYPES: Readonly<Record<string, string>> = {
 
 /** Has a scheme, or is `//host/…`: not a file next to the Markdown. */
 const NOT_A_PATH = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+/** `\\host\…` or `/\host/…` once decoded: a network share on Windows. */
+const NETWORK_PATH = sep === '\\' ? /^[\\/]{2}/ : /^\/\//;
 
 /** The file a URL in the Markdown points at, if it can point at one. */
 export function localPath(url: string, baseDir: string): string | undefined {
   if (!url || NOT_A_PATH.test(url)) return undefined;
   try {
-    return resolve(baseDir, decodeURI(url));
+    const path = decodeURI(url);
+    return NETWORK_PATH.test(path) ? undefined : resolve(baseDir, path);
   } catch {
     return undefined;
   }
